@@ -54377,6 +54377,58 @@
         "base": null,
         "preferredBases": null
       }
+    },
+    {
+      "slug": "petercottle",
+      "assets": {
+        "bundle": {
+          "sha256": "0e7b311d9d90c96a2d0f0534d93c80cbeabf6684f49ded0c65638e0b294b6a02",
+          "size": 1535420
+        },
+        "metadata": {
+          "sha256": "f102ec19d959c473ecedd66ba431d2a12b1ea57b38ed90906ea7813b5ddb61cc",
+          "size": 683
+        },
+        "portrait": {
+          "sha256": "c8e984c90eecc6787c1ccdd802cb4b92c99a6e6b467e8f882069232c2ccd177b",
+          "size": 944094
+        },
+        "portraitTile": {
+          "sha256": "a78b3dab99867d20a9f2e1120f6589c832ccb540875fe7d08645d8855b630e7e",
+          "size": 12222
+        },
+        "portraitMedium": {
+          "sha256": "3762e9a2e78936f33015ef23aba0b41b62fd89e1bdc1c0be1cd7353456b6d29a",
+          "size": 72548
+        },
+        "ui": {
+          "sha256": "2bd9f57ed63af29a9fb9992ae28d8a2295c45c8b85f2f1a6300aad3cb543726f",
+          "size": 12852
+        },
+        "announcer": {
+          "sha256": "d32d05d3caa8b7e4168efff26c1077f56a49f2d9b78a17d152c912380aa3c11f",
+          "size": 70668
+        }
+      },
+      "variants": [
+        "captain",
+        "fox",
+        "kirby",
+        "link",
+        "luigi",
+        "mario",
+        "ness",
+        "pikachu",
+        "purin",
+        "samus"
+      ],
+      "metadata": {
+        "display": "Peter Cottle",
+        "nameFull": "Peter Cottle",
+        "short": "COTTLE",
+        "base": null,
+        "preferredBases": null
+      }
     }
   ]
 }
