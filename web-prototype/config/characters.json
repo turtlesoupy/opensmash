@@ -548,7 +548,8 @@
     "slug": "vanillaice"
   },
   {
-    "slug": "miketyson"
+    "slug": "miketyson",
+    "base": "luigi"
   },
   {
     "slug": "yannlecun"
