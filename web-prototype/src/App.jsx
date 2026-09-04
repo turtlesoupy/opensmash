@@ -788,6 +788,46 @@ export default function App() {
     };
   }, [audioUnlocked, engine, pageVisible, soundOn]);
 
+  // WebKit only lets an AudioContext start from a gesture inside its own
+  // document, and the gesture that launches a game (the roster tile click)
+  // happens here, before the engine iframe exists. So the page keeps one
+  // shared AudioContext that any trusted key press or pointer press creates
+  // and resumes, and the engine shell adopts it instead of constructing its
+  // own (BattleShip/web/index.html wraps AudioContext for SDL). The context
+  // is already running by the time SDL asks for it, so the opening is
+  // audible from the click itself. As a fallback for a context the engine
+  // did create (older shells), the same gesture resumes the iframe's SDL
+  // context synchronously; WebKit's gesture scope covers a same-origin frame
+  // called from the handler. Chrome inherits activation via allow="autoplay"
+  // and never needs either path.
+  useEffect(() => {
+    const unlockAudio = (event) => {
+      if (!event.isTrusted) return;
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (AudioContextClass && !window.__openSmashAudioContext) {
+        try { window.__openSmashAudioContext = new AudioContextClass(); } catch { /* no audio device */ }
+      }
+      const contexts = [
+        window.__openSmashAudioContext,
+        engine ? engineRef.current?.contentWindow?.Module?.SDL2?.audioContext : null,
+      ];
+      for (const audioContext of contexts) {
+        if (!audioContext || audioContext.state !== "suspended") continue;
+        // The sound preference is applied to the engine's context separately
+        // once it runs; a running silent context before that is harmless.
+        if (!soundOn && engine) continue;
+        audioContext.resume().catch(() => {});
+      }
+    };
+    const options = { capture: true, passive: true };
+    window.addEventListener("keydown", unlockAudio, options);
+    window.addEventListener("pointerdown", unlockAudio, options);
+    return () => {
+      window.removeEventListener("keydown", unlockAudio, options);
+      window.removeEventListener("pointerdown", unlockAudio, options);
+    };
+  }, [engine, soundOn]);
+
   // Re-plan the running game's ports when the controller settings change;
   // the shell (window.controllerPorts) handles hot-plug on its own.
   useEffect(() => {
