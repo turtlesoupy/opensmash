@@ -326,6 +326,17 @@ export function engineUrl(action, advancedOptions, gamepads = []) {
   const picks = (action.picks || []).map((pick) => resolvedCharacter(pick, options.characterMesh));
   const stage = options.stage === "random" ? Math.floor(Math.random() * 9) : Number(options.stage);
   const params = new URLSearchParams();
+  // Engine diagnostics opt-in from the site URL (e.g. /?SSB64_STALL_WATCH=1):
+  // forwarded verbatim so a stall or frame-cost report can be pulled from a
+  // match launched through the real shell, not just the bare engine page.
+  // The stall report: [...document.querySelectorAll('iframe')]
+  //   .find(i => i.src.includes('/engine/')).contentWindow.dumpStalls()
+  try {
+    const site = new URLSearchParams(window.location.search);
+    for (const key of ["SSB64_STALL_WATCH", "SSB64_FRAME_PROFILE", "SSB64_LOG_CONSOLE"]) {
+      if (site.get(key) === "1") params.set(key, "1");
+    }
+  } catch { /* no window (tests) */ }
   const plan = controllerPlan(options, gamepads);
   const humans = humanPortCount(plan);
   const multiplayer = humans >= 2;
