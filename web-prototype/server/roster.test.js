@@ -7,8 +7,8 @@ const variants = [
   "captain", "kirby", "pikachu", "purin", "ness",
 ];
 
-test("default assignment is balanced and omits experimental targets", () => {
-  const characters = Array.from({ length: 30 }, (_, index) => ({
+test("default assignment is roughly balanced, omits experimental targets, and is order-invariant", () => {
+  const characters = Array.from({ length: 1000 }, (_, index) => ({
     slug: `fighter${index}`, base: null, variants,
   }));
   const assigned = assignRosterBases(characters);
@@ -18,7 +18,14 @@ test("default assignment is balanced and omits experimental targets", () => {
     assert.notEqual(character.base, "yoshi");
     counts.set(character.base, counts.get(character.base) + 1);
   }
-  assert.deepEqual([...counts.values()], Array(10).fill(3));
+  for (const count of counts.values()) assert.ok(count > 60 && count < 140, `unbalanced: ${[...counts]}`);
+
+  const byslug = new Map(assigned.map((c) => [c.slug, c.base]));
+  const shuffled = [...characters].reverse().slice(0, 500);
+  shuffled.splice(3, 0, { slug: "newcomer", base: "kirby", variants });
+  for (const character of assignRosterBases(shuffled)) {
+    if (character.slug !== "newcomer") assert.equal(character.base, byslug.get(character.slug));
+  }
 });
 
 test("preferences constrain balancing and explicit experimental bases win", () => {

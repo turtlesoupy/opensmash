@@ -26,15 +26,24 @@ function hasBundleFor(character, base) {
   return base === "mario" || (character.variants || []).includes(base);
 }
 
-export function assignRosterBases(characters) {
-  const usage = new Map(DEFAULT_ROSTER_BASES.map((base) => [base, 0]));
+// FNV-1a over the slug. Assignment must be a pure function of the slug so
+// that adding, removing, pinning, or reordering fighters never moves anyone
+// else's base (round-robin by position did). Balance is statistical.
+export function slugHash(slug) {
+  let hash = 0x811c9dc5;
+  for (const char of String(slug)) {
+    hash ^= char.codePointAt(0);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash;
+}
 
+export function assignRosterBases(characters) {
   return characters.map((source) => {
     const character = { ...source };
     const explicit = normalizeBase(character.base);
     if (explicit !== null) {
       character.base = explicit;
-      if (usage.has(explicit)) usage.set(explicit, usage.get(explicit) + 1);
       delete character.preferredBases;
       return character;
     }
@@ -56,10 +65,7 @@ export function assignRosterBases(characters) {
     }
 
     if (candidates.length) {
-      character.base = candidates.reduce((best, base) => (
-        usage.get(base) < usage.get(best) ? base : best
-      ));
-      usage.set(character.base, usage.get(character.base) + 1);
+      character.base = candidates[slugHash(character.slug) % candidates.length];
     }
     delete character.preferredBases;
     return character;
