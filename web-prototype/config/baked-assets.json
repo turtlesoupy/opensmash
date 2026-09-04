@@ -54325,6 +54325,58 @@
         "base": null,
         "preferredBases": null
       }
+    },
+    {
+      "slug": "pietroschirano",
+      "assets": {
+        "bundle": {
+          "sha256": "0a7d62c235a5ef2c803c37d7cc28ea3cd7565de70bdf295eb26dc0bcc51b52cc",
+          "size": 1593868
+        },
+        "metadata": {
+          "sha256": "1b2c50bb7a66f97d46e604c720b6d99adabec1d96c0e36fba09fd9415841ec5b",
+          "size": 774
+        },
+        "portrait": {
+          "sha256": "89e83012ec92a12e032f05d661b29dac102615c878c07772fd6f3f0cf8d9a663",
+          "size": 1053190
+        },
+        "portraitTile": {
+          "sha256": "e7056d27aa5571223804869fb721ea2156f3f956564bd4b1c8c15323ef40931b",
+          "size": 13419
+        },
+        "portraitMedium": {
+          "sha256": "ae85c42ad80a931bd2d901d4d777486f84dd04468e84dc4905658c120e9896d1",
+          "size": 80556
+        },
+        "ui": {
+          "sha256": "ebb6986b706a64616b585588acd2405656d99031b9764fa35f2d750f0d815dc1",
+          "size": 12852
+        },
+        "announcer": {
+          "sha256": "5064d5454684047df0354028f974879c7b448ff5c6c244a34afa70a0b4d53f16",
+          "size": 89004
+        }
+      },
+      "variants": [
+        "captain",
+        "fox",
+        "kirby",
+        "link",
+        "luigi",
+        "mario",
+        "ness",
+        "pikachu",
+        "purin",
+        "samus"
+      ],
+      "metadata": {
+        "display": "Pietro Schirano",
+        "nameFull": "Pietro Schirano",
+        "short": "SCHIRANO",
+        "base": null,
+        "preferredBases": null
+      }
     }
   ]
 }
