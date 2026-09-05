@@ -103,12 +103,18 @@ def main(argv=None):
         if args.target == 'native' and not shutil.which('cmake'):
             raise ValueError('Native target requires CMake 3.24 or newer')
         marker = output/'opensmash-target.json'
-        if marker.exists() and json.loads(marker.read_text())['target'] != args.target:
+        previous = json.loads(marker.read_text()) if marker.exists() else {}
+        if previous and previous['target'] != args.target:
             raise ValueError('Output directory belongs to a different target')
+        reuse_config = (args.target == 'native' and previous.get('status') == 'complete'
+                        and previous.get('commands', [None])[0] == commands[0]
+                        and (output/'CMakeCache.txt').is_file())
         output.mkdir(parents=True, exist_ok=True)
         record = dict(target=args.target, status='building', commands=commands)
         marker.write_text(json.dumps(record, indent=2)+'\n')
-        for command in commands:
+        # CMake's generated build handles source/CMakeLists changes itself.
+        # Reconfigure explicitly only for new directories or changed options.
+        for command in (commands[1:] if reuse_config else commands):
             print('+ '+shlex.join(command), flush=True)
             try:
                 subprocess.run(command, check=True, cwd=ROOT)

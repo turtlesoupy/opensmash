@@ -80,6 +80,20 @@ class BuildTests(unittest.TestCase):
                 self.assertEqual(build.main(['native']),1)
             self.assertNotEqual(json.loads((output/'opensmash-target.json').read_text())['status'],'complete')
 
+    def test_native_reuses_matching_configure(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp)
+            commands = [['cmake','-S','engine'], ['cmake','--build',tmp]]
+            (output/'CMakeCache.txt').write_text('fixture')
+            (output/'opensmash-target.json').write_text(json.dumps(dict(
+                target='native',status='complete',commands=commands)))
+            with patch.object(build,'plan',return_value=(output,[],commands)), \
+                 patch.object(build.shutil,'which',return_value='/bin/cmake'), \
+                 patch.object(build.subprocess,'run') as run, \
+                 contextlib.redirect_stdout(io.StringIO()):
+                self.assertEqual(build.main(['native']),0)
+                run.assert_called_once_with(commands[1],check=True,cwd=build.ROOT)
+
 
 if __name__ == '__main__':
     unittest.main()
