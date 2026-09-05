@@ -40,10 +40,16 @@ New vertex batches never exceed 30 vertices, fitting the N64's vertex
 cache. Display lists are emitted as big-endian F3DEX2 commands and use
 vertex shading for the body. Head tiles use `LoadTile` and linear big-endian
 RGBA16 data; source UV seams are preserved by sampling the nearest original
-surface. The head combiner uses `DECALRGBA, PASS2`: fighters render in two
+surface. Nearly uniform tiles use vertex shading when every RGB555 channel
+stays within two levels of the texture samples; sharp facial details stay textured.
+The head combiner uses `DECALRGBA, PASS2`: fighters render in two
 cycles, so the second cycle must preserve the first cycle's color rather
 than sample an unloaded adjacent tile. Tiles default to 12x12 and reduce to 8x8 or 4x4 to fit the 256 KiB
-reloc-file limit. Local loadouts can set `face_texture_size` to 0 for the
+reloc-file limit and a shared 320 KiB model-growth budget. Character select loads
+all twelve models, including fighters that are not selected. The build and audit
+also enforce a conservative 352 KiB growth limit across all changed assets; this
+is not a measured hardware memory guarantee. If geometry alone cannot fit,
+reduce `--triangles` or select fewer fighters. Local loadouts can set `face_texture_size` to 0 for the
 earlier vertex-color path. Both detail trees and alternate
 hand display lists are redirected. Original animations and combat data
 are retained. Head textures add memory beyond the earlier ~40 KiB geometry growth;

@@ -31,6 +31,25 @@ def sprite():
 
 
 class SpriteTests(unittest.TestCase):
+    def test_css_budget_counts_more_than_four_fighters(self):
+        base=bytes(2*1024*1024)
+        rom=bytearray(base)
+        # Four 80 KB models fit the growth budget, five do not. CSS loads
+        # all five even though only four fighters can be active in battle.
+        for fid in range(5):
+            ENTRY.pack_into(rom,TABLE+fid*12,0,65535,20000,65535,20000)
+        with self.assertRaisesRegex(AssertionError,'Character-select asset growth'):
+            verify(base,rom,[])
+
+    def test_flat_head_tiles_use_shading_but_keep_sharp_detail(self):
+        from face_textures import shade_equivalent
+        pixels=np.full((12,12),(12<<11)|(9<<6)|(6<<1)|1,dtype='>u2')
+        colors=shade_equivalent(pixels.tobytes(),12)
+        np.testing.assert_array_equal(colors,np.tile(np.rint(np.array([12,9,6])*255/31).astype(int),(3,1)))
+        # An interior eye/mouth detail must not disappear into flat shading.
+        pixels[4:6,4:6]=1
+        self.assertIsNone(shade_equivalent(pixels.tobytes(),12))
+
     def test_n64_order_is_not_native_word_order(self):
         linear=bytes(range(64))
         encoded=swizzle(linear,16,8,4)

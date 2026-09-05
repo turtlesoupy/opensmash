@@ -9,7 +9,7 @@ import struct
 import subprocess
 import tempfile
 
-from face_textures import SurfaceSampler
+from face_textures import SurfaceSampler, shade_equivalent
 from presentation import MENU_SCALE_TABLE, MODELS, Reloc, bake_voice, patch_ui, symbols
 
 import fast_simplification
@@ -98,7 +98,12 @@ def mesh_parts(path, budget, face_texture_size=0):
             raise ValueError('Joint-local vertex outside signed 16-bit range')
         triangle = (np.rint(local).astype(int), colors[source].astype(int))
         if sampler is not None and joints[ji] == head_joint:
-            triangle += ((face_texture_size, sampler.tile(points[tri],face_texture_size)),)
+            tile = sampler.tile(points[tri],face_texture_size)
+            shading = shade_equivalent(tile,face_texture_size)
+            if shading is not None:
+                triangle = (triangle[0],shading)
+            else:
+                triangle += ((face_texture_size,tile),)
         parts[joints[ji]].append(triangle)
     return parts, len(faces), len(indices)
 
@@ -125,7 +130,11 @@ def patch_model(raw, entry, source, parts, main_source):
         batches = []
         # Textured triangles each carry a small independent tile. The rest
         # keep the original 30-vertex batches and vertex colors.
-        chunks = [[t] for t in triangles] if any(len(t)==3 for t in triangles) else [triangles[i:i+10] for i in range(0,len(triangles),10)]
+        # Draw shaded triangles first, in batches, then textured triangles.
+        # This also avoids carrying texture state into shaded head geometry.
+        shaded = [t for t in triangles if len(t)==2]
+        textured = [t for t in triangles if len(t)==3]
+        chunks = [shaded[i:i+10] for i in range(0,len(shaded),10)] + [[t] for t in textured]
         for batch in chunks:
             texture = batch[0][2] if len(batch[0])==3 else None
             tex_offset = None
@@ -284,19 +293,29 @@ def build(args):
             model = get(fid)
             raw = bytes(model.data)
             asset = args.assets / fighter['asset']
-            parts, before, after = mesh_parts(asset, args.triangles)
-            # Reserve room for geometry, commands, and existing ROM data.
-            head_count = max(map(len,parts.values()))
             requested = fighter.get('face_texture_size',12)
             if requested not in (0,4,8,12):
                 raise ValueError('face_texture_size must be 0, 4, 8, or 12')
-            size = next((n for n in (12,8,4) if n<=requested and len(raw)+after*64+head_count*(n*n*2+88)+2048 < 0xffff*4),0)
-            if size:
-                parts, before, after = mesh_parts(asset,args.triangles,size)
             source = (args.decomp/'src/relocData'/fighter['model_source']).read_text()
             main_source = (args.decomp/'src/relocData'/fighter['main_source']).read_text()
+            # CSS loads every fighter, not merely the four active players.
+            # Share a conservative model-growth budget across the loadout.
+            model_budget = 320*1024 // len(loadout)
             try:
-                blob, intern, extern = patch_model(raw, entries[fid], source, parts, main_source)
+                for size in (12,8,4,0):
+                    if size > requested:
+                        continue
+                    parts, before, after = mesh_parts(asset,args.triangles,size)
+                    try:
+                        blob, intern, extern = patch_model(raw, entries[fid], source, parts, main_source)
+                    except ValueError as exc:
+                        if str(exc) not in ('Relocation exceeds 16-bit word range','Model exceeds reloc file limit'):
+                            raise
+                        continue
+                    if len(blob)-len(raw) <= model_budget:
+                        break
+                else:
+                    raise ValueError('Loadout exceeds the character-select model budget; reduce --triangles or select fewer fighters')
                 edited[fid] = Reloc(blob, chain(blob, intern), chain(blob, extern))
                 presentation = patch_ui(fighter, args.assets, get, sym, patch) if fighter.get('ui') else {}
             except ValueError as exc:
@@ -305,6 +324,9 @@ def build(args):
         for fid, reloc in edited.items():
             blob, intern, extern = reloc.finish()
             replacements[fid] = (blob + suffixes[fid], intern, extern, len(blob)//4)
+    asset_growth = sum(max(0,r[3]*4-entries[fid][4]*4) for fid,r in replacements.items())
+    if asset_growth > 352*1024:
+        raise ValueError('Loadout exceeds the character-select asset budget; reduce --triangles or select fewer fighters')
     # Move ALL file bodies together so next-entry offsets remain meaningful
     # to the game's recursive external-dependency heap sizing. Keep original
     # audio/particle ROM addresses untouched by appending after the base ROM.
@@ -344,7 +366,7 @@ def build(args):
     # Additional model bytes loaded for any four distinct fighter kinds.
     # This excludes vanilla scene heaps and is not a hardware RAM guarantee.
     deltas = sorted((r['model_bytes_after']-r['model_bytes_before'] for r in report), reverse=True)
-    result = dict(presentation_patches=byte_patches, replaced_files=sorted(replacements), max_four_fighter_model_growth_bytes=sum(deltas[:4]), rom_sha256=hashlib.sha256(output).hexdigest(), rom_bytes=len(output), loadout=report, validation='Built; emulator and physical hardware validation pending')
+    result = dict(presentation_patches=byte_patches, replaced_files=sorted(replacements), max_four_fighter_model_growth_bytes=sum(deltas[:4]), all_fighter_model_growth_bytes=sum(deltas), character_select_asset_growth_bytes=asset_growth, character_select_asset_growth_budget_bytes=352*1024, rom_sha256=hashlib.sha256(output).hexdigest(), rom_bytes=len(output), loadout=report, validation='Built; emulator and physical hardware validation pending')
     args.output.with_suffix('.json').write_text(json.dumps(result, indent=2)+'\n')
     print(json.dumps(result, indent=2))
 

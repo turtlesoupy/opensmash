@@ -3,6 +3,26 @@ import numpy as np
 from scipy.spatial import cKDTree
 
 
+def shade_equivalent(tile, size, tolerance=2):
+    """Replace low-detail tiles only when every RGB555 channel stays in bounds.
+
+    Preserve textures containing eyes, mouth edges, or other sharp detail.
+    A constant or linearly shaded triangle often suffices for hair and clothing.
+    """
+    texels = np.frombuffer(tile, dtype='>u2').reshape(size, size).astype(int)
+    rgb = np.stack([(texels >> shift) & 31 for shift in (11, 6, 1)], axis=-1)
+    y,x = np.mgrid[:size,:size]
+    v,w = (x.ravel()-1)/(size-3), (y.ravel()-1)/(size-3)
+    weights = np.maximum(np.stack((1-v-w,v,w),axis=1),0)
+    weights /= weights.sum(axis=1)[:,None]
+    candidates = [np.tile(np.rint(rgb.mean(axis=(0,1))), (3,1)),
+                  np.array([rgb[1,1],rgb[1,size-2],rgb[size-2,1]])]
+    for colors in candidates:
+        if np.max(np.abs(weights @ colors - rgb.reshape(-1,3))) <= tolerance:
+            return np.rint(colors*255/31).astype(int)
+    return None
+
+
 class SurfaceSampler:
     def __init__(self, vertices, faces, texture):
         self.triangles = vertices[faces, :3]

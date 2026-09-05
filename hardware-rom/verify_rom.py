@@ -28,6 +28,9 @@ def verify(base, rom, fids, loadout=None):
     from presentation import MENU_SCALE_TABLE, CTL, TBL, MODELS, EMBLEMS, EMBLEM_TABLES, voice_info
     table = [ENTRY.unpack_from(rom, TABLE+i*12) for i in range(COUNT+1)]
     old = [ENTRY.unpack_from(base, TABLE+i*12) for i in range(COUNT+1)]
+    # All replacement assets can be resident together in character select.
+    growth = sum(max(0,new[4]-prev[4])*4 for new,prev in zip(table[:-1],old[:-1]))
+    assert growth <= 352*1024, 'Character-select asset growth exceeds conservative budget'
     expected = bytearray(base)
     extra_files = set()
     for fighter in loadout or []:

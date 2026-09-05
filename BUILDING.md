@@ -125,8 +125,10 @@ characters count toward the 12-slot limit.
 The result is `build/rom/opensmash.z64`, a generated `loadout.json`, and hash/size
 reports. The exporter verifies the original US v1.0 ROM and audits the output
 before reporting success. `--triangles 700` controls the per-character triangle
-budget (32–2,000). A 12-slot/700-triangle build passes the structural audit;
-that is not a physical-hardware or four-player memory guarantee.
+budget (32–2,000). Character select loads all fighter models, so larger loadouts automatically
+reduce texture resolution to share a conservative memory budget. If geometry
+alone exceeds it, reduce `--triangles` or select fewer fighters. The structural
+audit checks total asset growth, but does not guarantee physical-hardware stability.
 
 The ROM bakes supplied OSBV portraits, name lettering, stock icons and menu/HUD
 emblems, plus announcer WAVs converted to N64 ADPCM. Local loadout entries may
