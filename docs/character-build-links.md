@@ -1,7 +1,20 @@
-# Manage-modal integration: Copy build link
+# Custom-character download URLs and optional build links
 
-The UI is intentionally left to the separate manage-modal task. The helper and
-CLI consumer are ready:
+The manage modal now exposes `job.character.bundleUrl` as **Character download
+URL**. The native/ROM importer accepts that URL directly. For capability URLs,
+it reads `/engine/fighters/SLUG-CAPABILITY/manifest.json`, then uses companion
+`.osbui`/`.wav` URLs with the same capability. For public versioned URLs, it
+reads the version's manifest and uses its artifact URLs. Private manifests can
+have null artifact URLs; the importer derives the already-supported capability
+routes instead. It never constructs direct links to the private storage bucket.
+
+The `.osbui` includes the emblem and stock/menu sprites. Native preparation
+requires a nonempty emblem and a compatible PCM16 announcer WAV for these
+custom downloads. No UI or server endpoint changes are required.
+
+The optional helper below additionally carries the current base/fkind, which
+is not present in immutable download manifests. It remains available if the
+modal later wants a separate **Copy build link** control:
 
 ```js
 import { characterBuildLink } from "../shared/character-build-link.js";

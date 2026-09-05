@@ -66,6 +66,48 @@ def clean_character(source, origin):
     return c
 
 
+def download_character(url):
+    """Resolve companions for the download URL emitted by FighterJobModal.
+
+    Private jobs use a capability route. Public jobs expose a versioned
+    object-store URL. Both already publish a manifest; no API login is needed.
+    Unknown standalone mesh URLs keep the legacy mesh-only behavior.
+    """
+    parsed = urllib.parse.urlsplit(url)
+    private = re.fullmatch(r'(.*)/engine/bundles/([a-z0-9]+)-([A-Za-z0-9]{16})\.osb6', parsed.path)
+    public = re.fullmatch(r'(.*/characters/([a-z0-9]+)/versions/[^/]+)/injection/\2\.osb6', parsed.path)
+    if private:
+        prefix, slug, capability = private.groups()
+        root = f'{prefix}/engine/fighters/{slug}-{capability}'
+        paths = dict(uiUrl=parsed.path[:-5]+'.osbui', voiceUrl=parsed.path[:-5]+'.wav',
+                     portrait=root+'/portrait.png')
+    elif public:
+        root, slug = public.groups()
+        paths = dict(uiUrl=parsed.path[:-5]+'.osbui', voiceUrl=root+'/announcer.wav',
+                     portrait=root+'/portrait.png')
+    else:
+        return None
+
+    def at(path):
+        return urllib.parse.urlunsplit(parsed._replace(path=path, fragment=''))
+
+    manifest_url = at(root+'/manifest.json')
+    manifest = json.loads(fetch(manifest_url))
+    character = manifest.get('character', {})
+    artifacts = manifest.get('artifacts', {})
+    if manifest.get('protocolVersion') != 1 or character.get('slug') != slug:
+        raise ValueError('Character download manifest has an unsupported version or mismatched slug')
+    for key in ('bundle', 'ui', 'announcer'):
+        if not isinstance(artifacts.get(key), dict):
+            raise ValueError(f'{slug}: download manifest is missing the {key} artifact')
+    c = dict(character, bundleUrl=url, requireExtras=True)
+    for key, artifact in [('uiUrl', 'ui'), ('voiceUrl', 'announcer'), ('portrait', 'portrait')]:
+        source = artifacts.get(artifact, {})
+        c[key] = urllib.parse.urljoin(manifest_url, source.get('url') or at(paths[key]))
+    c['variants'] = artifacts.get('targets', [])
+    return c
+
+
 def from_url(url):
     """Copied build link, engine launch link, or a direct OSB6 URL."""
     parsed = urllib.parse.urlsplit(url)
@@ -81,7 +123,7 @@ def from_url(url):
                  uiUrl=query.get('inject_ui', [None])[0], voiceUrl=query.get('inject_voice', [None])[0])
     elif parsed.path.endswith(('.osb6', '.osb')):
         slug = re.sub(r'-[A-Za-z0-9]{16}$', '', Path(parsed.path).stem)
-        c = dict(slug=slug, bundleUrl=url)
+        c = download_character(url) or dict(slug=slug, bundleUrl=url)
     else:
         raise ValueError('Use Copy build link in fighter details, an engine launch URL, or a direct .osb6 URL')
     return clean_character(c, url)
@@ -181,6 +223,35 @@ def field(value, limit):
     return str(value).replace('|', ' ').replace('\n', ' ').replace('\r', ' ').replace('\0', '').encode('utf-8')[:limit].decode('utf-8', 'ignore')
 
 
+OSBV_EMBLEM_OFFSET = 4 + 8640 + 64 * 16 + 80 + 32 + 64 * 12
+
+
+def has_emblem(data):
+    canvas = data[OSBV_EMBLEM_OFFSET:OSBV_EMBLEM_OFFSET + 48 * 48]
+    return data[:4] == b'OSBV' and len(canvas) == 48 * 48 and any(canvas)
+
+
+def validate_voice(data):
+    """Match BattleShip's PCM s16 mono/stereo WAV reader, rejecting truncation."""
+    if len(data) < 44 or data[:4] != b'RIFF' or data[8:12] != b'WAVE':
+        raise ValueError('Announcer must be a PCM 16-bit WAV file')
+    at, fmt, samples = 12, None, None
+    while at + 8 <= len(data):
+        kind, size = struct.unpack_from('<4sI', data, at)
+        at += 8
+        if at + size > len(data):
+            raise ValueError('Truncated announcer WAV')
+        if kind == b'fmt ' and size >= 16:
+            fmt = struct.unpack_from('<HHIIHH', data, at)
+        elif kind == b'data':
+            samples = size
+        at += size + size % 2
+    if (fmt is None or fmt[0] != 1 or fmt[1] not in (1, 2) or fmt[2] == 0
+            or fmt[5] != 16 or samples is None or samples < fmt[1] * 2
+            or samples % (fmt[1] * 2)):
+        raise ValueError('Announcer must be PCM 16-bit mono or stereo with nonempty audio')
+
+
 def cached_asset(url, cache):
     key = hashlib.sha256(url.encode()).hexdigest()
     path = cache / key
@@ -255,6 +326,7 @@ def prepare(args):
         mesh = extract(data, fk)
         (folder/'mesh.osb').write_bytes(mesh)
         paths = {'bundleUrl': (folder/'mesh.osb').relative_to(output).as_posix()}
+        extras = dict(announcer=False, emblem=False)
         if args.target == 'native':
             for key, filename, magic in [('uiUrl', 'ui.osbui', (b'OSBU', b'OSBV')), ('voiceUrl', 'voice.wav', b'RIFF'), ('portrait', 'portrait.png', b'\x89PNG')]:
                 if c.get(key):
@@ -262,6 +334,13 @@ def prepare(args):
                     # The engine validates UI versions. Basic signature checks prevent saving error pages.
                     if not asset.startswith(magic):
                         raise ValueError(f'{c["slug"]}: invalid {key} asset')
+                    if key == 'voiceUrl':
+                        validate_voice(asset)
+                        extras['announcer'] = True
+                    elif key == 'uiUrl':
+                        extras['emblem'] = has_emblem(asset)
+                        if c.get('requireExtras') and not extras['emblem']:
+                            raise ValueError(f'{c["slug"]}: UI pack has no embedded emblem; regenerate its UI assets')
                     (folder/filename).write_bytes(asset)
                     paths[key] = (folder/filename).relative_to(output).as_posix()
             rows.append('|'.join([c['slug'], str(TILES[i % 12]), paths['bundleUrl'], paths.get('uiUrl', ''),
@@ -270,7 +349,7 @@ def prepare(args):
             loadout.append(dict(name=c['name'], slot=TITLES[fk], asset=paths['bundleUrl'], model_file=MODELS[fk],
                                 model_source=f'{MODELS[fk]}_{TITLES[fk]}Model.c', main_source=f'{MAINS[fk]}_{TITLES[fk]}Main.c'))
         report.append(dict(slug=c['slug'], name=c['name'], base=FIGHTERS[fk], page=1+i//12,
-                           mesh_sha256=hashlib.sha256(mesh).hexdigest(), mesh_bytes=len(mesh)))
+                           mesh_sha256=hashlib.sha256(mesh).hexdigest(), mesh_bytes=len(mesh), **extras))
     # Publish roster only after every selected character has staged successfully.
     if args.target == 'native':
         (output/'roster.txt').write_text('\n'.join(rows)+'\n')

@@ -61,30 +61,41 @@ JP vanilla builds remain available.
 
 ## Private characters and copied links
 
-Both targets accept repeatable `--character-url` arguments. Links are added to
+Copy the **Character download URL** from custom fighter settings and pass it
+as `--character-url`. Both targets accept repeatable `--character-url` arguments. Links are added to
 the selected public roster, or replace a matching slug. To build *only* linked
 characters, use `--characters none`:
 
 ```sh
-python3 build.py native --characters none --character-url 'COPIED_BUILD_LINK'
+python3 build.py native --characters none --character-url 'COPIED_DOWNLOAD_URL'
 python3 build.py native --characters queen --character-url 'COPIED_BUILD_LINK'
 python3 build.py rom --characters none --character-url 'COPIED_BUILD_LINK'
 ```
 
 Quote links so the shell does not interpret `&` or other URL characters.
-Supported inputs are the self-contained build links produced by
-`characterBuildLink`, existing `/engine/?inject=...` launch links, and direct
-`.osb6` asset links. Build links include UI/audio/name metadata; a bare asset
-link contains only the mesh and defaults to the Mario variant. A normal website
-home-page URL or an authenticated job URL is not an export link.
+The URLs shown by the custom-character modal work directly, including private
+`/engine/bundles/SLUG-CAPABILITY.osb6` URLs and public versioned object-store
+URLs. The importer reads the associated manifest for the character's name,
+then downloads the mesh, `.osbui` pack, announcer WAV and portrait. Emblems,
+stock icons and menu art are embedded in `.osbui`; the raw emblem PNG is not
+used by BattleShip. Native preparation validates the WAV format and checks
+that a custom download has a nonempty embedded emblem, failing visibly when
+these assets are missing. `characters.json` records `announcer` and `emblem`
+booleans for each staged fighter.
 
-The copy-link helper is ready for the separate manage-modal work to integrate;
-this branch does not add a button to that modal. See
-[the integration note](docs/character-build-links.md). Copying a private link
-uses its existing asset capability without publishing the fighter. Anyone
-with that link can download its assets. Build logs and completion reports omit
-copied links; local asset files and caches remain in the ignored build output.
-No browser cookies or account tokens are imported.
+The immutable download URL does not encode the separate, editable website
+moveset setting; raw downloads default to Mario. A self-contained
+`characterBuildLink` can carry a specific base/fkind. Existing engine launch
+links and unknown standalone `.osb6` URLs also remain supported; unknown mesh
+URLs carry no companion-asset information and import only a mesh.
+
+The modal's existing download field needs no changes or additional website
+deployment for this import behavior. The optional self-contained link helper
+is described in [the integration note](docs/character-build-links.md).
+Private downloads reuse the existing asset capability without publishing the
+fighter. Anyone with that URL can download its assets. Build logs and reports
+omit copied URLs; local asset files and caches stay in the ignored build
+output. No browser cookies or account tokens are imported.
 
 ## Hardware ROM: select a subset
 
