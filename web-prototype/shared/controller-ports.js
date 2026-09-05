@@ -117,6 +117,11 @@ export function planControllerPorts({ gamepads = [], ports } = {}) {
   return plan;
 }
 
+// Keep at least two fighters enabled, including CPU slots without a device.
+export function canTurnPortOff(plan, port) {
+  return plan[port]?.kind === NONE || plan.filter((entry) => entry?.kind !== NONE).length > 2;
+}
+
 export function humanPortCount(plan) {
   return plan.filter((entry) => entry && (entry.kind === KEYBOARD || entry.kind === "gamepad")).length;
 }

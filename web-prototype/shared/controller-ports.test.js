@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  canTurnPortOff,
   choiceForEntry,
   controllerPortParams,
   humanPortCount,
@@ -108,4 +109,18 @@ test("automatic CPU slots accept connected controllers while explicit choices st
   assert.deepEqual(planControllerPorts({ ports: choices }), [{ kind: "keyboard" }, null, { kind: "none" }, { kind: "cpu" }]);
   const plan = planControllerPorts({ ports: choices, gamepads: [XBOX, PS5, PS5_TWIN] });
   assert.deepEqual(plan.map(entry => entry?.kind), ["gamepad", "gamepad", "none", "cpu"]);
+});
+
+
+test("Off cannot remove the last opponent, whether human or CPU", () => {
+  const defaultPlan = planControllerPorts();
+  assert.equal(canTurnPortOff(defaultPlan, 1), true);
+  for (const opponent of ["auto", "cpu", "gamepad:0"]) {
+    const plan = planControllerPorts({ gamepads: [XBOX], ports: ["keyboard", "none", opponent, "none"] });
+    assert.equal(canTurnPortOff(plan, 0), false);
+    assert.equal(canTurnPortOff(plan, 2), false);
+    assert.equal(canTurnPortOff(plan, 1), true);
+  }
+  const invalidSavedPlan = planControllerPorts({ ports: ["keyboard", "none", "none", "none"] });
+  assert.equal(canTurnPortOff(invalidSavedPlan, 0), false);
 });

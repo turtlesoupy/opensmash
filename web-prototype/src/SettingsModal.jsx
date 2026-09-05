@@ -3,7 +3,7 @@ import AuthGate from "./AuthGate.jsx";
 import ModalPage from "./ModalPage.jsx";
 import RomHandoffModal from "./RomHandoffModal.jsx";
 import RomHandoffReceiver from "./RomHandoffReceiver.jsx";
-import { choiceForEntry, portOptions } from "../shared/controller-ports.js";
+import { canTurnPortOff, choiceForEntry, portOptions } from "../shared/controller-ports.js";
 import {
   BOOT_MODES,
   CHARACTER_MESHES,
@@ -75,6 +75,7 @@ export default function SettingsModal({
   }
 
   function updatePort(port, value) {
+    if (value === "none" && !canTurnPortOff(portPlan, port)) return;
     const ports = [...(draft.ports ?? DEFAULT_ADVANCED_OPTIONS.ports)];
     ports[port] = value;
     const next = { ...draft, ports };
@@ -322,7 +323,7 @@ export default function SettingsModal({
                           onChange={(event) => updatePort(port, event.target.value)}
                         >
                           <option value={current === "auto" ? "auto" : "cpu"}>CPU</option>
-                          <option value="none">Off</option>
+                          <option value="none" disabled={!canTurnPortOff(portPlan, port)}>Off</option>
                           {choices.map((choice) => (
                             <option value={choice.value} key={choice.value}>{choice.label}</option>
                           ))}
@@ -332,7 +333,7 @@ export default function SettingsModal({
                   );
                 })}
               </div>
-              <small className="advanced-controllers-note">Off removes a fighter from the match. Connect a controller to fill an unassigned CPU slot.</small>
+              <small className="advanced-controllers-note">Off removes a fighter from the match. At least two fighters must stay enabled. Connect a controller to fill an unassigned CPU slot.</small>
               {humanPorts >= 2 && (
                 <small className="advanced-controllers-note">
                   Choose each player’s fighter on the roster before the match starts.
