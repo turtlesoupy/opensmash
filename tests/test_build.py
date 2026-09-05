@@ -58,6 +58,21 @@ class BuildTests(unittest.TestCase):
                 self.assertEqual(build.main(['native','--dry-run','--output-dir',str(out)]), 0)
             self.assertFalse(out.exists())
 
+    def test_vanilla_has_no_roster_preparation(self):
+        _, _, commands = build.plan(self.args('native', '--vanilla'))
+        self.assertEqual(len(commands), 2)
+        with self.assertRaises(ValueError):
+            build.plan(self.args('native', '--vanilla', '--characters', 'queen'))
+
+    def test_link_arguments_reach_both_targets_but_are_redacted(self):
+        for target in ('native', 'rom'):
+            _, _, commands = build.plan(self.args(target, '--characters', 'none',
+                                                 '--character-url', 'https://example.test/#secret'))
+            prepare = next(c for c in commands if any('targets/characters.py' in a for a in c))
+            self.assertIn('https://example.test/#secret', prepare)
+            self.assertNotIn('https://example.test/#secret', build.redacted(prepare))
+            self.assertEqual(prepare[prepare.index('--characters')+1], 'none')
+
     def test_native_discovers_alternative_rom_byte_order(self):
         with tempfile.TemporaryDirectory() as tmp:
             rom = Path(tmp)/'baserom.us.v64'

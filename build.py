@@ -20,14 +20,19 @@ def parser():
         p.add_argument('--battleship', type=Path, default=ROOT.parent/'BattleShip')
         p.add_argument('--rom', type=Path, help='Base ROM (default: BattleShip/baserom.us.z64)')
         p.add_argument('--output-dir', type=Path, help='Dedicated target build directory')
+        p.add_argument('--characters', nargs='+', help='Character slugs (comma or space separated), all (default), or none for links only')
+        p.add_argument('--character-url', action='append', default=[], help='Copied character build link; may be repeated')
+        p.add_argument('--site', default='https://smash.fun', help='Website origin for relative asset URLs')
+        p.add_argument('--catalog', help='Catalog JSON path or URL (default: SITE/api/characters)')
         p.add_argument('--dry-run', action='store_true', help='Print commands without running or creating files')
     rom = targets.choices['rom']
     rom.add_argument('--decomp', type=Path, help='Default: BattleShip/decomp')
     rom.add_argument('--assets', type=Path, default=ROOT/'play')
-    rom.add_argument('--loadout', type=Path, default=ROOT/'hardware-rom/loadout.json')
+    rom.add_argument('--loadout', type=Path, help='Legacy local ROM loadout; bypass website character selection')
     rom.add_argument('--vpk0', type=Path, help='Default: decomp/tools/vpk0cmd, then PATH')
     rom.add_argument('--triangles', type=int, default=700)
     native = targets.choices['native']
+    native.add_argument('--vanilla', action='store_true', help='Build BattleShip without preparing a custom roster')
     native.add_argument('--version', choices=['us','jp'], default='us')
     native.add_argument('--config', choices=['Debug','Release','RelWithDebInfo'], default='Release')
     native.add_argument('--jobs', type=int, default=4)
@@ -38,6 +43,8 @@ def parser():
 
 def plan(args):
     engine = args.battleship.resolve()
+    if (getattr(args, 'vanilla', False) or getattr(args, 'loadout', None)) and (args.characters or args.character_url):
+        raise ValueError('Do not combine --vanilla/--loadout with character selection')
     version = getattr(args, 'version', 'us')
     default_rom = engine/f'baserom.{version}.z64'
     if args.target == 'native':
@@ -67,9 +74,9 @@ def plan(args):
         decomp = (args.decomp or engine/'decomp').resolve()
         candidate = decomp/'tools/vpk0cmd'
         vpk0 = (args.vpk0 or (candidate if candidate.is_file() else Path(shutil.which('vpk0cmd') or candidate))).resolve()
-        loadout_path = args.loadout.resolve()
-        loadout = json.loads(loadout_path.read_text())
-        if not loadout or len({f['model_file'] for f in loadout}) != len(loadout):
+        loadout_path = args.loadout.resolve() if args.loadout else output/'loadout.json'
+        loadout = json.loads(loadout_path.read_text()) if args.loadout else []
+        if args.loadout and (not loadout or len({f['model_file'] for f in loadout}) != len(loadout)):
             raise ValueError('Loadout must contain distinct model files')
         required = [base, vpk0]
         for fighter in loadout:
@@ -79,13 +86,27 @@ def plan(args):
         artifact = output/'opensmash.z64'
         commands = [[sys.executable, str(ROOT/'hardware-rom/build_rom.py'),
                      '--rom', str(base), '--decomp', str(decomp), '--vpk0', str(vpk0),
-                     '--assets', str(args.assets.resolve()), '--loadout', str(loadout_path),
+                     '--assets', str(args.assets.resolve() if args.loadout else output), '--loadout', str(loadout_path),
                      '--triangles', str(args.triangles), '--output', str(artifact)],
                     [sys.executable, str(ROOT/'hardware-rom/verify_rom.py'), str(base), str(artifact),
-                     '--models', *[str(f['model_file']) for f in loadout]]]
+                     *(['--models', *[str(f['model_file']) for f in loadout]] if args.loadout else ['--loadout', str(loadout_path)])]]
     if output in (ROOT, engine) or output in ROOT.parents or output in engine.parents:
         raise ValueError('Use a dedicated output directory, not a repository root or its parent')
+    if not getattr(args, 'vanilla', False) and not getattr(args, 'loadout', None):
+        prepare = [sys.executable, str(ROOT/'targets/characters.py'), '--target', args.target,
+                   '--output', str(output), '--site', args.site,
+                   '--catalog', args.catalog or args.site.rstrip('/')+'/api/characters']
+        if args.characters:
+            prepare += ['--characters', *args.characters]
+        for url in args.character_url:
+            prepare += ['--character-url', url]
+        commands = commands + [prepare] if args.target == 'native' else [prepare] + commands
     return output, required, commands
+
+
+def redacted(command):
+    return ['<private character link>' if i and command[i-1] == '--character-url' else v
+            for i, v in enumerate(command)]
 
 
 def main(argv=None):
@@ -95,7 +116,7 @@ def main(argv=None):
         output, required, commands = plan(args)
         if args.dry_run:
             for command in commands:
-                print(shlex.join(command))
+                print(shlex.join(redacted(command)))
             return 0
         missing = [str(path) for path in required if not path.is_file()]
         if missing:
@@ -110,12 +131,12 @@ def main(argv=None):
                         and previous.get('commands', [None])[0] == commands[0]
                         and (output/'CMakeCache.txt').is_file())
         output.mkdir(parents=True, exist_ok=True)
-        record = dict(target=args.target, status='building', commands=commands)
+        record = dict(target=args.target, status='building', commands=[redacted(c) for c in commands])
         marker.write_text(json.dumps(record, indent=2)+'\n')
         # CMake's generated build handles source/CMakeLists changes itself.
         # Reconfigure explicitly only for new directories or changed options.
         for command in (commands[1:] if reuse_config else commands):
-            print('+ '+shlex.join(command), flush=True)
+            print('+ '+shlex.join(redacted(command)), flush=True)
             try:
                 subprocess.run(command, check=True, cwd=ROOT)
             except (OSError, subprocess.CalledProcessError):
@@ -127,7 +148,7 @@ def main(argv=None):
         print(f'{args.target} build complete: {output}')
         return 0
     except (ValueError, OSError, KeyError, subprocess.CalledProcessError) as exc:
-        print(f'Build failed: {exc}', file=sys.stderr)
+        print('Build failed: ' + ('target command failed; see error above' if isinstance(exc, subprocess.CalledProcessError) else str(exc)), file=sys.stderr)
         return 1
 
 

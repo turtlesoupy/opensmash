@@ -1,108 +1,158 @@
 # Build targets
 
-`python3 build.py native` builds the native game through BattleShip's CMake
-build. `python3 build.py rom` builds an experimental N64 ROM with a baked
-fighter loadout. Neither command changes the website's build or starts any
-asset-generation services. The driver uses only the Python standard library;
-ROM conversion dependencies are loaded only by the ROM target.
+The build driver uses Python's standard library. Native builds use BattleShip's
+CMake build and dynamic character injection. ROM builds use an optional exporter
+with separate Python dependencies. Neither changes the website build.
 
-## Checkouts and inputs
+## Checkouts and prerequisites
 
-Use the existing sibling layout:
+Use sibling `pipeline/` and `BattleShip/` checkouts, or pass `--battleship PATH`.
+Initialize BattleShip's submodules and install its platform prerequisites from
+its `BUILDING.md` (CMake 3.24+, a compiler and platform libraries).
+Both targets consume your local `BattleShip/baserom.us.z64`; use `--rom PATH`
+for another location. No ROM is uploaded or committed.
 
-```
-workspace/
-  BattleShip/              # with its decomp, libultraship and torch submodules
-  pipeline/                # this repository
-    build.py
-    play/                  # your generated fighter assets, needed only for ROM
-```
+The BattleShip revision needs the optional `SSB64_BASEROM` CMake cache setting
+included in the companion `feature/build-targets` branch. Its ordinary direct
+CMake workflow remains supported.
 
-Initialize BattleShip's submodules as described in its `BUILDING.md`.
-`--battleship PATH` supports another checkout. Both targets default to the
-user's `BattleShip/baserom.us.z64`; pass `--rom PATH` to use another location.
-The ROM is always an input and is never copied into source control.
-
-## Native
-
-Install BattleShip's platform prerequisites (CMake 3.24+, a C/C++ compiler,
-and its platform libraries). Then:
+## Desktop: the full roster by default
 
 ```sh
-python3 build.py native
-python3 build.py native --config Debug --jobs 4
-python3 build.py native --version jp --rom /path/to/baserom.jp.z64
+python3 build.py native --rom /path/to/baserom.us.z64
 ```
 
-Outputs are isolated by host platform, region and configuration, for example
-`build/native-darwin-us-release/`. CMake owns the incremental build and asset
-extraction. The driver invokes the default build target so runtime archives,
-Torch and other supporting files are built too. Run BattleShip from that
-build directory (on Windows, check the configuration subdirectory).
+This builds BattleShip, fetches the public website catalog, and stages every
+character's mesh, portraits, names, stock UI and announcer audio. Each character
+retains the website's assigned moveset. The engine loads assets from disk when
+needed; it does not keep every mesh in RAM. The normal vanilla roster is page 0;
+custom characters occupy pages 1 onward, 12 per page. Use L/R or the on-screen
+arrows to change pages. BattleShip supports up to 2,048 custom entries.
 
-Use `--generator Ninja` to select Ninja explicitly or let CMake choose the
-platform default. Additional CMake definitions can be passed as
-`--cmake-arg=-DNAME=value`. The selected BattleShip revision needs the
-optional `SSB64_BASEROM` cache setting for an external ROM path; its own
-normal `cmake -S . -B build-us` workflow remains supported.
+Outputs live in `build/native-PLATFORM-REGION-CONFIG/`, for example
+`build/native-darwin-us-release/`. Launch the injected roster with:
 
-This target builds the existing native game. It does not apply the ROM's
-model replacements or unlock patches to BattleShip. Native character
-injection remains the engine's existing runtime feature.
+```sh
+python3 build/native-darwin-us-release/play.py
+```
 
-## ROM (experimental)
+Or open `Play.command` on macOS / `Play.bat` on Windows. The launcher opens VS
+character select and enables the original locked slots. It works offline after
+preparation. Running the BattleShip executable directly keeps its ordinary
+launch behavior. Python 3 is needed for the generated launcher.
 
-This is an asset-packing target, not a full MIPS source rebuild. It accepts
-only the original US v1.0 ROM and converts existing OSB5 fighter files.
+A 1,046-character catalog staged about 725 MiB of runtime character files and
+1.6 GiB of reusable download cache in local testing. `character-cache/` can be
+removed after a successful build if disk space matters; the next preparation
+will download those source assets again. Only the requested skeleton variant
+is staged into each runtime mesh.
 
-Install the exporter dependencies in a virtual environment:
+```sh
+python3 build.py native --characters queen,50cent,abrahamlincoln
+python3 build.py native --characters queen 50cent --config Debug --jobs 4
+python3 build.py native --vanilla
+python3 build.py native --vanilla --version jp --rom /path/to/baserom.jp.z64
+```
+
+Character IDs are website **slugs**, not display names. Commas and spaces both
+separate slugs. `--vanilla` skips roster preparation entirely; use the BattleShip
+executable directly for this mode. Custom injection has been tested with US;
+JP vanilla builds remain available.
+
+## Private characters and copied links
+
+Both targets accept repeatable `--character-url` arguments. Links are added to
+the selected public roster, or replace a matching slug. To build *only* linked
+characters, use `--characters none`:
+
+```sh
+python3 build.py native --characters none --character-url 'COPIED_BUILD_LINK'
+python3 build.py native --characters queen --character-url 'COPIED_BUILD_LINK'
+python3 build.py rom --characters none --character-url 'COPIED_BUILD_LINK'
+```
+
+Quote links so the shell does not interpret `&` or other URL characters.
+Supported inputs are the self-contained build links produced by
+`characterBuildLink`, existing `/engine/?inject=...` launch links, and direct
+`.osb6` asset links. Build links include UI/audio/name metadata; a bare asset
+link contains only the mesh and defaults to the Mario variant. A normal website
+home-page URL or an authenticated job URL is not an export link.
+
+The copy-link helper is ready for the separate manage-modal work to integrate;
+this branch does not add a button to that modal. See
+[the integration note](docs/character-build-links.md). Copying a private link
+uses its existing asset capability without publishing the fighter. Anyone
+with that link can download its assets. Build logs and completion reports omit
+copied links; local asset files and caches remain in the ignored build output.
+No browser cookies or account tokens are imported.
+
+## Hardware ROM: select a subset
+
+The current ROM exporter has **12 fixed fighter slots**, with one generated
+character per slot. It does not implement paginated character selection on the
+N64. With the full public roster, the command fails with selection instructions
+before downloading character assets. It never silently truncates a loadout.
 
 ```sh
 python3 -m venv .venv
 . .venv/bin/activate
 python3 -m pip install -r hardware-rom/requirements.txt
-python3 build.py rom --assets /path/to/play --vpk0 /path/to/vpk0cmd
+python3 build.py rom --characters queen,50cent,abrahamlincoln --vpk0 /path/to/vpk0cmd
 ```
 
-On Windows, activate `.venv\Scripts\Activate.ps1` instead. `vpk0cmd` is the
-decompilation's external decompressor: install a binary appropriate to your
-host using that project's instructions. The driver checks
-`BattleShip/decomp/tools/vpk0cmd`, then `PATH`; `--vpk0` overrides both.
-`--decomp` can select a separate decomp checkout, but it is not required.
-The driver does not download or install dependencies automatically.
+On Windows, activate `.venv\Scripts\Activate.ps1`. `vpk0cmd` is the external
+VPK0 decompressor from the decompilation project; use its installation
+instructions. The driver checks `BattleShip/decomp/tools/vpk0cmd`, then `PATH`.
+`--decomp PATH` supports a separate decomp checkout.
+
+The resolver extracts OSB5 variants from the website's OSB6 bundles and assigns
+unique available base slots, preferring the website movesets. Conflicting
+movesets may be reassigned; `build/rom/characters.json` records the actual bases.
+If there is no valid assignment, the build fails with a useful error. Private
+characters count toward the 12-slot limit.
+
+The result is `build/rom/opensmash.z64`, a generated `loadout.json`, and hash/size
+reports. The exporter verifies the original US v1.0 ROM and audits the output
+before reporting success. `--triangles 700` controls the per-character triangle
+budget (32–2,000). A 12-slot/700-triangle build passes the structural audit;
+that is not a physical-hardware or four-player memory guarantee.
+
+This remains a rigid, vertex-colored approximation. Movesets, menu portraits,
+names, voices and move-specific props/forms remain vanilla. BattleShip's smooth
+skinning and canonical retargeting are not reproduced on the N64. See
+[ROM details](hardware-rom/README.md) for limitations.
+
+The earlier local OSB5 loadout format still works without network access:
 
 ```sh
-python3 build.py rom --loadout hardware-rom/loadout.json --triangles 700
+python3 build.py rom --loadout hardware-rom/loadout.json --assets /path/to/play
 ```
 
-The result is `build/rom/opensmash.z64` with a JSON asset/hash report. A
-structural audit runs before the target reports success. The sample loadout
-uses three local assets (`queen.osb`, `50cent-luigi.osb`,
-`abrahamlincoln-captain.osb`); those are not distributed with the code.
-[ROM details and limitations](hardware-rom/README.md) describe supported
-model layouts and the remaining visual/hardware validation.
+`--loadout` cannot be combined with website character selection.
 
-## Inspection and verification
+## Configuration and validation
 
-Either target accepts `--dry-run` to print its commands without executing,
-creating directories or requiring installed target dependencies. ROM dry
-runs still read the loadout JSON. `--output-dir` selects a dedicated custom
-build directory; do not share it between targets. Each executed build writes
-`opensmash-target.json` there with its command list and completion status.
+`--site URL` selects another website (default `https://smash.fun`). `--catalog`
+accepts an API-shaped JSON file or URL; by default it uses `SITE/api/characters`.
+Selections refresh on each build, while cached asset downloads are reused.
+Use separate `--output-dir` directories to keep different loadouts installed.
+Each successful preparation publishes a new `roster.txt` containing exactly the
+selection, so old cached fighters do not appear in a smaller roster.
+
+`--generator Ninja` and `--cmake-arg=-DNAME=value` customize the native build.
+CMake owns incremental compilation and resource extraction. `--dry-run` prints
+commands without accessing the network or creating files (legacy `--loadout`
+still reads the JSON). Each executed build writes `opensmash-target.json` with
+its target and completion status. Failed preparation does not report success.
 
 ```sh
 python3 build.py native --dry-run
-python3 build.py rom --dry-run
-python3 -m unittest discover -s tests -p 'test_build.py'
+python3 build.py rom --characters queen --dry-run
+python3 -m unittest discover -s tests -p 'test_*.py'
+node --test web-prototype/shared/character-build-link.test.js
 ```
 
-With the sample 700-triangle ROM built and exporter dependencies installed,
-run `python3 hardware-rom/test_packer.py --base /path/to/baserom.us.z64`.
-Use `--rom PATH` if the output is outside `build/rom/opensmash.z64`.
-The orientation regression always runs; ROM-dependent corruption checks
-are explicitly skipped if the local input/output pair is absent.
-
-No default/all target automatically builds a ROM. Existing website and
-BattleShip build commands continue to work independently. The additions can
-land as an optional exporter and a small top-level dispatcher, with the
-BattleShip ROM-path option as a separate engine change.
+For the original three-character ROM regression fixture, run
+`python3 hardware-rom/test_packer.py --base /path/to/baserom.us.z64 --rom PATH`.
+The orientation regression always runs; corruption tests explicitly skip when
+the local fixture is absent. The build itself audits arbitrary selected slots.

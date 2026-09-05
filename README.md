@@ -61,8 +61,9 @@ What's in this repo:
 
 ## Native and ROM builds
 
-Use `python3 build.py native` for BattleShip or `python3 build.py rom` for
-the experimental baked-roster N64 target. See [BUILDING.md](BUILDING.md)
+Use `python3 build.py native` for BattleShip with the full paginated website
+roster, or `python3 build.py rom --characters queen,50cent` for a selected
+N64 loadout. Both accept `--character-url` for custom fighters. See [BUILDING.md](BUILDING.md)
 for prerequisites and options. These targets are independent of the site.
 
 ## Running the site

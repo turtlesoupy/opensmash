@@ -88,5 +88,9 @@ if __name__ == '__main__':
     ap.add_argument('base', type=Path)
     ap.add_argument('rom', type=Path)
     ap.add_argument('--models', type=int, nargs='+', default=[296,323,332])
+    ap.add_argument('--loadout', type=Path, help='Read model IDs from a generated loadout')
     args = ap.parse_args()
+    if args.loadout:
+        import json
+        args.models = [c['model_file'] for c in json.loads(args.loadout.read_text())]
     print('PASS:', verify(args.base.read_bytes(), args.rom.read_bytes(), args.models))

@@ -1,11 +1,14 @@
 # Experimental hardware ROM
 
-Use `python3 build.py rom` from the repository root. See
+Use `python3 build.py rom --characters queen,50cent,abrahamlincoln` from the repository root. See
 [build targets](../BUILDING.md) for setup, path overrides and native builds.
 The ROM target is optional and has separate dependencies and output from
 the native engine and website. Generated ROMs and character inputs stay local.
 
-## Loadout
+## Original local sample loadout
+
+Use `--loadout hardware-rom/loadout.json --assets /path/to/play` for this
+original fixture. Website selection also supports all twelve base slots.
 
 | Select this original slot | Baked model | Triangles |
 |---|---|---:|
@@ -29,8 +32,8 @@ budget (700 by default). Each remaining triangle follows one joint using
 its inverse BIND frame. CAN1 assets use this rigid approximation too;
 virtual skeleton reconstruction, smooth skinning and accessory pinning
 are not implemented. Expect seams at bending joints and loss of facial
-texture detail. The converter currently supports these three annotated
-model layouts, not arbitrary fighter assets.
+texture detail. All twelve normal US fighter model layouts are supported. Later joint trees
+and separate weapon/accessory tables retain their original forms.
 
 New vertex batches never exceed 30 vertices, fitting the N64's vertex
 cache. Display lists are emitted as big-endian F3DEX2 commands and use
@@ -48,8 +51,8 @@ all 2,132 entries, every unchanged payload, external ID suffixes, pointer
 chains, vertex alignment and emitted triangle indices.
 
 Menus, portraits, stock icons, names, voices and costume recolors are still
-the original game's. The ROM contains three replacement fighters using the
-original selection slots; it does not yet offer multiple generated skins
+the original game's. The ROM contains up to twelve replacement fighters using
+the original selection slots; it does not yet offer multiple generated skins
 per slot. Physical-console validation and a full four-player/scene stress
 test remain necessary before calling this hardware-ready.
 

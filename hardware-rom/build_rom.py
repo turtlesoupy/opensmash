@@ -96,8 +96,11 @@ def patch_model(raw, entry, source, parts, main_source):
     external = chain(blob, entry[3])
     trees = [int(x, 16) for x in re.findall(r'DObjDesc: JointTree[^@\n]*@ (0x[0-9A-Fa-f]+)', source)]
     trees = list(dict.fromkeys(trees))
-    if len(trees) != 2:
+    if len(trees) < 2:
         raise ValueError(f'Expected high/low detail joint trees, found {trees}')
+
+    # Later trees are move-specific props/forms, not the normal body skeleton.
+    trees = trees[:2]
 
     def command(w0, w1):
         blob.extend(struct.pack('>II', w0, w1))
@@ -150,11 +153,16 @@ def patch_model(raw, entry, source, parts, main_source):
             raise ValueError('Unterminated joint tree')
     # Route animated open/closed hands to the same rigid hand mesh. The
     # supported source layouts name DL offsets explicitly, including gaps.
+    # The engine's sources contain JP alternatives; this exporter targets US.
+    main_source = re.sub(r'#if defined\(REGION_JP\)(.*?)#endif',
+                         lambda m: m[1].partition('#else')[2], main_source, flags=re.S)
     for body in re.findall(r'FTModelPart \w+\[\d+\] = \{(.*?)\n\};', main_source, re.S):
         symbols = re.findall(r'\{\s*\(Gfx\*\)&(\w+)', body)
         offsets = [sum(int(x, 16) for x in re.findall(r'0x[0-9A-Fa-f]+', symbol)) for symbol in symbols]
         if not offsets or offsets[0] not in original_dls:
-            raise ValueError('Unknown alternate model-part layout')
+            # Separate weapon/accessory tables (Ness bat, Fox gun, Link
+            # sword/shield) are not a replaced body joint. Keep them vanilla.
+            continue
         for offset in offsets:
             if offset+8 > len(raw) or offset+4 in external:
                 raise ValueError('Invalid alternate model-part address')
@@ -206,7 +214,10 @@ def build(args):
             parts, before, after = mesh_parts(asset, args.triangles)
             source = (args.decomp/'src/relocData'/fighter['model_source']).read_text()
             main_source = (args.decomp/'src/relocData'/fighter['main_source']).read_text()
-            blob, intern, extern = patch_model(raw, entry, source, parts, main_source)
+            try:
+                blob, intern, extern = patch_model(raw, entry, source, parts, main_source)
+            except ValueError as exc:
+                raise ValueError(f'{fighter["name"]} on {fighter["slot"]}: {exc}') from exc
             replacements[fid] = (blob + packed[entry[2]*4:], intern, extern, len(blob)//4)
             report.append(dict(fighter, source_sha256=hashlib.sha256(asset.read_bytes()).hexdigest(), triangles_before=before, triangles_after=after, model_bytes_before=len(raw), model_bytes_after=len(blob)))
     # Move ALL file bodies together so next-entry offsets remain meaningful
@@ -241,7 +252,10 @@ def build(args):
     args.output.write_bytes(output)
     # The four selection-mask instructions lie beyond the CIC checksum range.
     assert output[0x1000:0x101000] == original[0x1000:0x101000]
-    result = dict(rom_sha256=hashlib.sha256(output).hexdigest(), rom_bytes=len(output), loadout=report, validation='Built; emulator and physical hardware validation pending')
+    # Additional model bytes loaded for any four distinct fighter kinds.
+    # This excludes vanilla scene heaps and is not a hardware RAM guarantee.
+    deltas = sorted((r['model_bytes_after']-r['model_bytes_before'] for r in report), reverse=True)
+    result = dict(max_four_fighter_model_growth_bytes=sum(deltas[:4]), rom_sha256=hashlib.sha256(output).hexdigest(), rom_bytes=len(output), loadout=report, validation='Built; emulator and physical hardware validation pending')
     args.output.with_suffix('.json').write_text(json.dumps(result, indent=2)+'\n')
     print(json.dumps(result, indent=2))
 
