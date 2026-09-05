@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Queen Elizabeth II",
+    "slot": "Mario",
+    "asset": "queen.osb",
+    "model_file": 296,
+    "model_source": "296_MarioModel.c",
+    "main_source": "203_MarioMain.c"
+  },
+  {
+    "name": "50 Cent",
+    "slot": "Luigi",
+    "asset": "50cent-luigi.osb",
+    "model_file": 323,
+    "model_source": "323_LuigiModel.c",
+    "main_source": "221_LuigiMain.c"
+  },
+  {
+    "name": "Abraham Lincoln",
+    "slot": "Captain Falcon",
+    "asset": "abrahamlincoln-captain.osb",
+    "model_file": 332,
+    "model_source": "332_CaptainModel.c",
+    "main_source": "236_CaptainMain.c"
+  }
+]

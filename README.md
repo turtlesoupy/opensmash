@@ -59,6 +59,12 @@ What's in this repo:
 | `eval/` | Mesh eval harness (`EVAL.md`). |
 | `config/`, `docs/`, `assets/` | Docs and the style references the generator uses. `config/` holds local (gitignored) roster inclusion/exclusion lists. |
 
+## Native and ROM builds
+
+Use `python3 build.py native` for BattleShip or `python3 build.py rom` for
+the experimental baked-roster N64 target. See [BUILDING.md](BUILDING.md)
+for prerequisites and options. These targets are independent of the site.
+
 ## Running the site
 
 You need Node 20+ with pnpm (`corepack enable`), a Super Smash Bros. USA
