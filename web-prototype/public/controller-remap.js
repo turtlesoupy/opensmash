@@ -116,16 +116,41 @@
     };
   }
 
-  function axisButton(gamepad, mapping) {
+  function hatSpacing(profile, index) {
+    // A calibrated eight-way hat has four equally spaced cardinal values
+    // on one axis. Infer this from saved profiles so existing setups work too.
+    const values = [...new Set(Object.values(profile.axes || {})
+      .filter((mapping) => mapping.index === index)
+      .map((mapping) => mapping.value))].sort((a, b) => a - b);
+    if (values.length !== 4) return null;
+    const spacing = (values[3] - values[0]) / 3;
+    if (spacing < 0.2 || values.some((value, i) =>
+      Math.abs(value - (values[0] + i * spacing)) > 0.04)) return null;
+    return spacing;
+  }
+
+  function axisButton(gamepad, mapping, profile) {
     if (!mapping) return EMPTY_BUTTON;
     const current = Number(gamepad.axes?.[mapping.index]);
     if (!Number.isFinite(current)) return EMPTY_BUTTON;
-    const travel = Math.abs(mapping.value - mapping.neutral);
-    const active = travel >= 0.2
-      // Hat directions share one axis: tolerance must not grow with the
-      // distance from neutral and overlap a different direction.
-      && Math.abs(current - mapping.value) <= 0.12
-      && Math.abs(current - mapping.neutral) >= travel * 0.55;
+    const delta = mapping.value - mapping.neutral;
+    const travel = Math.abs(delta);
+    if (travel < 0.2) return EMPTY_BUTTON;
+    const spacing = hatSpacing(profile, mapping.index);
+    let active;
+    if (spacing !== null) {
+      // Include adjacent diagonal positions, including the wrap from the last
+      // cardinal back to the first. Never interpret the neutral code as input.
+      const period = spacing * 4;
+      const distance = Math.abs(current - mapping.value) % period;
+      active = Math.abs(current - mapping.neutral) > 0.12
+        && Math.min(distance, period - distance) <= spacing / 2 + 0.04;
+    } else {
+      // Capture may happen partway through an analog stroke. Further travel
+      // in that direction must keep the mapped button held.
+      active = (current - mapping.neutral) * Math.sign(delta)
+        >= Math.max(0.2, travel * 0.55);
+    }
     return active ? { pressed: true, touched: true, value: 1 } : EMPTY_BUTTON;
   }
 
@@ -142,7 +167,7 @@
     for (const [control, target] of Object.entries(BUTTON_TARGETS)) {
       const source = profile.buttons[control];
       if (source !== undefined) buttons[target] = buttonValue(originalButtons[source]);
-      else if (profile.axes?.[control]) buttons[target] = axisButton(gamepad, profile.axes[control]);
+      else if (profile.axes?.[control]) buttons[target] = axisButton(gamepad, profile.axes[control], profile);
       else if (profile.mode === "custom") buttons[target] = EMPTY_BUTTON;
     }
 
@@ -172,7 +197,7 @@
   function controlPressed(gamepad, buttons, profile, control) {
     const index = profile.buttons[control];
     if (index !== undefined) return buttonsPressed(buttons, index);
-    return axisButton(gamepad, profile.axes?.[control]).pressed;
+    return axisButton(gamepad, profile.axes?.[control], profile).pressed;
   }
 
   function rawGamepads() {

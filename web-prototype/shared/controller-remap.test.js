@@ -126,3 +126,58 @@ test("failed storage writes preserve the active profile", () => {
   assert.equal(api.disableProfile(gamepad.id), false);
   assert.equal(api.getProfile(gamepad.id).buttons.a, 1);
 });
+
+test("analog mappings stay held beyond the captured position and release at rest", () => {
+  const gamepad = pad();
+  const { api, navigator } = harness(gamepad);
+  api.saveProfile(gamepad.id, {
+    mode: "custom",
+    axes: {
+      cright: { index: 2, neutral: 0, value: 0.3 },
+      cleft: { index: 2, neutral: 0, value: -0.28 },
+      cup: { index: 3, neutral: 0, value: -0.32 },
+      cdown: { index: 3, neutral: 0, value: 0.27 },
+      z: { index: 4, neutral: -1, value: -0.7 },
+    },
+  });
+  for (const value of [0.32, 0.5, 1]) {
+    for (const sign of [-1, 1]) {
+      gamepad.axes = [0, 0, sign * value, sign * value, value];
+      const mapped = navigator.getGamepads()[0];
+      assert.deepEqual(Array.from(mapped.axes), [0, 0, sign, sign]);
+      assert.equal(mapped.buttons[6].pressed, true);
+    }
+  }
+  gamepad.axes = [0, 0, 0.1, -0.1, -1];
+  const mapped = navigator.getGamepads()[0];
+  assert.deepEqual(Array.from(mapped.axes), [0, 0, 0, 0]);
+  assert.equal(mapped.buttons[6].pressed, false);
+});
+
+test("eight-way hats activate adjacent directions on all four diagonals", () => {
+  // Cover cardinal values on either alternating set of the eight positions.
+  for (const offset of [0, 1]) {
+    const gamepad = pad();
+    const { api, navigator } = harness(gamepad);
+    const controls = ["dup", "dright", "ddown", "dleft"];
+    api.saveProfile(gamepad.id, {
+      mode: "custom",
+      axes: Object.fromEntries(controls.map((control, i) => [control, {
+        index: 2, neutral: 9 / 7, value: -1 + (2 * i + offset) * 2 / 7,
+      }])),
+    });
+    const targets = { dup: 12, dright: 15, ddown: 13, dleft: 14 };
+    for (let position = 0; position < 8; position++) {
+      gamepad.axes = [0, 0, -1 + position * 2 / 7];
+      const mapped = navigator.getGamepads()[0];
+      controls.forEach((control, i) => {
+        const distance = (position - (2 * i + offset) + 8) % 8;
+        assert.equal(mapped.buttons[targets[control]].pressed,
+          distance === 0 || distance === 1 || distance === 7,
+          `offset ${offset}, position ${position}, ${control}`);
+      });
+    }
+    gamepad.axes[2] = 9 / 7;
+    assert.ok(navigator.getGamepads()[0].buttons.every((button) => !button.pressed));
+  }
+});
