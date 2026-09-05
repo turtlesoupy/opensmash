@@ -128,8 +128,14 @@ before reporting success. `--triangles 700` controls the per-character triangle
 budget (32–2,000). A 12-slot/700-triangle build passes the structural audit;
 that is not a physical-hardware or four-player memory guarantee.
 
-This remains a rigid, vertex-colored approximation. Movesets, menu portraits,
-names, voices and move-specific props/forms remain vanilla. BattleShip's smooth
+The ROM bakes supplied OSBV portraits, name lettering, stock icons and menu/HUD
+emblems, plus announcer WAVs converted to N64 ADPCM. Local loadout entries may
+include `ui` and `voice` paths relative to `--assets`; omitted assets stay vanilla.
+Heads retain texture detail using small per-triangle tiles; bodies use vertex
+colors. Website loadouts enlarge menu previews by 15% (`menu_scale` in local
+loadouts overrides this without changing gameplay scale). This remains a rigid
+approximation. Movesets and move-specific
+props/forms remain vanilla. BattleShip's smooth
 skinning and canonical retargeting are not reproduced on the N64. See
 [ROM details](hardware-rom/README.md) for limitations.
 

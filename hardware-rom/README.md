@@ -26,32 +26,59 @@ rewritten by this patch. Existing game behavior still controls save writes.
 
 ## Design and limitations
 
-The atlas is sampled into vertex colors. QEM simplification first welds
+The head retains atlas detail through small per-triangle RGBA16 texture tiles;
+the body uses vertex colors. QEM simplification first welds
 UV seam duplicates, then reduces the mesh to a configurable triangle
 budget (700 by default). Each remaining triangle follows one joint using
 its inverse BIND frame. CAN1 assets use this rigid approximation too;
 virtual skeleton reconstruction, smooth skinning and accessory pinning
 are not implemented. Expect seams at bending joints and loss of facial
-texture detail. All twelve normal US fighter model layouts are supported. Later joint trees
+detail outside the textured head. All twelve normal US fighter model layouts are supported. Later joint trees
 and separate weapon/accessory tables retain their original forms.
 
 New vertex batches never exceed 30 vertices, fitting the N64's vertex
 cache. Display lists are emitted as big-endian F3DEX2 commands and use
-vertex shading with texturing disabled. Both detail trees and alternate
+vertex shading for the body. Head tiles use `LoadTile` and linear big-endian
+RGBA16 data; source UV seams are preserved by sampling the nearest original
+surface. The head combiner uses `DECALRGBA, PASS2`: fighters render in two
+cycles, so the second cycle must preserve the first cycle's color rather
+than sample an unloaded adjacent tile. Tiles default to 12x12 and reduce to 8x8 or 4x4 to fit the 256 KiB
+reloc-file limit. Local loadouts can set `face_texture_size` to 0 for the
+earlier vertex-color path. Both detail trees and alternate
 hand display lists are redirected. Original animations and combat data
-are retained. The model files grow by approximately 40 KiB each; retaining
-unused original mesh data is intentional in this first prototype. A later
+are retained. Head textures add memory beyond the earlier ~40 KiB geometry growth;
+unused original mesh data is also retained. A later
 iteration should reuse vertex batches and reclaim the replaced geometry.
 
 All asset file bodies are copied after the original 16 MiB ROM, and the
 original table is rewritten to point there. Moving them together preserves
 next-entry boundaries used to calculate external-dependency heap sizes.
-Original audio and particle addresses remain intact. The verifier checks
+Original particle addresses remain intact. New announcer samples are appended,
+with only their existing sound-bank sample offset and length updated. The verifier checks
 all 2,132 entries, every unchanged payload, external ID suffixes, pointer
 chains, vertex alignment and emitted triangle indices.
 
-Menus, portraits, stock icons, names, voices and costume recolors are still
-the original game's. The ROM contains up to twelve replacement fighters using
+Website builds also bake OSBV portraits, custom name lettering on the selection
+and versus screens, stock icons (all costume palettes), menu/HUD emblems and
+announcer audio. Menu emblems use private sprites per slot, so replacing Mario
+does not change Luigi's emblem. Stage-series symbols and opening art remain
+vanilla. Voices use the original ADPCM predictor books and compensate for the
+game's per-name pitch; samples stream from ROM through the existing DMA path.
+No full PCM clips are added to RAM.
+
+Website loadouts set `menu_scale: 1.15` to enlarge previews. This adjusts the
+menu/results scale table only; gameplay scale and collision data are unchanged.
+Local loadouts default to 1.0 and may override it from 0.5 to 2.0.
+
+Name texel row widths match the render tile line stride calculated from the
+drawn width (8-byte alignment). Using an unrelated 64-texel row length causes
+scrambled text on hardware even when an offline sprite decoder looks correct.
+
+For a local loadout, add `ui` and `voice` paths relative to `--assets` alongside
+`asset`. Omit either field to retain that part of the vanilla presentation.
+ROM UI needs an OSBV pack; regenerate older OSBU assets.
+
+The ROM contains up to twelve replacement fighters using
 the original selection slots; it does not yet offer multiple generated skins
 per slot. Physical-console validation and a full four-player/scene stress
 test remain necessary before calling this hardware-ready.

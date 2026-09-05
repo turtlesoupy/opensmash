@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bake rigid, vertex-colored OSB5 fighters into an owned NTSC-U SSB64 ROM."""
+"""Bake rigid OSB5 fighters with textured heads into an owned NTSC-U SSB64 ROM."""
 import argparse
 import hashlib
 import json
@@ -8,6 +8,9 @@ import re
 import struct
 import subprocess
 import tempfile
+
+from face_textures import SurfaceSampler
+from presentation import MENU_SCALE_TABLE, MODELS, Reloc, bake_voice, patch_ui, symbols
 
 import fast_simplification
 import numpy as np
@@ -65,8 +68,15 @@ def bind_to_local(frame, points):
     return np.linalg.solve(matrix, (points - frame[:3]).T).T
 
 
-def mesh_parts(path, budget):
+def mesh_parts(path, budget, face_texture_size=0):
     joints, verts, faces, frames, colors = read_osb(path)
+    sampler = None
+    head_joint = joints[int(np.argmax(frames[:,1]))]
+    if face_texture_size:
+        data = path.read_bytes()
+        w,h = struct.unpack_from('<2I',data,16)
+        at = 24+len(joints)*4
+        sampler = SurfaceSampler(verts,faces,np.frombuffer(data[at:at+w*h*2],dtype='>u2').reshape(h,w))
     # Weld UV seam duplicates before QEM; recover color/weights spatially.
     points, inverse = np.unique(np.round(verts[:, :3], 4), axis=0, return_inverse=True)
     indices = inverse[faces].astype(np.int32)
@@ -86,7 +96,10 @@ def mesh_parts(path, budget):
         local = bind_to_local(frame, points[tri])
         if not np.isfinite(local).all() or np.abs(local).max() > 32767:
             raise ValueError('Joint-local vertex outside signed 16-bit range')
-        parts[joints[ji]].append((np.rint(local).astype(int), colors[source].astype(int)))
+        triangle = (np.rint(local).astype(int), colors[source].astype(int))
+        if sampler is not None and joints[ji] == head_joint:
+            triangle += ((face_texture_size, sampler.tile(points[tri],face_texture_size)),)
+        parts[joints[ji]].append(triangle)
     return parts, len(faces), len(indices)
 
 
@@ -110,25 +123,56 @@ def patch_model(raw, entry, source, parts, main_source):
         while len(blob) % 8:
             blob.append(0)
         batches = []
-        for start in range(0, len(triangles), 10):
-            batch = triangles[start:start+10]
+        # Textured triangles each carry a small independent tile. The rest
+        # keep the original 30-vertex batches and vertex colors.
+        chunks = [[t] for t in triangles] if any(len(t)==3 for t in triangles) else [triangles[i:i+10] for i in range(0,len(triangles),10)]
+        for batch in chunks:
+            texture = batch[0][2] if len(batch[0])==3 else None
+            tex_offset = None
+            if texture:
+                tex_offset = len(blob)
+                blob.extend(texture[1])
             offset = len(blob)
-            for positions, colors in batch:
-                for p, c in zip(positions, colors):
-                    blob.extend(struct.pack('>hhhHhhBBBB', *p, 0, 0, 0, *c, 255))
-            batches.append((offset, len(batch)))
+            for triangle in batch:
+                positions, colors = triangle[:2]
+                coords = [(32,32),((texture[0]-2)*32,32),(32,(texture[0]-2)*32)] if texture else [(0,0)]*3
+                for p,c,uv in zip(positions,colors,coords):
+                    blob.extend(struct.pack('>hhhHhhBBBB',*p,0,*uv,*(c if not texture else (255,255,255)),255))
+            batches.append((offset,len(batch),tex_offset,texture[0] if texture else 0))
         dl_by_joint[joint] = len(blob)
         command(0xE7000000, 0)  # Pipe sync
         command(0xD7000000, 0)  # Texture off
         command(0xD9F1F9FF, 0x00200004)  # Clear lighting/texgen/culling; smooth shade
-        command(0xFCFFFFFF, 0xFFFE793C)  # G_CC_SHADE, G_CC_SHADE
-        for offset, n in batches:
+        command(0xFCFFFFFF, 0xFFFE793C)  # G_CC_SHADE
+        for offset,n,tex_offset,size in batches:
+            if tex_offset is not None:
+                command(0xE7000000,0)
+                command(0xD7000002,0xFFFFFFFF)
+                # ftDisplayMain uses G_CYC_2CYCLE. The second cycle must
+                # pass COMBINED through; TEXEL0 there samples tile+1.
+                command(0xFCFFFFFF,0xFFFCF238)  # DECALRGBA, PASS2
+                at=len(blob)
+                command(0xFD100000|(size-1),0)  # RGBA16 texture image
+                internal[at+4]=tex_offset
+                # LoadTile handles row swizzling in TMEM. Unlike sprite
+                # LoadBlock(dxt=0), its source bytes must remain linear.
+                command(0xF5100000|((size//4)<<9),0x07080200)
+                command(0xE6000000,0)
+                extent=((size-1)*4<<12)|((size-1)*4)
+                command(0xF4000000,0x07000000|extent)
+                command(0xE7000000,0)
+                command(0xF5100000|((size//4)<<9),0x00080200)
+                command(0xF2000000,extent)
             at = len(blob)
             command(0x01000000 | ((n*3) << 12) | ((n*3) << 1), 0)
             internal[at+4] = offset
             for ti in range(n):
                 a = ti*6
                 command(0x05000000 | (a << 16) | ((a+2) << 8) | (a+4), 0)
+        if any(size for _,_,_,size in batches):
+            command(0xE7000000,0)
+            command(0xD7000000,0)
+            command(0xFCFFFFFF,0xFFFE793C)
         command(0xDF000000, 0)
     original_dls = {}
     for tree in trees:
@@ -192,17 +236,26 @@ def build(args):
     report = []
     loadout = json.loads(args.loadout.read_text())
     replacements = {}
+    edited = {}
+    suffixes = {}
+    byte_patches = []
+
+    def patch(offset, expected, replacement):
+        if output[offset:offset+len(expected)] != expected or len(expected) != len(replacement):
+            raise ValueError(f'Presentation patch preimage mismatch at {offset:#x}')
+        output[offset:offset+len(expected)] = replacement
+        byte_patches.append(dict(offset=offset, expected=expected.hex(), replacement=replacement.hex()))
+
     with tempfile.TemporaryDirectory() as tmp:
-        for fighter in loadout:
-            fid = fighter['model_file']
-            if fid in replacements:
-                raise ValueError('Duplicate model file in loadout')
+        def get(fid):
+            if fid in edited:
+                return edited[fid]
             entry = entries[fid]
             start = DATA + (entry[0] & 0x7FFFFFFF)
             end = DATA + (entries[fid+1][0] & 0x7FFFFFFF)
             packed = original[start:end]
             if entry[0] & 0x80000000:
-                src, dst = Path(tmp)/'model.vpk0', Path(tmp)/'model.bin'
+                src, dst = Path(tmp)/'asset.vpk0', Path(tmp)/'asset.bin'
                 src.write_bytes(packed[:entry[2]*4])
                 subprocess.run([str(args.vpk0 or args.decomp/'tools/vpk0cmd'), 'd', str(src), str(dst)], check=True, stdout=subprocess.DEVNULL)
                 raw = dst.read_bytes()
@@ -210,16 +263,48 @@ def build(args):
                 raw = packed[:entry[4]*4]
             if len(raw) != entry[4]*4:
                 raise ValueError('Decompressed size mismatch')
+            edited[fid] = Reloc(raw, chain(raw, entry[1]), chain(raw, entry[3]))
+            suffixes[fid] = packed[entry[2]*4:]
+            return edited[fid]
+
+        seen = set()
+        sym = symbols(args.decomp) if any(f.get('ui') for f in loadout) else {}
+        for fighter in loadout:
+            fid = fighter['model_file']
+            if fid in seen:
+                raise ValueError('Duplicate model file in loadout')
+            seen.add(fid)
+            menu_scale = fighter.get('menu_scale',1.0)
+            if not .5 <= menu_scale <= 2:
+                raise ValueError('menu_scale must be between 0.5 and 2')
+            if menu_scale != 1:
+                scale_at = MENU_SCALE_TABLE+MODELS.index(fid)*4
+                scale = struct.unpack_from('>f',original,scale_at)[0]
+                patch(scale_at,original[scale_at:scale_at+4],struct.pack('>f',scale*menu_scale))
+            model = get(fid)
+            raw = bytes(model.data)
             asset = args.assets / fighter['asset']
             parts, before, after = mesh_parts(asset, args.triangles)
+            # Reserve room for geometry, commands, and existing ROM data.
+            head_count = max(map(len,parts.values()))
+            requested = fighter.get('face_texture_size',12)
+            if requested not in (0,4,8,12):
+                raise ValueError('face_texture_size must be 0, 4, 8, or 12')
+            size = next((n for n in (12,8,4) if n<=requested and len(raw)+after*64+head_count*(n*n*2+88)+2048 < 0xffff*4),0)
+            if size:
+                parts, before, after = mesh_parts(asset,args.triangles,size)
             source = (args.decomp/'src/relocData'/fighter['model_source']).read_text()
             main_source = (args.decomp/'src/relocData'/fighter['main_source']).read_text()
             try:
-                blob, intern, extern = patch_model(raw, entry, source, parts, main_source)
+                blob, intern, extern = patch_model(raw, entries[fid], source, parts, main_source)
+                edited[fid] = Reloc(blob, chain(blob, intern), chain(blob, extern))
+                presentation = patch_ui(fighter, args.assets, get, sym, patch) if fighter.get('ui') else {}
             except ValueError as exc:
                 raise ValueError(f'{fighter["name"]} on {fighter["slot"]}: {exc}') from exc
-            replacements[fid] = (blob + packed[entry[2]*4:], intern, extern, len(blob)//4)
-            report.append(dict(fighter, source_sha256=hashlib.sha256(asset.read_bytes()).hexdigest(), triangles_before=before, triangles_after=after, model_bytes_before=len(raw), model_bytes_after=len(blob)))
+            report.append(dict(fighter, source_sha256=hashlib.sha256(asset.read_bytes()).hexdigest(), triangles_before=before, triangles_after=after, face_texture_size=size, textured_triangles=sum(len(t)==3 for ts in parts.values() for t in ts), model_bytes_before=len(raw), model_bytes_after=len(blob), presentation=presentation))
+        for fid, reloc in edited.items():
+            blob, intern, extern = reloc.finish()
+            replacements[fid] = (blob + suffixes[fid], intern, extern, len(blob)//4)
     # Move ALL file bodies together so next-entry offsets remain meaningful
     # to the game's recursive external-dependency heap sizing. Keep original
     # audio/particle ROM addresses untouched by appending after the base ROM.
@@ -238,6 +323,10 @@ def build(args):
         ENTRY.pack_into(output, TABLE+i*12, *new_entry)
         output.extend(blob)
     ENTRY.pack_into(output, TABLE+COUNT*12, len(output)-DATA, *entries[-1][1:])
+    for fighter, item in zip(loadout, report):
+        if fighter.get('voice'):
+            print(f"Encoding announcer: {fighter['name']}", flush=True)
+            item['presentation'].update(bake_voice(original, output, fighter, args.assets, patch))
     size = 1 << (len(output)-1).bit_length()
     if size > 64*1024*1024:
         raise ValueError('ROM exceeds 64 MiB')
@@ -255,7 +344,7 @@ def build(args):
     # Additional model bytes loaded for any four distinct fighter kinds.
     # This excludes vanilla scene heaps and is not a hardware RAM guarantee.
     deltas = sorted((r['model_bytes_after']-r['model_bytes_before'] for r in report), reverse=True)
-    result = dict(max_four_fighter_model_growth_bytes=sum(deltas[:4]), rom_sha256=hashlib.sha256(output).hexdigest(), rom_bytes=len(output), loadout=report, validation='Built; emulator and physical hardware validation pending')
+    result = dict(presentation_patches=byte_patches, replaced_files=sorted(replacements), max_four_fighter_model_growth_bytes=sum(deltas[:4]), rom_sha256=hashlib.sha256(output).hexdigest(), rom_bytes=len(output), loadout=report, validation='Built; emulator and physical hardware validation pending')
     args.output.with_suffix('.json').write_text(json.dumps(result, indent=2)+'\n')
     print(json.dumps(result, indent=2))
 

@@ -301,7 +301,7 @@ def prepare(args):
     print(f'Preparing {len(characters)} characters for {args.target}…', flush=True)
     # Files are cached on disk; retain only one fighter per worker in memory.
     def download(c):
-        keys = ['bundleUrl'] if args.target == 'rom' else ['bundleUrl', 'uiUrl', 'voiceUrl', 'portrait']
+        keys = ['bundleUrl', 'uiUrl', 'voiceUrl'] + (['portrait'] if args.target == 'native' else [])
         for key in keys:
             if c.get(key):
                 cached_asset(c[key], cache)
@@ -327,26 +327,27 @@ def prepare(args):
         (folder/'mesh.osb').write_bytes(mesh)
         paths = {'bundleUrl': (folder/'mesh.osb').relative_to(output).as_posix()}
         extras = dict(announcer=False, emblem=False)
+        for key, filename, magic in [('uiUrl', 'ui.osbui', (b'OSBU', b'OSBV')), ('voiceUrl', 'voice.wav', b'RIFF'), ('portrait', 'portrait.png', b'\x89PNG')]:
+            if c.get(key) and (key != 'portrait' or args.target == 'native'):
+                asset = cached_asset(c[key], cache)
+                # The engine validates UI versions. Basic signature checks prevent saving error pages.
+                if not asset.startswith(magic):
+                    raise ValueError(f'{c["slug"]}: invalid {key} asset')
+                if key == 'voiceUrl':
+                    validate_voice(asset)
+                    extras['announcer'] = True
+                elif key == 'uiUrl':
+                    extras['emblem'] = has_emblem(asset)
+                    if c.get('requireExtras') and not extras['emblem']:
+                        raise ValueError(f'{c["slug"]}: UI pack has no embedded emblem; regenerate its UI assets')
+                (folder/filename).write_bytes(asset)
+                paths[key] = (folder/filename).relative_to(output).as_posix()
         if args.target == 'native':
-            for key, filename, magic in [('uiUrl', 'ui.osbui', (b'OSBU', b'OSBV')), ('voiceUrl', 'voice.wav', b'RIFF'), ('portrait', 'portrait.png', b'\x89PNG')]:
-                if c.get(key):
-                    asset = cached_asset(c[key], cache)
-                    # The engine validates UI versions. Basic signature checks prevent saving error pages.
-                    if not asset.startswith(magic):
-                        raise ValueError(f'{c["slug"]}: invalid {key} asset')
-                    if key == 'voiceUrl':
-                        validate_voice(asset)
-                        extras['announcer'] = True
-                    elif key == 'uiUrl':
-                        extras['emblem'] = has_emblem(asset)
-                        if c.get('requireExtras') and not extras['emblem']:
-                            raise ValueError(f'{c["slug"]}: UI pack has no embedded emblem; regenerate its UI assets')
-                    (folder/filename).write_bytes(asset)
-                    paths[key] = (folder/filename).relative_to(output).as_posix()
             rows.append('|'.join([c['slug'], str(TILES[i % 12]), paths['bundleUrl'], paths.get('uiUrl', ''),
                                   paths.get('voiceUrl', ''), field(c['short'], 10), str(fk), field(c['name'], 47), paths.get('portrait', '')]))
         else:
             loadout.append(dict(name=c['name'], slot=TITLES[fk], asset=paths['bundleUrl'], model_file=MODELS[fk],
+                                ui=paths.get('uiUrl'), voice=paths.get('voiceUrl'), menu_scale=1.15,
                                 model_source=f'{MODELS[fk]}_{TITLES[fk]}Model.c', main_source=f'{MAINS[fk]}_{TITLES[fk]}Main.c'))
         report.append(dict(slug=c['slug'], name=c['name'], base=FIGHTERS[fk], page=1+i//12,
                            mesh_sha256=hashlib.sha256(mesh).hexdigest(), mesh_bytes=len(mesh), **extras))

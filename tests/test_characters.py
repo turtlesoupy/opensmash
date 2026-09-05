@@ -188,6 +188,20 @@ class CharacterTests(unittest.TestCase):
             self.assertNotIn('https://',(Path(tmp)/'characters.json').read_text())
             compile((Path(tmp)/'play.py').read_text(),'play.py','exec')
 
+    def test_rom_stages_custom_ui_and_voice_in_loadout(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            args=type('Args',(),dict(target='rom',output=Path(tmp),catalog='unused',site='https://smash.fun',characters=None,character_url=[]))()
+            character=c.clean_character(row('private',uiUrl='https://assets.test/private.osbui',voiceUrl='https://assets.test/private.wav'),'https://smash.fun')
+            assets={character['bundleUrl']:bundle(),character['uiUrl']:b'OSBV'+bytes(10544)+b'\xff'*2304,character['voiceUrl']:voice()}
+            with patch.object(c,'resolve',return_value=[character]), patch.object(c,'fetch',side_effect=assets.__getitem__), contextlib.redirect_stdout(io.StringIO()):
+                c.prepare(args)
+            loadout=json.loads((Path(tmp)/'loadout.json').read_text())[0]
+            self.assertEqual((Path(tmp)/loadout['ui']).read_bytes(),assets[character['uiUrl']])
+            self.assertEqual((Path(tmp)/loadout['voice']).read_bytes(),voice())
+            report=json.loads((Path(tmp)/'characters.json').read_text())['characters'][0]
+            self.assertTrue(report['announcer'] and report['emblem'])
+            self.assertNotIn('https://',(Path(tmp)/'loadout.json').read_text())
+
     def test_rom_full_catalog_fails_before_downloading_or_creating_output(self):
         with tempfile.TemporaryDirectory() as tmp:
             output=Path(tmp)/'not-created'

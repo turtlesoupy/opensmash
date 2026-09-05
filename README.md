@@ -108,7 +108,7 @@ python3 build.py native --characters queen,50cent --character-url 'PASTE_DOWNLOA
 For native builds, omit `--characters` to include the full public roster. For recognized
 custom download URLs, the importer discovers the manifest and companion UI,
 portrait and announcer files automatically. The UI pack contains the emblem;
-native preparation validates both the emblem and WAV. Private URLs use their
+both targets validate the companion emblem and WAV. Private URLs use their
 existing access capability—anyone with the URL can download the character.
 Raw download URLs default to Mario's moveset; they do not carry the website's
 editable moveset setting.
@@ -140,8 +140,10 @@ slot assignments using local OSB5 files, see the
 `--loadout hardware-rom/loadout.json --assets /path/to/play`.
 
 Models are simplified to 700 triangles by default (`--triangles` changes the
-budget). ROM injection uses rigid, vertex-colored meshes; menu names, portraits,
-voices and emblems remain vanilla. Builds receive a structural audit, but
+budget). ROM injection uses rigid meshes with textured heads and vertex-colored
+bodies, and bakes the supplied
+portraits, custom name lettering, stock icons, menu/HUD emblems and announcer
+voices into the ROM. Voices are converted to N64 ADPCM at the correct game pitch. Builds receive a structural audit, but
 physical-hardware compatibility and memory limits remain experimental. See
 [ROM details and limitations](hardware-rom/README.md).
 
