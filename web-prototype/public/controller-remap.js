@@ -122,7 +122,9 @@
     if (!Number.isFinite(current)) return EMPTY_BUTTON;
     const travel = Math.abs(mapping.value - mapping.neutral);
     const active = travel >= 0.2
-      && Math.abs(current - mapping.value) <= Math.max(0.12, travel * 0.35)
+      // Hat directions share one axis: tolerance must not grow with the
+      // distance from neutral and overlap a different direction.
+      && Math.abs(current - mapping.value) <= 0.12
       && Math.abs(current - mapping.neutral) >= travel * 0.55;
     return active ? { pressed: true, touched: true, value: 1 } : EMPTY_BUTTON;
   }

@@ -14,7 +14,7 @@ function harness(gamepad) {
   const navigator = { getGamepads: () => [gamepad] };
   const window = {};
   vm.runInNewContext(source, { window, navigator, localStorage, Proxy, Reflect, Object, Array, Number, Boolean, JSON, String, Set });
-  return { api: window.openSmashControllerRemap, navigator };
+  return { api: window.openSmashControllerRemap, navigator, localStorage };
 }
 
 function pad() {
@@ -97,4 +97,32 @@ test("clearing a profile restores the native gamepad", () => {
   api.saveProfile(gamepad.id, { mode: "standard", buttons: { a: 1, b: 0 } });
   api.clearProfile(gamepad.id);
   assert.equal(navigator.getGamepads()[0], gamepad);
+});
+
+test("hat directions do not overlap each other or the neutral position", () => {
+  const gamepad = pad();
+  const { api, navigator } = harness(gamepad);
+  const directions = { dup: -1, ddown: -0.43, dleft: 0.14, dright: 0.71 };
+  api.saveProfile(gamepad.id, {
+    mode: "custom",
+    axes: Object.fromEntries(Object.entries(directions).map(([control, value]) =>
+      [control, { index: 2, neutral: 1, value }])),
+  });
+  for (const [expected, value] of [...Object.entries(directions), [null, 1]]) {
+    gamepad.axes = [0, 0, value];
+    const buttons = navigator.getGamepads()[0].buttons;
+    Object.keys(directions).forEach((control, index) => {
+      assert.equal(buttons[12 + index].pressed, control === expected, `${expected}: ${control}`);
+    });
+  }
+});
+
+test("failed storage writes preserve the active profile", () => {
+  const gamepad = pad();
+  const { api, localStorage } = harness(gamepad);
+  assert.equal(api.saveProfile(gamepad.id, { mode: "standard", buttons: { a: 1, b: 0 } }), true);
+  localStorage.setItem = () => { throw new Error("Storage unavailable"); };
+  assert.equal(api.saveProfile(gamepad.id, { mode: "custom", buttons: { a: 3 } }), false);
+  assert.equal(api.disableProfile(gamepad.id), false);
+  assert.equal(api.getProfile(gamepad.id).buttons.a, 1);
 });

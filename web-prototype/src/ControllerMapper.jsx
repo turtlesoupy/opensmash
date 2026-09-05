@@ -26,7 +26,6 @@ function remapApi() {
 function rawPad(pad) {
   const pads = remapApi()?.rawGamepads?.() || [];
   return pads.find((candidate) => candidate && candidate.index === pad.index && candidate.id === pad.id)
-    || pads.find((candidate) => candidate && candidate.id === pad.id)
     || null;
 }
 
@@ -93,7 +92,11 @@ export default function ControllerMapper({ pad, onBack, onSaved }) {
       setMapping(nextMapping);
       setAxisMapping(nextAxisMapping);
       if (step === CONTROLS.length - 1) {
-        api?.saveProfile?.(pad.id, { mode: "custom", buttons: nextMapping, axes: nextAxisMapping });
+        if (!api?.saveProfile?.(pad.id, { mode: "custom", buttons: nextMapping, axes: nextAxisMapping })) {
+          setStep(-1);
+          setMessage("Could not save mapping. Allow browser storage and try again.");
+          return;
+        }
         setHasProfile(true);
         setStep(-1);
         setMessage("Mapping saved and active");
@@ -107,6 +110,8 @@ export default function ControllerMapper({ pad, onBack, onSaved }) {
       if (cancelled) return;
       const connected = rawPad(pad);
       if (!connected) {
+        armed = false;
+        axisArmed = false;
         setMessage("Controller disconnected. Reconnect it to continue.");
         frame = window.requestAnimationFrame(poll);
         return;
@@ -159,7 +164,10 @@ export default function ControllerMapper({ pad, onBack, onSaved }) {
   }
 
   function swapAB() {
-    api?.saveProfile?.(pad.id, { mode: "standard", buttons: { a: 1, b: 0 } });
+    if (!api?.saveProfile?.(pad.id, { mode: "standard", buttons: { a: 1, b: 0 } })) {
+      setMessage("Could not save mapping. Allow browser storage and try again.");
+      return;
+    }
     setHasProfile(true);
     setMapping({ a: 1, b: 0 });
     setAxisMapping({});
@@ -169,7 +177,10 @@ export default function ControllerMapper({ pad, onBack, onSaved }) {
   }
 
   function resetMapping() {
-    api?.disableProfile?.(pad.id);
+    if (!api?.disableProfile?.(pad.id)) {
+      setMessage("Could not reset mapping. Allow browser storage and try again.");
+      return;
+    }
     setHasProfile(false);
     setMapping({});
     setAxisMapping({});
