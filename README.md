@@ -59,6 +59,102 @@ What's in this repo:
 | `eval/` | Mesh eval harness (`EVAL.md`). |
 | `config/`, `docs/`, `assets/` | Docs and the style references the generator uses. `config/` holds local (gitignored) roster inclusion/exclusion lists. |
 
+## Native and ROM builds with character injection
+
+You can play OpenSmash outside the browser in two ways: build a **native desktop
+game** through BattleShip, or create an **experimental N64 ROM** for an emulator
+or real console. Both can include website fighters and your own custom/private
+characters, including their portraits, names, emblems and announcer voices.
+
+Both use `build.py` and the same character-selection arguments. The main
+difference is the roster: **native adds pages of custom fighters alongside the
+vanilla roster; ROM builds replace existing slots, up to 12, without extra pages.**
+
+For either build, run commands from this repository's root with a current
+`BattleShip/` checkout alongside it and its submodules initialized. Put your own
+US v1.0 ROM at `BattleShip/baserom.us.z64`, or add `--rom /path/to/baserom.us.z64`
+to the commands below. Your ROM stays local. See [build setup](BUILDING.md#checkouts-and-prerequisites)
+for prerequisites and other checkout layouts.
+
+### Native: a desktop version of the website's game
+
+The native build runs through BattleShip and includes the full public website
+roster by default. Custom fighters appear on additional character-select pages;
+use L/R or the on-screen arrows to switch. Once built and downloaded, the game
+works offline.
+
+Install [BattleShip's platform prerequisites](https://github.com/turtlesoupy/BattleShip/blob/main/BUILDING.md), then:
+
+```sh
+# Build with the full public roster:
+python3 build.py native
+
+# Or choose just a few website fighters:
+python3 build.py native --characters queen,50cent,abrahamlincoln
+```
+
+To include a custom or private fighter, copy **Character download URL** from its
+settings on the website. Use `--characters none` to include only your linked
+fighters, or specify public fighters to include alongside them:
+
+```sh
+python3 build.py native --characters none --character-url 'PASTE_DOWNLOAD_URL'
+python3 build.py native --characters queen,50cent --character-url 'PASTE_DOWNLOAD_URL'
+```
+
+Character IDs such as `queen` are website slugs. Repeat `--character-url` to add
+more links. These options choose the custom roster; native still keeps the
+original fighters available. See [custom-character links](BUILDING.md#private-characters-and-copied-links)
+for moveset defaults and link details.
+
+**To play**, open `Play.command` (macOS) or `Play.bat` (Windows) in the generated
+`build/native-PLATFORM-REGION-CONFIG/` folder. On any desktop platform, you can
+also run that folder's `play.py` with Python. For example, on macOS:
+
+```sh
+python3 build/native-darwin-us-release/play.py
+```
+
+### ROM: bake a loadout into an N64 cartridge image
+
+The ROM build produces `build/rom/opensmash.z64` for an emulator or an N64 flash
+cartridge such as EverDrive. Choose a subset of fighters: each replaces one of
+the **12 original slots**, while unselected slots stay vanilla. There is no
+paginated selector in this build yet.
+
+**The same `--characters` and `--character-url` options work here:** change
+`native` to `rom`. Unlike native, select a loadout rather than the full public
+roster. First install the extra [ROM build dependencies](BUILDING.md#hardware-rom-select-a-subset),
+including `vpk0cmd`:
+
+```sh
+python3 -m venv .venv
+. .venv/bin/activate
+python3 -m pip install -r hardware-rom/requirements.txt
+
+# Bake selected website fighters into a ROM:
+python3 build.py rom --characters queen,50cent --vpk0 /path/to/vpk0cmd
+
+# Or bake in a custom/private fighter:
+python3 build.py rom --characters none --character-url 'PASTE_DOWNLOAD_URL' --vpk0 /path/to/vpk0cmd
+```
+
+On Windows, activate `.venv\Scripts\Activate.ps1` instead. Omit `--vpk0` if the
+tool is installed at `BattleShip/decomp/tools/vpk0cmd` or on `PATH`.
+
+The builder prefers each fighter's website moveset, but may reassign conflicting
+slots. Check `build/rom/characters.json` for the actual assignments. For precise
+control of replacement slots, see [local loadouts](hardware-rom/README.md).
+
+**ROM support is experimental.** Meshes are simplified and use rigid joints;
+they do not yet have the native version's smooth skinning, so gaps can appear
+during animation. Hardware performance and memory limits still need testing.
+See [ROM details and limitations](hardware-rom/README.md).
+
+For either target, `--output-dir PATH` keeps different builds separate, and
+`--dry-run` previews the build commands. See [BUILDING.md](BUILDING.md) for all
+options, including vanilla native builds and local asset loadouts.
+
 ## Running the site
 
 You need Node 20+ with pnpm (`corepack enable`), a Super Smash Bros. USA

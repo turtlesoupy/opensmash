@@ -1,0 +1,26 @@
+[
+  {
+    "function": "mnPlayersVSInitVars",
+    "rom_offset": "0x139218",
+    "expected": "0x958c4938",
+    "replacement": "0x240c0fff"
+  },
+  {
+    "function": "mnPlayers1PGameInitVars",
+    "rom_offset": "0x1404b0",
+    "expected": "0x95ce4938",
+    "replacement": "0x240e0fff"
+  },
+  {
+    "function": "mnPlayers1PBonusInitVars",
+    "rom_offset": "0x14cbf8",
+    "expected": "0x954a4938",
+    "replacement": "0x240a0fff"
+  },
+  {
+    "function": "mnPlayers1PTrainingInitVars",
+    "rom_offset": "0x147028",
+    "expected": "0x95084938",
+    "replacement": "0x24080fff"
+  }
+]

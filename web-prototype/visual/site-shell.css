@@ -1,3 +1,24 @@
+@font-face {
+  font-family: 'Smash Caption Regular';
+  src: url('../src/fonts/smash-caption-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Smash Caption Condensed';
+  src: url('../src/fonts/smash-caption-condensed.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Smash Caption Narrow';
+  src: url('../src/fonts/smash-caption-narrow.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 /* Canonical visual shell for the production React site. */
 * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { min-height: 100%; }
@@ -143,7 +164,6 @@
     transform: translateX(var(--capture-phase-x));
   }
   .replica-portrait-layer,
-  .replica-caption-layer,
   .replica-rule-layer,
   .flame-bridge-texture-layer {
     position: absolute;
@@ -165,7 +185,33 @@
     z-index: 0;
     object-fit: fill;
   }
-  .replica-caption-layer { z-index: 2; }
+  .replica-caption-layer {
+    position: absolute;
+    top: calc(2 * 100% / 43);
+    left: var(--caption-left, 8.889%);
+    z-index: 2;
+    display: block;
+    width: max-content;
+    height: 1em;
+    pointer-events: none;
+    white-space: nowrap;
+    font-family: 'Smash Caption Regular', ui-monospace, monospace;
+    font-size: calc(10 * 100cqh / 43);
+    font-weight: 400;
+    font-style: normal;
+    font-synthesis: none;
+    line-height: 1;
+    letter-spacing: 0;
+    color: rgb(146, 139, 114);
+    font-kerning: normal;
+    /* The font bakes the original 2x sharp/smooth pixel blend into its
+       color layers. A CSS blur would change its coverage and contrast. */
+  }
+  .replica-caption-layer.is-tightened > span { position: absolute; top: 0; }
+  .replica-caption-layer[data-cut="condensed"] { font-family: 'Smash Caption Condensed', ui-monospace, monospace; }
+  .replica-caption-layer[data-cut="narrow"] { font-family: 'Smash Caption Narrow', ui-monospace, monospace; }
+  html[data-caption-font="loading"] .replica-caption-layer { visibility: hidden; }
+  html[data-caption-font="fallback"] .replica-caption-layer { font-family: ui-monospace, monospace; }
   .replica-action-icon {
     position: absolute;
     inset: 0;
@@ -179,7 +225,25 @@
     pointer-events: none;
   }
   .replica-action-icon[hidden] { display: none; }
-  /* Invisible find-in-page target. The visible name is a bitmap; each WORD of
+  .replica-action-static-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    contain: paint;
+  }
+  .replica-action-static-strip {
+    display: block;
+    width: 800%;
+    max-width: none;
+    height: 100%;
+    animation: action-static-frames calc(8s / 12) steps(8, end) infinite;
+  }
+  @keyframes action-static-frames {
+    to { transform: translateX(-100%); }
+  }
+  /* Full-name find-in-page target beneath the visible short caption; each WORD of
      the fighter's name(s) gets its own transparent span stacked over the tile,
      laid out as one line as tall as the tile in a monospace face and squeezed
      horizontally (--find-sx, set per word from its length) to the tile width.
@@ -260,27 +324,67 @@
     filter: drop-shadow(0 1px 0 #1a0a00) drop-shadow(0 0 2px rgba(0, 0, 0, .9));
     pointer-events: none;
   }
+  /* Keep the visible icons compact while giving the whole group a generous
+     tap target. Private fighters pair their lock with the settings gear. */
   .replica-manage-button {
     position: absolute;
-    top: 4%;
+    bottom: 4%;
     right: 4%;
     z-index: 5;
-    width: clamp(14px, 1.6vw, 20px);
-    height: clamp(14px, 1.6vw, 20px);
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    width: 44px;
+    height: 44px;
     padding: 0;
-    border: 1px solid #6b5a4a;
-    border-radius: 2px;
-    background: rgba(8, 5, 4, .85);
-    color: #d8c6b2;
-    font: bold 11px/1 sans-serif;
-    opacity: 0;
-    transition: opacity 120ms ease;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #f2d9a6;
+    cursor: pointer;
+    touch-action: manipulation;
   }
-  .replica-cell:hover .replica-manage-button,
-  .replica-cell:focus-within .replica-manage-button,
-  .replica-manage-button:focus-visible { opacity: 1; }
-  @media (hover: none) { .replica-manage-button { opacity: .85; } }
-  .replica-manage-button:hover { background: #3a1a14; color: #fff; }
+  .replica-manage-button svg {
+    position: relative;
+    display: block;
+    flex: none;
+    width: 14px;
+    height: 14px;
+    filter: drop-shadow(0 1px 0 #1a0a00) drop-shadow(0 0 2px rgba(0, 0, 0, .9));
+  }
+  .replica-cell[data-visibility="private"] .replica-manage-button { width: 56px; }
+  .replica-cell[data-mine="true"]:has(.replica-manage-button) > .replica-private-badge {
+    bottom: 4%;
+    right: calc(4% + 20px);
+    /* Clicks pass through the lock to the shared settings button below. */
+    pointer-events: none;
+    z-index: 6;
+    width: 14px;
+    height: 14px;
+  }
+  .replica-manage-button::before {
+    content: "";
+    position: absolute;
+    right: -3px;
+    bottom: -3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    pointer-events: none;
+  }
+  .replica-cell[data-visibility="private"] .replica-manage-button::before { width: 40px; }
+  .replica-manage-button:hover,
+  .replica-manage-button:focus-visible,
+  .replica-manage-button:active { color: #fff2d6; }
+  .replica-manage-button:hover::before,
+  .replica-manage-button:focus-visible::before,
+  .replica-manage-button:active::before {
+    background: rgba(242, 217, 166, .18);
+    box-shadow: inset 0 0 0 1px rgba(242, 217, 166, .5);
+  }
+  .replica-cell:has(.replica-manage-button:hover)::after { background: transparent; }
+  .replica-manage-button:focus-visible { outline: none; }
+  .replica-manage-button:focus-visible::before { outline: 2px solid #f2d9a6; outline-offset: 1px; }
   .fighter-job-cell.is-generating .replica-private-badge {
     top: 55%;
     right: auto;

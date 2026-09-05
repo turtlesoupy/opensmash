@@ -1,0 +1,58 @@
+{
+  "rom_sha256": "dd20e268e7bae5d747fd91fa38fc2ea383b1d937bf5d801b69d73255a3734b43",
+  "rom_bytes": 33554432,
+  "loadout": [
+    {
+      "name": "Queen Elizabeth II",
+      "slot": "Mario",
+      "asset": "queen.osb",
+      "model_file": 296,
+      "model_source": "296_MarioModel.c",
+      "main_source": "203_MarioMain.c",
+      "source_sha256": "1d90652f9f8f29374702715cd918cacb011c5a14e3307689e20eb76e8de2618a",
+      "triangles_before": 3860,
+      "triangles_after": 700,
+      "model_bytes_before": 29968,
+      "model_bytes_after": 70336
+    },
+    {
+      "name": "50 Cent",
+      "slot": "Luigi",
+      "asset": "50cent-luigi.osb",
+      "model_file": 323,
+      "model_source": "323_LuigiModel.c",
+      "main_source": "221_LuigiMain.c",
+      "source_sha256": "7185eec03aa8fbbb1e769d3c219d413555a27e1e3d8e3392a1a539aa80b1ebc3",
+      "triangles_before": 3790,
+      "triangles_after": 700,
+      "model_bytes_before": 32528,
+      "model_bytes_after": 72888
+    },
+    {
+      "name": "Abraham Lincoln",
+      "slot": "Captain Falcon",
+      "asset": "abrahamlincoln-captain.osb",
+      "model_file": 332,
+      "model_source": "332_CaptainModel.c",
+      "main_source": "236_CaptainMain.c",
+      "source_sha256": "f437c91a92e6eb87e0effabf562da0bdfc4ed1901f435c97f418a0a75bf4f680",
+      "triangles_before": 3798,
+      "triangles_after": 700,
+      "model_bytes_before": 51344,
+      "model_bytes_after": 91704
+    }
+  ],
+  "validation": {
+    "structural_audit": "PASS: 2132 asset entries; code patch preimages; original data preservation; model pointer chains; emitted GBI indices",
+    "corruption_tests": "PASS: 5 tests including serialized bind orientation regression",
+    "emulator": "v2 launch requested in ares; visual verification pending because the user is interacting with the emulator. Prior v1 ran tutorial combat but had incorrect joint orientation.",
+    "physical_hardware": "Not tested",
+    "manual_selection_and_four_player": "Not tested: synthetic keyboard events did not register in emulator",
+    "remaining": [
+      "Complete long-run stability and all automatic demo sequences",
+      "Exercise Abraham Lincoln, all selection screens and four-player battles",
+      "Replace original names/portraits/stock icons/announcer",
+      "Improve rigid joint seams, facial detail, vertex reuse and reclaim old model geometry"
+    ]
+  }
+}

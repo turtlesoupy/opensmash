@@ -7,17 +7,20 @@
 //   "auto"              the default: controller k on port k (connection
 //                       order); the keyboard on P1 only when there is no
 //                       controller. Overrides never reshuffle the others.
-//   "none"              leave the port empty
+//   "none"              Off: exclude this fighter from the match
+//   "cpu"               CPU: no input device, but an active fighter
 //   "keyboard"          the keyboard
 //   "gamepad:<index>"   the Gamepad with that navigator index
 // The resolved plan has one entry per port:
-//   { kind: "gamepad", id, index } | { kind: "keyboard" } | { kind: "none" } | null
+//   { kind: "gamepad", id, index } | { kind: "keyboard" } |
+//   { kind: "cpu" } | { kind: "none" } | null
 // where "none" is an explicit close (the shell will not hot-plug into it)
-// and null is simply unfilled.
+// and null is an automatic CPU slot that can accept a controller.
 
 export const MAX_PORTS = 4;
 export const AUTO = "auto";
 export const NONE = "none";
+export const CPU = "cpu";
 export const KEYBOARD = "keyboard";
 
 export function gamepadChoice(pad) {
@@ -29,7 +32,7 @@ export function normalizePortChoices(value) {
   if (!Array.isArray(value)) return choices;
   for (let i = 0; i < MAX_PORTS; i += 1) {
     const choice = value[i];
-    if (choice === NONE || choice === KEYBOARD || /^gamepad:\d{1,2}$/.test(choice)) {
+    if (choice === NONE || choice === CPU || choice === KEYBOARD || /^gamepad:\d{1,2}$/.test(choice)) {
       choices[i] = choice;
     }
   }
@@ -78,8 +81,8 @@ export function planControllerPorts({ gamepads = [], ports } = {}) {
   // port; a later duplicate is ignored. A chosen controller that is not
   // connected leaves the port empty.
   choices.forEach((choice, port) => {
-    if (choice === NONE) {
-      plan[port] = { kind: NONE };
+    if (choice === NONE || choice === CPU) {
+      plan[port] = { kind: choice };
     } else if (choice === KEYBOARD) {
       if (!keyboardClaimed) {
         keyboardClaimed = true;
@@ -114,12 +117,18 @@ export function planControllerPorts({ gamepads = [], ports } = {}) {
   return plan;
 }
 
+// Keep at least two fighters enabled, including CPU slots without a device.
+export function canTurnPortOff(plan, port) {
+  return plan[port]?.kind === NONE || plan.filter((entry) => entry?.kind !== NONE).length > 2;
+}
+
 export function humanPortCount(plan) {
-  return plan.filter((entry) => entry && entry.kind !== NONE).length;
+  return plan.filter((entry) => entry && (entry.kind === KEYBOARD || entry.kind === "gamepad")).length;
 }
 
 export function describePort(entry, gamepads = []) {
-  if (!entry || entry.kind === NONE) return "";
+  if (!entry || entry.kind === CPU) return "CPU";
+  if (entry.kind === NONE) return "Off";
   if (entry.kind === KEYBOARD) return "Keyboard";
   const pad = gamepads.find((candidate) => candidate.index === entry.index) || entry;
   return padLabel(pad, gamepads);
@@ -127,14 +136,14 @@ export function describePort(entry, gamepads = []) {
 
 // The choice string that reproduces what a port currently shows.
 export function choiceForEntry(entry) {
-  if (!entry || entry.kind === NONE) return NONE;
+  if (!entry) return AUTO;
+  if (entry.kind === NONE || entry.kind === CPU) return entry.kind;
   if (entry.kind === KEYBOARD) return KEYBOARD;
   return `gamepad:${entry.index}`;
 }
 
-// Dropdown contents for one port: the devices no other port is using, plus
-// whatever this port shows now. Empty `options` (besides None) means the
-// port cannot be filled until another controller is connected.
+// Input choices for one port: devices no other port is using, plus its
+// current device. The settings UI adds CPU and Off independently.
 export function portOptions(plan, gamepads, port) {
   const usedElsewhere = new Set(
     plan.filter((entry, i) => i !== port && entry).map((entry) => choiceForEntry(entry)),
@@ -150,5 +159,5 @@ export function portOptions(plan, gamepads, port) {
 
 // Query parameters the engine shell reads (see window.controllerPorts).
 export function controllerPortParams(plan) {
-  return { ports: JSON.stringify(plan) };
+  return { ports: JSON.stringify(plan.map((entry) => entry?.kind === CPU ? { kind: NONE } : entry)) };
 }

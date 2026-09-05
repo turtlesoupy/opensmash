@@ -5,20 +5,12 @@ import {
   planControllerPorts,
 } from "../shared/controller-ports.js";
 
-export const CHARACTER_MESHES = [
-  { value: "auto", label: "Automatic" },
-  { value: "mario", label: "Mario", fkind: 0 },
-  { value: "fox", label: "Fox", fkind: 1 },
-  { value: "donkey", label: "Donkey Kong", fkind: 2 },
-  { value: "samus", label: "Samus", fkind: 3 },
-  { value: "luigi", label: "Luigi", fkind: 4 },
-  { value: "link", label: "Link", fkind: 5 },
-  { value: "yoshi", label: "Yoshi", fkind: 6 },
-  { value: "captain", label: "Captain Falcon", fkind: 7 },
-  { value: "kirby", label: "Kirby", fkind: 8 },
-  { value: "pikachu", label: "Pikachu", fkind: 9 },
-  { value: "purin", label: "Jigglypuff", fkind: 10 },
-  { value: "ness", label: "Ness", fkind: 11 },
+import { CHARACTER_MESHES } from "../shared/fighter-targets.js";
+export { CHARACTER_MESHES } from "../shared/fighter-targets.js";
+
+export const SELECTION_MODES = [
+  { value: "playing-characters", label: "Playing only" },
+  { value: "full-roster", label: "Players and CPU" },
 ];
 
 export const STAGES = [
@@ -75,6 +67,7 @@ export const RENDER_RESOLUTIONS = [
 
 export const DEFAULT_ADVANCED_OPTIONS = Object.freeze({
   characterMesh: "auto",
+  selectionMode: "playing-characters",
   stage: "random",
   opponentLevel: "3",
   bootMode: "free-for-all",
@@ -83,6 +76,7 @@ export const DEFAULT_ADVANCED_OPTIONS = Object.freeze({
   ports: Object.freeze(["auto", "auto", "auto", "auto"]),
 });
 
+const VALID_SELECTION_MODES = new Set(SELECTION_MODES.map(({ value }) => value));
 const VALID_MESHES = new Set(CHARACTER_MESHES.map(({ value }) => value));
 const VALID_STAGES = new Set(STAGES.map(({ value }) => value));
 const VALID_OPPONENT_LEVELS = new Set(OPPONENT_LEVELS.map(({ value }) => value));
@@ -92,6 +86,9 @@ const VALID_RENDER_RESOLUTIONS = new Set(RENDER_RESOLUTIONS.map(({ value }) => v
 
 export function normalizeAdvancedOptions(value) {
   return {
+    selectionMode: VALID_SELECTION_MODES.has(value?.selectionMode)
+      ? value.selectionMode
+      : DEFAULT_ADVANCED_OPTIONS.selectionMode,
     characterMesh: VALID_MESHES.has(value?.characterMesh)
       ? value.characterMesh
       : DEFAULT_ADVANCED_OPTIONS.characterMesh,
@@ -122,6 +119,28 @@ export function hasAdvancedOverrides(options) {
 // page can currently see plus the player's Settings choices.
 export function controllerPlan(options, gamepads = []) {
   return planControllerPorts({ gamepads, ports: normalizeAdvancedOptions(options).ports });
+}
+
+// Pick humans first, then CPUs, preserving each fighter's actual port number.
+function selectionPorts(options, plan) {
+  const humans = plan.flatMap((entry, port) =>
+    entry?.kind === "keyboard" || entry?.kind === "gamepad" ? [port] : []);
+  const cpus = plan.flatMap((entry, port) =>
+    !entry || entry.kind === "cpu" ? [port] : []);
+  return options.selectionMode === "full-roster" && options.bootMode === "free-for-all"
+    ? [...humans, ...cpus] : humans;
+}
+
+export function characterSelectionSlots(options, gamepads = []) {
+  const normalized = normalizeAdvancedOptions(options);
+  const plan = controllerPlan(normalized, gamepads);
+  return selectionPorts(normalized, plan).map((port) =>
+    !plan[port] || plan[port].kind === "cpu" ? `CPU${port + 1}` : `${port + 1}P`);
+}
+
+function battleSlotKinds(plan) {
+  return plan.map((entry) => entry?.kind === "none" ? "o"
+    : !entry || entry.kind === "cpu" ? "c" : "h").join("");
 }
 
 function resolvedCharacter(character, meshName) {
@@ -281,31 +300,36 @@ function characterInjection(character, player) {
   return { player, ...characterAssets(character) };
 }
 
-// Direct boot into a VS match. Port 1 is the site's pick; `picks` holds the
-// fighters of any further human ports (double select); CPUs fill the rest
-// from `opponents`. Custom fighters on ports 2-4 ride the per-player
-// injection rows, human or CPU alike (the engine binds them by port).
-function directBattle(params, character, stage, opponents, picks = []) {
-  const humans = 1 + picks.length;
-  const slots = [character ?? null, ...picks];
+// Assign chosen fighters to their actual ports; only unpicked active slots
+// receive random opponents. Off slots remain empty in the engine.
+function directBattle(params, character, stage, opponents, picks, plan, selectedPorts, selectInGame = false) {
+  const slots = new Array(4).fill(null);
+  const primaryPort = selectedPorts[0] ?? plan.findIndex((entry) => entry?.kind !== "none");
+  [character, ...picks].forEach((pick, index) => {
+    const port = selectedPorts[index] ?? (index === 0 ? primaryPort : -1);
+    if (port >= 0) slots[port] = pick;
+  });
+  if (!character && !selectInGame && primaryPort >= 0) slots[primaryPort] = { fkind: 0 };
   const cpus = (opponents || []).filter((opponent) => (
     opponent.type !== "character" || !slots.some((slot) => slot?.slug === opponent.character.slug)
   ));
-  while (slots.length < 4) {
+  plan.forEach((entry, port) => {
+    if (entry?.kind === "none" || slots[port]) return;
+    if (selectInGame && (entry?.kind === "keyboard" || entry?.kind === "gamepad")) return;
     const opponent = cpus.shift();
-    slots.push(opponent
+    slots[port] = opponent
       ? (opponent.type === "character" ? opponent.character : { fkind: opponent.fkind })
-      : { fkind: Math.floor(Math.random() * 12) });
-  }
-  const kinds = slots.map((slot) => slot?.fkind ?? 0);
-  params.set(
-    "SSB64_BOOT_BATTLE",
-    [kinds[0], kinds[1], stage, humans >= 2 ? 0 : 1, kinds[2], kinds[3]].join(","),
-  );
+      : { fkind: Math.floor(Math.random() * 12) };
+  });
+  const kinds = slots.map((slot) => slot?.fkind ?? -1);
+  const humans = humanPortCount(plan);
+  params.set("SSB64_BOOT_BATTLE", [kinds[0], kinds[1], stage, humans >= 2 ? 0 : 1, kinds[2], kinds[3]].join(","));
+  params.set("SSB64_BOOT_SLOTS", battleSlotKinds(plan));
   if (humans >= 2) params.set("SSB64_BOOT_HUMANS", String(humans));
-  slots.forEach((slot, index) => {
-    if (index > 0 && slot?.slug) {
-      params.append("inject_player", JSON.stringify(characterInjection(slot, index)));
+  if (character) params.set("player", String(primaryPort));
+  slots.forEach((slot, port) => {
+    if (port !== primaryPort && slot?.slug) {
+      params.append("inject_player", JSON.stringify(characterInjection(slot, port)));
     }
   });
 }
@@ -340,6 +364,10 @@ export function engineUrl(action, advancedOptions, gamepads = []) {
   const plan = controllerPlan(options, gamepads);
   const humans = humanPortCount(plan);
   const multiplayer = humans >= 2;
+  const selectedPorts = selectionPorts(options, plan);
+  if (options.bootMode === "free-for-all" && plan.filter((entry) => entry?.kind !== "none").length < 2) {
+    throw new Error("Enable at least two slots in Players & Controllers to start a match.");
+  }
   for (const [key, value] of Object.entries(controllerPortParams(plan))) {
     params.set(key, value);
   }
@@ -393,17 +421,19 @@ export function engineUrl(action, advancedOptions, gamepads = []) {
   }
 
   if (options.bootMode === "default") {
-    if (action.type === "character") directBattle(params, character, stage, action.opponents);
+    if (action.type === "character") directBattle(params, character, stage, action.opponents, picks, plan, selectedPorts);
     if (action.type === "select") {
       params.set("SSB64_START_SCENE", "16");
       params.set("roster", "1");
     }
   } else if (options.bootMode === "free-for-all") {
-    if (multiplayer && picks.length !== humans - 1) {
+    const fullRoster = options.selectionMode === "full-roster" && picks.length === selectedPorts.length - 1;
+    if (multiplayer && !fullRoster && picks.length !== humans - 1) {
       // No double select happened (e.g. the "play" action): everyone picks in-game.
       multiplayerSelect(params, character, stage, humans);
+      directBattle(params, character, stage, action.opponents, picks, plan, selectedPorts, true);
     } else {
-      directBattle(params, character, stage, action.type === "character" ? action.opponents : null, picks);
+      directBattle(params, character, stage, action.type === "character" ? action.opponents : null, picks, plan, selectedPorts);
     }
   } else if (options.bootMode === "vs-menu") {
     params.set("SSB64_START_SCENE", "9");
@@ -435,6 +465,13 @@ export function engineUrl(action, advancedOptions, gamepads = []) {
     options.stage !== "random"
   ) {
     params.set("SSB64_BOOT_BATTLE", `-1,8,${stage}`);
+  }
+
+  // Explicit roles also seed the in-game VS menus, including Off slots and
+  // human controllers assigned beyond a CPU or an empty slot.
+  if ((options.bootMode === "vs-menu" || options.bootMode === "vs-character-select") &&
+      options.ports.some((choice) => choice !== "auto")) {
+    directBattle(params, character, stage, action.opponents, picks, plan, selectedPorts, true);
   }
 
   if (params.has("SSB64_BOOT_BATTLE")) {

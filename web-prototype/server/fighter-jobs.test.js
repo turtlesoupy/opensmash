@@ -424,3 +424,37 @@ test("a delete observed from the database drops the job on this instance too", a
     await cleanup();
   }
 });
+
+
+test("fighter target settings persist and only the owner can choose built targets", async () => {
+  const original = storedJob({ status: "complete", artifacts: { targets: ["luigi", "fox"] } });
+  const h = await harness({ storedJobs: [original] });
+  try {
+    await h.jobs.init();
+    await assert.rejects(h.jobs.updateSettings(original.id, "someone-else", { retarget: "luigi" }), { status: 404 });
+    for (const retarget of ["auto", "ness", "unknown", null]) {
+      await assert.rejects(h.jobs.updateSettings(original.id, "owner-1", { retarget }), { status: 400 });
+    }
+    const updated = await h.jobs.updateSettings(original.id, "owner-1", { retarget: "luigi" });
+    assert.equal(updated.character.fkind, 4);
+    assert.equal(updated.character.base, "luigi");
+    assert.equal(h.saved.at(-1).retarget, "luigi");
+    assert.equal(h.jobs.get(original.id, "owner-1").character.fkind, 4);
+    const reloaded = await harness({ storedJobs: [h.saved.at(-1)] });
+    try {
+      await reloaded.jobs.init();
+      assert.equal(reloaded.jobs.get(original.id, "owner-1").character.base, "luigi");
+    } finally { await reloaded.cleanup(); }
+    const reset = await h.jobs.updateSettings(original.id, "owner-1", { retarget: "mario" });
+    assert.equal(reset.character.fkind, 0);
+  } finally { await h.cleanup(); }
+});
+
+test("unfinished fighters cannot change target", async () => {
+  const original = storedJob();
+  const h = await harness({ storedJobs: [original] });
+  try {
+    await h.jobs.init();
+    await assert.rejects(h.jobs.updateSettings(original.id, "owner-1", { retarget: "mario" }), { status: 409 });
+  } finally { await h.cleanup(); }
+});

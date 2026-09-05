@@ -94,3 +94,7 @@ eval/announcer_conditioning_corrected/
 # Local-only experiment outputs and source captures purged from history.
 eval/round2/
 web-prototype/asset-sources/n64-console-sketchfab-recovered.glb
+
+# ROM and native outputs and local exporter environment.
+/build/
+/.venv/

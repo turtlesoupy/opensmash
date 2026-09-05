@@ -4,7 +4,7 @@ import ModalPage from "./ModalPage.jsx";
 import RomHandoffModal from "./RomHandoffModal.jsx";
 import RomHandoffReceiver from "./RomHandoffReceiver.jsx";
 import ControllerMapper from "./ControllerMapper.jsx";
-import { choiceForEntry, padDisplayName, portOptions } from "../shared/controller-ports.js";
+import { canTurnPortOff, choiceForEntry, padDisplayName, portOptions } from "../shared/controller-ports.js";
 import {
   BOOT_MODES,
   CHARACTER_MESHES,
@@ -13,6 +13,7 @@ import {
   OPPONENT_LEVELS,
   RENDER_RESOLUTIONS,
   STAGES,
+  SELECTION_MODES,
   controllerPlan,
   normalizeAdvancedOptions,
 } from "./launch-options.js";
@@ -48,7 +49,7 @@ export default function SettingsModal({
   const receiveFirstRef = useRef(null);
   const sendBackRef = useRef(null);
   const portPlan = controllerPlan(draft, gamepads);
-  const humanPorts = portPlan.filter((entry) => entry && entry.kind !== "none").length;
+  const humanPorts = portPlan.filter((entry) => entry?.kind === "keyboard" || entry?.kind === "gamepad").length;
 
   useEffect(() => {
     if (open) {
@@ -78,6 +79,7 @@ export default function SettingsModal({
   }
 
   function updatePort(port, value) {
+    if (value === "none" && !canTurnPortOff(portPlan, port)) return;
     const ports = [...(draft.ports ?? DEFAULT_ADVANCED_OPTIONS.ports)];
     ports[port] = value;
     const next = { ...draft, ports };
@@ -93,7 +95,7 @@ export default function SettingsModal({
 
   const title = page === "gameplay"
     ? "Gameplay Options"
-    : page === "controllers" ? "Keyboard & Controllers"
+    : page === "controllers" ? "Players & Controllers"
       : page === "mapping" ? "Map Controller" : "Settings";
   const handoffPage = page === "receive" || page === "send";
 
@@ -150,7 +152,7 @@ export default function SettingsModal({
               <span>Gameplay Options</span>
             </button>
             <button className="launch-flow-action settings-menu-button" type="button" onClick={() => setPage("controllers")}>
-              <span>Keyboard &amp; Controllers</span>
+              <span>Players &amp; Controllers</span>
             </button>
             {authorized ? (
               <button
@@ -299,23 +301,34 @@ export default function SettingsModal({
           </div>
 
           <div className="advanced-form settings-subpage" hidden={page !== "controllers"}>
+            <div className="advanced-selects settings-selection-mode">
+              <label className="advanced-field">
+                <span className="advanced-field-label">Selection Mode</span>
+                <span className="advanced-select-shell advanced-cell-frame flame-bridge-cell">
+                  <select ref={controllersFirstRef} value={draft.selectionMode} onChange={(event) => update("selectionMode", event.target.value)}>
+                    {SELECTION_MODES.map((mode) => (
+                      <option value={mode.value} key={mode.value}>{mode.label}</option>
+                    ))}
+                  </select>
+                </span>
+                <small>Choose just the players, or players and CPU opponents, before Free-for-All matches.</small>
+              </label>
+            </div>
             <section className="advanced-input" aria-label="Player inputs">
               <div className="advanced-selects advanced-inputs">
                 {portPlan.map((entry, port) => {
                   const choices = portOptions(portPlan, gamepads, port);
                   const current = choiceForEntry(entry);
-                  const disabled = choices.length === 0 && current === "none";
                   return (
                     <label className="advanced-field" key={port}>
                       <span className="advanced-field-label">{`P${port + 1}`}</span>
-                      <span className={`advanced-select-shell advanced-cell-frame flame-bridge-cell ${disabled ? "is-disabled" : ""}`}>
+                      <span className="advanced-select-shell advanced-cell-frame flame-bridge-cell">
                         <select
-                          ref={port === 0 ? controllersFirstRef : undefined}
                           value={current}
-                          disabled={disabled}
                           onChange={(event) => updatePort(port, event.target.value)}
                         >
-                          <option value="none">{disabled ? "No input" : "None"}</option>
+                          <option value={current === "auto" ? "auto" : "cpu"}>CPU</option>
+                          <option value="none" disabled={!canTurnPortOff(portPlan, port)}>Off</option>
                           {choices.map((choice) => (
                             <option value={choice.value} key={choice.value}>{choice.label}</option>
                           ))}
@@ -325,9 +338,10 @@ export default function SettingsModal({
                   );
                 })}
               </div>
+              <small className="advanced-controllers-note">Off removes a fighter from the match. At least two fighters must stay enabled. Connect a controller to fill an unassigned CPU slot.</small>
               {humanPorts >= 2 && (
                 <small className="advanced-controllers-note">
-                  Two or more players: launches open the VS character select so everyone picks a fighter.
+                  Choose each player’s fighter on the roster before the match starts.
                 </small>
               )}
             </section>

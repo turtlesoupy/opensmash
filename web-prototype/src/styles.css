@@ -643,6 +643,7 @@ body:has(.advanced-overlay:not([hidden])) { overflow: hidden; }
 .settings-receive-handoff-form .launch-flow-error { position: static; width: 100%; margin: 2px 0 0; }
 .settings-handoff-unavailable { position: static; width: min(480px, 100%); margin: 0 auto; text-align: center; }
 .advanced-selects { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(12px, 2vw, 20px); }
+.settings-selection-mode { grid-template-columns: minmax(0, 1fr); max-width: 28rem; }
 .advanced-field { min-width: 0; display: grid; align-content: start; gap: 8px; }
 .advanced-select-shell { position: relative; display: block; }
 .advanced-cell-frame { isolation: isolate; background: #080504; }
@@ -2016,3 +2017,17 @@ body.retro-home.show-native-cursor * {
   .fighter-job-headline-dot { animation: none; }
   .fighter-job-bar i { transition: none; }
 }
+
+.fighter-settings { width: 100%; display: grid; gap: 14px; margin: 18px 0; text-align: left; }
+.fighter-settings h3 { margin: 0; font-size: 16px; }
+.fighter-settings label { font-size: 14px; font-weight: 700; }
+.fighter-settings p { margin: 0; font-size: 13px; line-height: 1.6; color: #c8c3b8; }
+.fighter-settings select { width: 100%; padding: 12px; border: 1px solid #817459; border-radius: 4px; background: #181714; color: #fff; font: inherit; }
+.fighter-settings select:focus-visible { outline: 2px solid #eac579; outline-offset: 3px; }
+.fighter-settings button:disabled { opacity: .5; cursor: default; }
+
+.fighter-download { border-top: 1px solid #514735; padding-top: 22px; }
+.fighter-download input { box-sizing: border-box; width: 100%; min-width: 0; padding: 12px; border: 1px solid #817459; border-radius: 4px; background: #181714; color: #fff; font: 13px/1.5 monospace; }
+.fighter-download input:focus-visible { outline: 2px solid #eac579; outline-offset: 3px; }
+.fighter-download-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.fighter-download-actions > * { flex: 1 1 150px; text-align: center; text-decoration: none; box-sizing: border-box; }

@@ -576,7 +576,7 @@ async function configuredCharacters(query = "", user = null) {
       // A baked fighter the viewer generated still counts as theirs.
       if (job.mine) {
         const index = configuredSlugs.get(job.slug);
-        result[index] = { ...result[index], mine: true };
+        result[index] = { ...result[index], base: job.character.base, fkind: job.character.fkind, mine: true };
       }
       continue;
     }
@@ -804,7 +804,7 @@ async function handleRequest(req, res, vite) {
   }
   const romSession = readSession(req);
   let user = await authService.readUser(req, {
-    checkRevoked: req.method === "POST" && pathname.startsWith("/api/fighters"),
+    checkRevoked: ["POST", "PATCH", "DELETE"].includes(req.method) && pathname.startsWith("/api/fighters"),
   });
   if (!authService.enabled && romSession) {
     user = {
@@ -829,7 +829,7 @@ async function handleRequest(req, res, vite) {
     });
   }
 
-  if (req.method === "POST" && pathname.startsWith("/api/") && !mutationOriginAllowed(req)) {
+  if (["POST", "PATCH", "DELETE"].includes(req.method) && pathname.startsWith("/api/") && !mutationOriginAllowed(req)) {
     return json(res, 403, { error: "Request origin is not allowed" });
   }
 
@@ -1014,6 +1014,15 @@ async function handleRequest(req, res, vite) {
     return job
       ? json(res, 200, { job })
       : json(res, 404, { error: "Fighter job not found." });
+  }
+
+  if (req.method === "PATCH" && fighterMatch) {
+    try {
+      const settings = await readJsonBody(req);
+      return json(res, 200, { job: await fighterJobs.updateSettings(fighterMatch[1], user.uid, settings) });
+    } catch (error) {
+      return json(res, error.status || 400, { error: error.message || "Could not save fighter settings." });
+    }
   }
 
   const fighterDeleteMatch = pathname.match(/^\/api\/fighters\/([a-f0-9-]+)$/);
