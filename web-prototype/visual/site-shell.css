@@ -225,6 +225,24 @@
     pointer-events: none;
   }
   .replica-action-icon[hidden] { display: none; }
+  .replica-action-static-layer {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+    contain: paint;
+  }
+  .replica-action-static-strip {
+    display: block;
+    width: 800%;
+    max-width: none;
+    height: 100%;
+    animation: action-static-frames calc(8s / 12) steps(8, end) infinite;
+  }
+  @keyframes action-static-frames {
+    to { transform: translateX(-100%); }
+  }
   /* Full-name find-in-page target beneath the visible short caption; each WORD of
      the fighter's name(s) gets its own transparent span stacked over the tile,
      laid out as one line as tall as the tile in a monospace face and squeezed

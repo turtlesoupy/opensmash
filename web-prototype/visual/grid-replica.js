@@ -4,7 +4,8 @@
 // served by the site (VANILLA_ROSTER below is metadata only: fkind order and
 // labels).
 
-import { scalePixels2x } from '../shared/pixel-scale.js';
+import searchStaticUrl from './assets/action-static-search.png?url';
+import createStaticUrl from './assets/action-static-create.png?url';
 import { fitCaption } from '../shared/roster-caption.js';
 import { loadCaptionFonts } from '../shared/caption-font-loading.js';
 import {
@@ -60,8 +61,6 @@ function installFindCurrentRule() {
   }
 }
 installFindCurrentRule();
-const STONE_BACKGROUND_SEED = 3075641479;
-const STATIC_BLEND = 0x30 / 255;
 const RANDOM_NAME_POOL = Object.freeze([
   'ALEX', 'AMIR', 'ANNA', 'ARIA', 'ASH', 'AVA', 'BEAU', 'BEN',
   'BLAKE', 'CARA', 'CHLOE', 'COLE', 'DARA', 'DEV', 'ELI', 'ELLA',
@@ -200,52 +199,6 @@ function put(dst, width, x, y, r, g, b, a = 255) {
   dst[i + 2] = Math.round((b * sourceAlpha + dst[i + 2] * destinationWeight) / outputAlpha);
   dst[i + 3] = Math.round(outputAlpha * 255);
 }
-
-function seededRandom(seed) {
-  let state = seed >>> 0;
-  return () => {
-    state += 0x6D2B79F5;
-    let value = state;
-    value = Math.imul(value ^ value >>> 15, value | 1);
-    value ^= value + Math.imul(value ^ value >>> 7, value | 61);
-    return ((value ^ value >>> 14) >>> 0) / 4294967296;
-  };
-}
-
-function renderActionCellBackground(seed) {
-  const random = seededRandom(seed);
-  const pixels = new Uint8ClampedArray(CELL_W * CELL_H * 4);
-  for (let index = 0; index < pixels.length; index += 4) {
-    const grain = random();
-    const tone = grain < 0.08
-      ? 3 + Math.floor(random() * 2)
-      : grain > 0.92
-        ? 14 + Math.floor(random() * 10)
-        : 6 + Math.floor(random() * 5);
-    pixels[index] = tone;
-    pixels[index + 1] = Math.max(0, tone - 1);
-    pixels[index + 2] = Math.max(0, tone - 2);
-    pixels[index + 3] = 255;
-  }
-  return pixels;
-}
-
-const ACTION_CELL_BACKGROUND_PIXELS = Object.freeze({
-  search: renderActionCellBackground(STONE_BACKGROUND_SEED),
-  create: renderActionCellBackground(STONE_BACKGROUND_SEED ^ 0x9E3779B9),
-});
-
-function drawActionStatic(pixels) {
-  const baseTone = 22;
-  const baseAlpha = 0.48;
-  for (let y = 1; y < CELL_H - 1; y++) for (let x = 1; x < CELL_W - 1; x++) {
-    const noise = Math.random() * 255;
-    const tone = Math.round(baseTone + (noise - baseTone) * STATIC_BLEND * 1.6);
-    const alpha = Math.round(255 * (baseAlpha + (baseAlpha - noise / 255) * STATIC_BLEND));
-    put(pixels, CELL_W, x, y, tone, tone, tone, Math.max(0, Math.min(255, alpha)));
-  }
-}
-
 
 function decodeReferenceRules() {
   const sourceWidth = 96;
@@ -414,50 +367,14 @@ function setActionIcon(button, fileName, kind) {
   button.prepend(image);
 }
 
-function paintActionStatic(button, kind, frameIndex = 0) {
-  let canvas = button.querySelector('.replica-action-static-layer');
-  if (!canvas) {
-    canvas = document.createElement('canvas');
-    canvas.className = 'replica-action-static-layer';
-    canvas.setAttribute('aria-hidden', 'true');
-    Object.assign(canvas.style, {
-      position: 'absolute',
-      inset: '0',
-      zIndex: '0',
-      display: 'block',
-      width: '100%',
-      height: '100%',
-      pointerEvents: 'none',
-      imageRendering: 'auto',
-    });
-    button.prepend(canvas);
-  }
-  const frame = actionStaticFrame(kind, frameIndex);
-  if (canvas.width !== frame.width || canvas.height !== frame.height) {
-    canvas.width = frame.width;
-    canvas.height = frame.height;
-  }
-  canvas.getContext('2d').putImageData(frame, 0, 0);
-}
-
-// The static is random noise, so a short loop of pre-rendered frames reads
-// the same as a fresh draw. Rendering one used to cost a 7.7 KB copy, ~1,800
-// random writes and a 2x upscale, twelve times a second, forever.
-const ACTION_STATIC_FRAME_COUNT = 8;
-const actionStaticFrames = new Map();
-function actionStaticFrame(kind, index) {
-  let frames = actionStaticFrames.get(kind);
-  if (!frames) {
-    frames = [];
-    actionStaticFrames.set(kind, frames);
-  }
-  if (!frames[index]) {
-    const native = new Uint8ClampedArray(ACTION_CELL_BACKGROUND_PIXELS[kind]);
-    drawActionStatic(native);
-    const framebuffer = scalePixels2x(native, CELL_W, CELL_H, false);
-    frames[index] = new ImageData(framebuffer.pixels, framebuffer.width, framebuffer.height);
-  }
-  return frames[index];
+function setActionStatic(button, kind) {
+  const clip = document.createElement('span');
+  clip.className = 'replica-action-static-layer';
+  clip.setAttribute('aria-hidden', 'true');
+  const strip = createImageLayer('replica-action-static-strip');
+  strip.src = kind === 'search' ? searchStaticUrl : createStaticUrl;
+  clip.append(strip);
+  button.prepend(clip);
 }
 
 function ensureLabel(button) {
@@ -646,7 +563,7 @@ CELL_IDS.forEach((id, index) => {
     button.append(input);
   }
   if (isSearch || isCreate) {
-    paintActionStatic(button, isSearch ? 'search' : 'create');
+    setActionStatic(button, isSearch ? 'search' : 'create');
     setActionIcon(button, isSearch ? 'SearchGlass.png' : 'Plus.png', isSearch ? 'search' : 'create');
     setCellLabel(button, label);
   }
@@ -663,24 +580,6 @@ CELL_IDS.forEach((id, index) => {
 const actionCells = [...cells.values()].filter(button =>
   button.dataset.kind === 'search' || button.dataset.kind === 'create'
 );
-// Only tiles in (or near) the viewport animate: the two statics sit at the
-// top of the roster, so a player deep in the grid or in a match pays nothing.
-const actionCellObserver = 'IntersectionObserver' in window
-  ? new IntersectionObserver(entries => {
-      for (const entry of entries) entry.target.dataset.staticOnScreen = entry.isIntersecting ? '1' : '';
-    }, { rootMargin: '100px 0px' })
-  : null;
-actionCells.forEach(button => actionCellObserver?.observe(button));
-let actionStaticFrameIndex = 0;
-setInterval(() => {
-  if (document.hidden) return;
-  actionStaticFrameIndex = (actionStaticFrameIndex + 1) % ACTION_STATIC_FRAME_COUNT;
-  actionCells.forEach(button => {
-    if (actionCellObserver && button.dataset.staticOnScreen === '') return;
-    paintActionStatic(button, button.dataset.kind, actionStaticFrameIndex);
-  });
-}, 1000 / 12);
-
 const ruleCanvas = document.createElement('canvas');
 ruleCanvas.className = 'replica-rule-layer';
 ruleCanvas.setAttribute('aria-hidden', 'true');
