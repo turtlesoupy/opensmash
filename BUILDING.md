@@ -96,6 +96,12 @@ python3 build.py rom --dry-run
 python3 -m unittest discover -s tests -p 'test_build.py'
 ```
 
+With the sample 700-triangle ROM built and exporter dependencies installed,
+run `python3 hardware-rom/test_packer.py --base /path/to/baserom.us.z64`.
+Use `--rom PATH` if the output is outside `build/rom/opensmash.z64`.
+The orientation regression always runs; ROM-dependent corruption checks
+are explicitly skipped if the local input/output pair is absent.
+
 No default/all target automatically builds a ROM. Existing website and
 BattleShip build commands continue to work independently. The additions can
 land as an optional exporter and a small top-level dispatcher, with the

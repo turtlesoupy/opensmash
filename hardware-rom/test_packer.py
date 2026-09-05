@@ -1,5 +1,7 @@
 """Small corruption tests for the standalone ROM auditor."""
 import unittest
+import argparse
+import sys
 from pathlib import Path
 import struct
 import numpy as np
@@ -7,8 +9,8 @@ from build_rom import bind_to_local
 from verify_rom import verify, TABLE, DATA, ENTRY
 
 ROOT = Path(__file__).resolve().parent
-BASE = ROOT.parents[1]/'ssb-decomp-re/baserom.us.z64'
-ROM = ROOT/'build/opensmash-hardware-v2.z64'
+BASE = ROOT.parents[1]/'BattleShip/baserom.us.z64'
+ROM = ROOT.parent/'build/rom/opensmash.z64'
 
 
 class BindTests(unittest.TestCase):
@@ -21,10 +23,11 @@ class BindTests(unittest.TestCase):
                                    [[0, 0, 1], [0, 1, 0], [1, 0, 0]])
 
 
-@unittest.skipUnless(BASE.exists() and ROM.exists(), 'Build local ROM first')
 class AuditTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        if not BASE.is_file() or not ROM.is_file():
+            raise unittest.SkipTest('Build the sample ROM or pass --base and --rom')
         cls.base = BASE.read_bytes()
         cls.rom = ROM.read_bytes()
 
@@ -52,4 +55,9 @@ class AuditTests(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+    parser = argparse.ArgumentParser(add_help=False)
+    parser.add_argument('--base', type=Path, default=BASE)
+    parser.add_argument('--rom', type=Path, default=ROM)
+    args, remaining = parser.parse_known_args()
+    BASE, ROM = args.base, args.rom
+    unittest.main(argv=[sys.argv[0], *remaining])
