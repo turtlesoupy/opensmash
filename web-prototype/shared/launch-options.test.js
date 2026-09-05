@@ -400,3 +400,11 @@ test("multiplayer also applies to preselected VS launches", () => {
   assert.equal(query.get("SSB64_BOOT_HUMANS"), "2");
   assert.match(query.get("SSB64_BOOT_BATTLE"), /^0,-1,\d+,0,-1,-1$/);
 });
+
+
+test("automatic launch uses the character's saved target", () => {
+  const character = { ...CHARACTER, base: "luigi", fkind: 4, variants: ["luigi"] };
+  const query = queryFor({ type: "character", character });
+  assert.match(query.get("SSB64_BOOT_BATTLE"), /^4,/);
+  assert.equal(query.get("inject"), "bundles/testfighter.osb6");
+});

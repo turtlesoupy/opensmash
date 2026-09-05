@@ -1,3 +1,4 @@
+import { CHARACTER_MESHES } from "../shared/fighter-targets.js";
 import { createHash } from "node:crypto";
 
 export const JOB_PROTOCOL_VERSION = 1;
@@ -83,7 +84,8 @@ export function publicJob(job) {
       variants: artifacts.targets || Object.keys(artifacts.variants || {}),
       visibility,
       uploader: result.uploader,
-      fkind: 0,
+      base: job.retarget || "mario",
+      fkind: CHARACTER_MESHES.find(({ value }) => value === job.retarget)?.fkind ?? 0,
       bundle: `${job.slug}.osb6`,
     };
     result.costUsd = job.costUsd ?? null;

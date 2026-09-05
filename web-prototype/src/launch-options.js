@@ -5,21 +5,8 @@ import {
   planControllerPorts,
 } from "../shared/controller-ports.js";
 
-export const CHARACTER_MESHES = [
-  { value: "auto", label: "Automatic" },
-  { value: "mario", label: "Mario", fkind: 0 },
-  { value: "fox", label: "Fox", fkind: 1 },
-  { value: "donkey", label: "Donkey Kong", fkind: 2 },
-  { value: "samus", label: "Samus", fkind: 3 },
-  { value: "luigi", label: "Luigi", fkind: 4 },
-  { value: "link", label: "Link", fkind: 5 },
-  { value: "yoshi", label: "Yoshi", fkind: 6 },
-  { value: "captain", label: "Captain Falcon", fkind: 7 },
-  { value: "kirby", label: "Kirby", fkind: 8 },
-  { value: "pikachu", label: "Pikachu", fkind: 9 },
-  { value: "purin", label: "Jigglypuff", fkind: 10 },
-  { value: "ness", label: "Ness", fkind: 11 },
-];
+import { CHARACTER_MESHES } from "../shared/fighter-targets.js";
+export { CHARACTER_MESHES } from "../shared/fighter-targets.js";
 
 export const STAGES = [
   { value: "random", label: "Random" },

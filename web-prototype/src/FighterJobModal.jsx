@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { availableFighterTargets } from "../shared/fighter-targets.js";
 import ModalPage from "./ModalPage.jsx";
 import { formatFighterJobError } from "../shared/fighter-job-ui.js";
 
@@ -35,7 +36,7 @@ function statusHeadline(job) {
 // been running, the pipeline's last log lines, and retry when it failed.
 // Opened by tapping a generating or failed grid tile and automatically when a
 // job that was visible while it ran fails.
-export default function FighterJobModal({ job, onClose, onDelete, onRetry, open }) {
+export default function FighterJobModal({ job, onClose, onDelete, onRetry, onSaveSettings, open }) {
   const closeRef = useRef(null);
   const [now, setNow] = useState(() => Date.now());
   const [logOpen, setLogOpen] = useState(false);
@@ -43,6 +44,14 @@ export default function FighterJobModal({ job, onClose, onDelete, onRetry, open 
   const [retryError, setRetryError] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleting, setDeleting] = useState(false);
+
+  const [retarget, setRetarget] = useState("mario");
+  const [saving, setSaving] = useState(false);
+  const [copyMessage, setCopyMessage] = useState("");
+  useEffect(() => {
+    setRetarget(job?.character?.base || "mario");
+    setCopyMessage("");
+  }, [open, job?.id]);
 
   const active = ACTIVE.has(job?.status);
   useEffect(() => {
@@ -61,6 +70,9 @@ export default function FighterJobModal({ job, onClose, onDelete, onRetry, open 
 
   if (!job) return <ModalPage className="fighter-job-overlay" open={false} />;
 
+  const downloadUrl = job.character?.bundleUrl
+    ? new URL(job.character.bundleUrl, window.location.origin).href
+    : "";
   const failed = job.status === "failed";
   const progress = Math.max(0, Math.min(100, Number(job.progress) || 0));
   const startedAt = Date.parse(job.startedAt || job.createdAt || "");
@@ -118,7 +130,7 @@ export default function FighterJobModal({ job, onClose, onDelete, onRetry, open 
           role="dialog"
           aria-modal="true"
           aria-labelledby="fighter-job-title"
-          aria-describedby="fighter-job-copy"
+          aria-describedby={job.status === "complete" ? "fighter-retarget-help" : "fighter-job-copy"}
         >
           <div className="fighter-job-content">
             <h2 id="fighter-job-title" className="launch-flow-title fighter-job-title">
@@ -129,6 +141,57 @@ export default function FighterJobModal({ job, onClose, onDelete, onRetry, open 
               {active && <span className="fighter-job-headline-dot" aria-hidden="true" />}
             </p>
 
+            {job.status === "complete" && onSaveSettings && (
+              <section className="fighter-settings">
+                <h3>Character settings</h3>
+                <p id="fighter-retarget-help">Choose the fighter whose moves and animations your character uses.</p>
+                <select id="fighter-retarget" aria-label="Target fighter" value={retarget} disabled={saving || deleting}
+                  aria-describedby="fighter-retarget-help"
+                  onChange={async (event) => {
+                    const nextTarget = event.target.value;
+                    const previousTarget = job.character?.base || "mario";
+                    if (saving || nextTarget === previousTarget) return;
+                    setRetarget(nextTarget);
+                    setSaving(true);
+                    setRetryError("");
+                    try {
+                      await onSaveSettings(job, nextTarget);
+                    } catch (error) {
+                      setRetarget(previousTarget);
+                      setRetryError(error.message || "Could not save fighter settings.");
+                    } finally {
+                      setSaving(false);
+                    }
+                  }}>
+                  {availableFighterTargets(job.artifacts).map(({ value, label }) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+              </section>
+            )}
+
+            {job.status === "complete" && downloadUrl && (
+              <section className="fighter-settings fighter-download" aria-labelledby="fighter-download-label">
+                <label id="fighter-download-label" htmlFor="fighter-download-url">Character download URL</label>
+                <p id="fighter-download-help">Download the character bundle (.osb6), including its available fighter targets.</p>
+                <input id="fighter-download-url" type="url" readOnly value={downloadUrl}
+                  aria-describedby="fighter-download-help" onFocus={(event) => event.target.select()} />
+                <div className="fighter-download-actions">
+                  <button className="launch-flow-action" type="button" onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(downloadUrl);
+                      setCopyMessage("Download URL copied.");
+                    } catch {
+                      setCopyMessage("Select the URL above to copy it manually.");
+                    }
+                  }}>Copy URL</button>
+                  <a className="launch-flow-action" href={downloadUrl} download={`${job.slug}.osb6`}>Download character</a>
+                </div>
+                {copyMessage && <p role="status">{copyMessage}</p>}
+              </section>
+            )}
+
+            {job.status !== "complete" && <>
             <dl className="fighter-job-facts">
               <div>
                 <dt>Stage</dt>
@@ -192,6 +255,8 @@ export default function FighterJobModal({ job, onClose, onDelete, onRetry, open 
               </div>
             )}
 
+            </>}
+
             {retryError && <p className="fighter-job-retry-error" role="alert">{retryError}</p>}
 
             <div className="fighter-job-actions">
@@ -209,7 +274,7 @@ export default function FighterJobModal({ job, onClose, onDelete, onRetry, open 
                 <button
                   className={`launch-flow-action fighter-job-delete ${confirmDelete ? "is-confirming" : ""}`.trim()}
                   type="button"
-                  disabled={deleting}
+                  disabled={deleting || saving}
                   onClick={() => remove(close)}
                 >
                   {deleting ? "Deleting…" : confirmDelete ? "Really delete? Tap again" : "Delete fighter"}

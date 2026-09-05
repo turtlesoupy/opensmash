@@ -1,3 +1,4 @@
+import { availableFighterTargets } from "../shared/fighter-targets.js";
 import Busboy from "busboy";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { createWriteStream } from "node:fs";
@@ -1186,6 +1187,19 @@ export function createFighterJobs({
   // worker holds the lease); afterwards the record and its slug reservation
   // go, which also revokes the /engine/bundles/<slug> gate. Stored artifacts
   // are content-addressed and left in place.
+  async function updateSettings(id, ownerId, settings) {
+    const job = ownedJob(id, ownerId);
+    if (!job) throw new HttpError(404, "Fighter job not found.");
+    if (job.status !== "complete") throw new HttpError(409, "Wait for this fighter to finish before changing its settings.");
+    if (!availableFighterTargets(job.artifacts).some(({ value }) => value === settings?.retarget)) {
+      throw new HttpError(400, "Choose a target available for this fighter.");
+    }
+    const updated = { ...job, retarget: settings.retarget };
+    await saveJob(updated);
+    jobs.set(id, updated);
+    return publicJob(updated);
+  }
+
   async function remove(id, ownerId) {
     const job = ownedJob(id, ownerId);
     if (!job) throw new HttpError(404, "Fighter job not found.");
@@ -1290,6 +1304,7 @@ export function createFighterJobs({
     async retry(id, ownerId) {
       return retry(id, ownerId);
     },
+    updateSettings,
     async remove(id, ownerId) {
       return remove(id, ownerId);
     },

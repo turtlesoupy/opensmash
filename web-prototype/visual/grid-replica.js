@@ -125,7 +125,7 @@ function setCellManageControl(button, slug, mine) {
     control = document.createElement('button');
     control.type = 'button';
     control.className = 'replica-manage-button';
-    control.textContent = '\u00d7';
+    control.innerHTML = '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m9 3-.5 3-2 1-2.8-1-2 3.5L4 11v2l-2.3 1.5 2 3.5 2.8-1 2 1 .5 3h4l.5-3 2-1 2.8 1 2-3.5L18 13v-2l2.3-1.5-2-3.5-2.8 1-2-1L13 3Z"/><circle cx="11" cy="12" r="3"/></svg>';
     control.addEventListener('click', event => {
       event.stopPropagation();
       event.preventDefault();
@@ -134,7 +134,7 @@ function setCellManageControl(button, slug, mine) {
     button.append(control);
   }
   control.dataset.slug = slug;
-  control.title = 'Manage or delete this fighter';
+  control.title = 'Character settings';
   control.setAttribute('aria-label', `Manage ${button.dataset.displayName || slug}`);
 }
 
