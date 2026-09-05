@@ -3,7 +3,8 @@ import AuthGate from "./AuthGate.jsx";
 import ModalPage from "./ModalPage.jsx";
 import RomHandoffModal from "./RomHandoffModal.jsx";
 import RomHandoffReceiver from "./RomHandoffReceiver.jsx";
-import { choiceForEntry, portOptions } from "../shared/controller-ports.js";
+import ControllerMapper from "./ControllerMapper.jsx";
+import { choiceForEntry, padDisplayName, portOptions } from "../shared/controller-ports.js";
 import {
   BOOT_MODES,
   CHARACTER_MESHES,
@@ -38,6 +39,8 @@ export default function SettingsModal({
 }) {
   const [draft, setDraft] = useState(options);
   const [page, setPage] = useState("main");
+  const [mappingPad, setMappingPad] = useState(null);
+  const [, setMappingRevision] = useState(0);
   const mainFirstRef = useRef(null);
   const gameplayFirstRef = useRef(null);
   const controllersFirstRef = useRef(null);
@@ -51,6 +54,7 @@ export default function SettingsModal({
     if (open) {
       setDraft(options);
       setPage("main");
+      setMappingPad(null);
     }
   }, [open]);
 
@@ -89,7 +93,8 @@ export default function SettingsModal({
 
   const title = page === "gameplay"
     ? "Gameplay Options"
-    : page === "controllers" ? "Keyboard & Controllers" : "Settings";
+    : page === "controllers" ? "Keyboard & Controllers"
+      : page === "mapping" ? "Map Controller" : "Settings";
   const handoffPage = page === "receive" || page === "send";
 
   return (
@@ -327,6 +332,31 @@ export default function SettingsModal({
               )}
             </section>
 
+            {gamepads.length > 0 && (
+              <section className="controller-profile-list" aria-label="Controller mappings">
+                {gamepads.map((pad) => {
+                  const mappingSource = window.openSmashControllerRemap?.profileSource?.(pad.id) || "default";
+                  return (
+                    <div className="controller-profile-row" key={`${pad.id}:${pad.index}`}>
+                      <span>
+                        <strong>{padDisplayName(pad.id)}</strong>
+                        <small>{mappingSource === "m64"
+                          ? "M64 detected — complete button setup"
+                          : mappingSource === "custom" ? "Custom mapping active" : "Browser default mapping"}</small>
+                      </span>
+                      <button
+                        className="launch-flow-action"
+                        type="button"
+                        onClick={() => { setMappingPad(pad); setPage("mapping"); }}
+                      >
+                        Map buttons
+                      </button>
+                    </div>
+                  );
+                })}
+              </section>
+            )}
+
             {debugMode && (
               <section className="advanced-debug-tools" aria-labelledby="advanced-debug-title">
                 <div>
@@ -352,6 +382,14 @@ export default function SettingsModal({
 
             <BackButton onClick={() => setPage("main")} />
           </div>
+
+          {page === "mapping" && mappingPad && (
+            <ControllerMapper
+              pad={mappingPad}
+              onBack={() => setPage("controllers")}
+              onSaved={() => setMappingRevision((value) => value + 1)}
+            />
+          )}
         </section>
       )}
     </ModalPage>
