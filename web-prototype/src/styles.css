@@ -643,6 +643,7 @@ body:has(.advanced-overlay:not([hidden])) { overflow: hidden; }
 .settings-receive-handoff-form .launch-flow-error { position: static; width: 100%; margin: 2px 0 0; }
 .settings-handoff-unavailable { position: static; width: min(480px, 100%); margin: 0 auto; text-align: center; }
 .advanced-selects { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: clamp(12px, 2vw, 20px); }
+.settings-selection-mode { grid-template-columns: minmax(0, 1fr); max-width: 28rem; }
 .advanced-field { min-width: 0; display: grid; align-content: start; gap: 8px; }
 .advanced-select-shell { position: relative; display: block; }
 .advanced-cell-frame { isolation: isolate; background: #080504; }

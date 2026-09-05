@@ -5,6 +5,7 @@ import {
   FULL_BOOT_INTRO_CARDS,
   createFullBootIntroConfig,
   engineUrl,
+  characterSelectionSlots,
   hasAdvancedOverrides,
   normalizeAdvancedOptions,
   selectDirectBattleOpponents,
@@ -307,6 +308,7 @@ test("boot overrides address the distinct engine scenes", () => {
 test("stored settings are allow-listed and report active overrides", () => {
   assert.deepEqual(normalizeAdvancedOptions({ characterMesh: "bad", stage: "4", opponentLevel: "99", bootMode: "bad" }), {
     characterMesh: "auto",
+    selectionMode: "playing-characters",
     stage: "4",
     opponentLevel: "3",
     bootMode: "free-for-all",
@@ -375,7 +377,8 @@ test("two human ports without picks open the character select", () => {
   assert.equal(query.get("SSB64_START_SCENE"), "16");
   assert.equal(query.get("roster"), "1");
   assert.equal(query.get("SSB64_BOOT_HUMANS"), "2");
-  assert.match(query.get("SSB64_BOOT_BATTLE"), /^0,-1,\d+,0,-1,-1$/);
+  assert.match(query.get("SSB64_BOOT_BATTLE"), /^0,-1,\d+,0,\d+,\d+$/);
+  assert.equal(query.get("SSB64_BOOT_SLOTS"), "hhcc");
   assert.equal(query.has("inject_player"), false);
   assert.equal(query.get("inject"), "bundles/testfighter.osb6");
 });
@@ -407,4 +410,83 @@ test("automatic launch uses the character's saved target", () => {
   const query = queryFor({ type: "character", character });
   assert.match(query.get("SSB64_BOOT_BATTLE"), /^4,/);
   assert.equal(query.get("inject"), "bundles/testfighter.osb6");
+});
+
+test("selection mode defaults safely and full roster labels CPU slots", () => {
+  assert.equal(normalizeAdvancedOptions({}).selectionMode, "playing-characters");
+  assert.equal(normalizeAdvancedOptions({ selectionMode: "invalid" }).selectionMode, "playing-characters");
+  assert.deepEqual(characterSelectionSlots(DEFAULT_ADVANCED_OPTIONS), ["1P"]);
+  assert.deepEqual(characterSelectionSlots(DEFAULT_ADVANCED_OPTIONS, [XBOX_PAD, PS5_PAD]), ["1P", "2P"]);
+  const options = { ...DEFAULT_ADVANCED_OPTIONS, selectionMode: "full-roster" };
+  assert.equal(normalizeAdvancedOptions(options).selectionMode, "full-roster");
+  assert.equal(hasAdvancedOverrides(options), true);
+  assert.deepEqual(characterSelectionSlots(options), ["1P", "CPU2", "CPU3", "CPU4"]);
+  assert.deepEqual(characterSelectionSlots(options, [XBOX_PAD, PS5_PAD]), ["1P", "2P", "CPU3", "CPU4"]);
+  assert.deepEqual(characterSelectionSlots({ ...options, bootMode: "full-boot" }), ["1P"]);
+});
+
+test("full roster preserves every chosen fighter while CPUs remain CPU controlled", () => {
+  const third = { ...CHARACTER, slug: "third", fkind: 3, bundle: "third.osb6" };
+  const fourth = { ...CHARACTER, slug: "fourth", fkind: 9, bundle: "fourth.osb6" };
+  const action = { type: "character", character: CHARACTER, picks: [SECOND, third, fourth] };
+  const options = { ...DEFAULT_ADVANCED_OPTIONS, selectionMode: "full-roster", stage: "4", opponentLevel: "7" };
+  for (const [pads, humanCount] of [[[], 1], [[XBOX_PAD, PS5_PAD], 2], [[XBOX_PAD, PS5_PAD, { index: 2, id: "Third pad" }], 3], [[XBOX_PAD, PS5_PAD, { index: 2, id: "Third pad" }, { index: 3, id: "Fourth pad" }], 4]]) {
+    const query = queryWithPads(action, pads, options);
+    assert.equal(query.has("SSB64_START_SCENE"), false);
+    assert.equal(query.get("SSB64_BOOT_BATTLE"), `0,5,4,${humanCount >= 2 ? 0 : 1},3,9`);
+    assert.equal(query.get("SSB64_BOOT_HUMANS"), humanCount >= 2 ? String(humanCount) : null);
+    assert.equal(query.get("SSB64_CPU_LEVEL"), "7");
+    assert.deepEqual(query.getAll("inject_player").map(row => {
+      const { player, slug } = JSON.parse(row);
+      return [player, slug];
+    }), [[1, "secondfighter"], [2, "third"], [3, "fourth"]]);
+  }
+});
+
+test("Off slots are skipped in selection and excluded from a two-fighter battle", () => {
+  const options = { ...DEFAULT_ADVANCED_OPTIONS, selectionMode: "full-roster", ports: ["keyboard", "none", "cpu", "none"], stage: "4" };
+  assert.deepEqual(characterSelectionSlots(options), ["1P", "CPU3"]);
+  const query = queryFor({ type: "character", character: CHARACTER, picks: [SECOND] }, options);
+  assert.equal(query.get("SSB64_BOOT_SLOTS"), "hoco");
+  assert.equal(query.get("SSB64_BOOT_BATTLE"), "0,-1,4,1,5,-1");
+  assert.equal(JSON.parse(query.getAll("inject_player")[0]).player, 2);
+});
+
+test("sparse human slots keep controllers and selected fighters on their assigned ports", () => {
+  const options = { ...DEFAULT_ADVANCED_OPTIONS, selectionMode: "full-roster", ports: ["cpu", "none", "keyboard", "gamepad:0"], stage: "4" };
+  const third = { ...CHARACTER, slug: "third", fkind: 3, bundle: "third.osb6" };
+  assert.deepEqual(characterSelectionSlots(options, [XBOX_PAD]), ["3P", "4P", "CPU1"]);
+  const query = queryWithPads({ type: "character", character: CHARACTER, picks: [SECOND, third] }, [XBOX_PAD], options);
+  assert.equal(query.get("SSB64_BOOT_SLOTS"), "cohh");
+  assert.equal(query.get("SSB64_BOOT_BATTLE"), "3,-1,4,0,0,5");
+  assert.equal(query.get("player"), "2");
+  assert.deepEqual(query.getAll("inject_player").map(row => {
+    const { player, slug } = JSON.parse(row);
+    return [player, slug];
+  }), [[0, "third"], [3, "secondfighter"]]);
+  assert.deepEqual(JSON.parse(query.get("ports")).map(entry => entry?.kind), ["none", "none", "keyboard", "gamepad"]);
+});
+
+test("Playing only randomizes CPUs without filling Off slots", () => {
+  const options = { ...DEFAULT_ADVANCED_OPTIONS, ports: ["keyboard", "cpu", "none", "none"], stage: "4" };
+  assert.deepEqual(characterSelectionSlots(options), ["1P"]);
+  const query = queryFor({ type: "character", character: CHARACTER, opponents: [{ type: "character", character: SECOND }] }, options);
+  assert.equal(query.get("SSB64_BOOT_SLOTS"), "hcoo");
+  assert.equal(query.get("SSB64_BOOT_BATTLE"), "0,5,4,1,-1,-1");
+  assert.equal(query.getAll("inject_player").length, 1);
+});
+
+test("a match needs at least two enabled slots", () => {
+  for (const ports of [["keyboard", "none", "none", "none"], ["none", "none", "none", "none"]]) {
+    assert.throws(() => queryFor({ type: "character", character: CHARACTER }, { ...DEFAULT_ADVANCED_OPTIONS, ports }), /at least two slots/);
+  }
+});
+
+test("explicit slot roles seed VS character select as well as direct battles", () => {
+  const options = { ...DEFAULT_ADVANCED_OPTIONS, bootMode: "vs-character-select", ports: ["none", "cpu", "keyboard", "none"], stage: "4" };
+  const query = queryFor({ type: "character", character: CHARACTER }, options);
+  assert.equal(query.get("SSB64_START_SCENE"), "16");
+  assert.equal(query.get("SSB64_BOOT_SLOTS"), "ocho");
+  assert.match(query.get("SSB64_BOOT_BATTLE"), /^-1,\d+,4,1,0,-1$/);
+  assert.equal(query.get("player"), "2");
 });

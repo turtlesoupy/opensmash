@@ -392,11 +392,12 @@ function keepPageScrollableFromGame() {
   }, { capture: true, passive: false });
 }
 
-// Double select: with two or more human ports, each player clicks a tile in
+// Sequential selection: players and optionally CPUs each get a tile in
 // turn (P1 first). Picks are stamped on the grid and the match launches once
 // every port has a fighter. Clicking a stamped tile takes the pick back.
 const pickPrompt = document.getElementById('fighter-pick-prompt');
 let pendingPicks = [];
+let pendingPickSlots = "";
 
 function showPickPrompt(text) {
   if (!pickPrompt) return;
@@ -406,11 +407,15 @@ function showPickPrompt(text) {
 
 function clearPicks() {
   pendingPicks = [];
+  pendingPickSlots = "";
   window.characterGrid?.clearPicks?.();
   showPickPrompt('');
 }
 
-function collectPick(fighter, humans) {
+function collectPick(fighter, slots) {
+  const signature = slots.join(",");
+  if (pendingPickSlots !== signature) clearPicks();
+  pendingPickSlots = signature;
   const index = pendingPicks.findIndex(pick => pick.slug === fighter.slug);
   if (index >= 0) {
     pendingPicks.splice(index, 1);
@@ -418,13 +423,16 @@ function collectPick(fighter, humans) {
     pendingPicks.push(fighter);
   }
   window.characterGrid?.clearPicks?.();
-  pendingPicks.forEach((pick, i) => window.characterGrid?.markPick?.(pick.selectionName || pick.slug, `${i + 1}P`));
-  if (pendingPicks.length >= humans) {
+  pendingPicks.forEach((pick, i) => window.characterGrid?.markPick?.(pick.selectionName || pick.slug, slots[i]));
+  if (pendingPicks.length >= slots.length) {
     const picks = pendingPicks;
     clearPicks();
     return picks;
   }
-  showPickPrompt(`P${pendingPicks.length + 1}, pick your fighter`);
+  const nextSlot = slots[pendingPicks.length];
+  showPickPrompt(nextSlot.startsWith("CPU")
+    ? `${nextSlot}, pick an opponent`
+    : `${nextSlot}, pick your fighter`);
   return null;
 }
 
@@ -432,9 +440,10 @@ function launch(fighter) {
   if (!gameFrame || !videoFrame) return;
   pendingFighter = null;
   let picks = [];
-  const humans = APP_BRIDGE?.humanPortCount?.() ?? 1;
-  if (humans >= 2 && (fighter.actionType || 'character') === 'character') {
-    const ready = collectPick(fighter, humans);
+  const slots = APP_BRIDGE?.selectionSlots?.()
+    ?? Array.from({ length: APP_BRIDGE?.humanPortCount?.() ?? 1 }, (_, i) => `${i + 1}P`);
+  if (slots.length >= 2 && (fighter.actionType || 'character') === 'character') {
+    const ready = collectPick(fighter, slots);
     if (!ready) return;
     [fighter, ...picks] = ready;
   } else {
@@ -2761,6 +2770,7 @@ gameFrame?.addEventListener('load', () => {
 });
 
 window.gameLauncher = Object.freeze({
+  clearPicks,
   get running() { return Boolean(videoFrame?.classList.contains('is-game-running')); },
   get verified() { return hasVerifiedRom(); },
   get mobileControls() { return usesMobileControls(); },

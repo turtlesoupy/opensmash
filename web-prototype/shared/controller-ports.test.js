@@ -88,7 +88,24 @@ test("labels drop vendor noise and number identical controllers", () => {
 test("choices round-trip and unknown values normalize to automatic", () => {
   assert.deepEqual(normalizePortChoices(["keyboard", "gamepad:3", "bogus", undefined]), ["keyboard", "gamepad:3", "auto", "auto"]);
   assert.equal(choiceForEntry({ kind: "gamepad", id: XBOX.id, index: 0 }), "gamepad:0");
-  assert.equal(choiceForEntry(null), "none");
+  assert.equal(choiceForEntry(null), "auto");
   const plan = planControllerPorts({ gamepads: [XBOX] });
   assert.deepEqual(controllerPortParams(plan), { ports: JSON.stringify(plan) });
+});
+
+test("CPU and Off are distinct roles and never claim an input device", () => {
+  const plan = planControllerPorts({ gamepads: [XBOX], ports: ["auto", "cpu", "none", "auto"] });
+  assert.equal(plan[0].kind, "gamepad");
+  assert.deepEqual(plan.slice(1), [{ kind: "cpu" }, { kind: "none" }, null]);
+  assert.equal(humanPortCount(plan), 1);
+  assert.equal(choiceForEntry(plan[1]), "cpu");
+  assert.equal(choiceForEntry(plan[2]), "none");
+  assert.deepEqual(JSON.parse(controllerPortParams(plan).ports).slice(1), [{ kind: "none" }, { kind: "none" }, null]);
+});
+
+test("automatic CPU slots accept connected controllers while explicit choices stay put", () => {
+  const choices = ["auto", "auto", "none", "cpu"];
+  assert.deepEqual(planControllerPorts({ ports: choices }), [{ kind: "keyboard" }, null, { kind: "none" }, { kind: "cpu" }]);
+  const plan = planControllerPorts({ ports: choices, gamepads: [XBOX, PS5, PS5_TWIN] });
+  assert.deepEqual(plan.map(entry => entry?.kind), ["gamepad", "gamepad", "none", "cpu"]);
 });

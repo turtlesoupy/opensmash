@@ -33,6 +33,7 @@ import { useUiSounds } from "./ui-sounds.js";
 import {
   DEFAULT_ADVANCED_OPTIONS,
   controllerPlan,
+  characterSelectionSlots,
   engineUrl,
   hasAdvancedOverrides,
   normalizeAdvancedOptions,
@@ -1013,6 +1014,7 @@ export default function App() {
 
   function updateAdvancedOptions(nextOptions) {
     const normalized = normalizeAdvancedOptions(nextOptions);
+    window.gameLauncher?.clearPicks?.();
     setAdvancedOptions(normalized);
     try {
       sessionStorage.setItem(ADVANCED_OPTIONS_KEY, JSON.stringify(normalized));
@@ -1526,9 +1528,12 @@ export default function App() {
       closeGame() { setEngine(null); },
       completeCreateRom() { setCreateStage("creator"); },
       hasGamepad() { return gamepads.length > 0; },
+      selectionSlots() {
+        return characterSelectionSlots(launchOptionsFor({ type: "character" }), gamepads);
+      },
       humanPortCount() {
         return controllerPlan(advancedOptions, gamepads)
-          .filter((entry) => entry && entry.kind !== "none").length;
+          .filter((entry) => entry?.kind === "keyboard" || entry?.kind === "gamepad").length;
       },
       isAuthorized() { return authorized; },
       launch: launchVisualAction,
