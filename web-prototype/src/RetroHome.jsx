@@ -630,7 +630,7 @@ export default function RetroHome({
                   subscribeEmbeddedTrailer(event.currentTarget);
                 }}
               />
-              <img className="intro-video-rule-layer" alt="" aria-hidden="true" />
+              <canvas className="intro-video-rule-layer" aria-hidden="true" />
               <iframe ref={engineRef} id="intro-game-frame" className="intro-game-frame" src={engine?.src || "about:blank"} title={engine ? "Smash.fun game engine" : "Smash.fun game"} allow="autoplay; gamepad; fullscreen" />
               {engine && <button
                 className="game-fullscreen-control"

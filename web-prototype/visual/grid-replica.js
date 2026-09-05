@@ -1,15 +1,27 @@
 // Responsive extension of the supplied OpenSmash character grid. Portraits
-// are native lazy images; exact bitmap captions are composited only near the
-// viewport so a large roster can paint incrementally. Only generated/featured
-// fighters are drawn — the original game's portraits are never bundled or
+// are native lazy images; captions are native text using small shared fonts.
+// Only generated/featured fighters are drawn — the original game's portraits are never bundled or
 // served by the site (VANILLA_ROSTER below is metadata only: fkind order and
 // labels).
 
+import { scalePixels2x } from '../shared/pixel-scale.js';
+import { fitCaption } from '../shared/roster-caption.js';
+import { loadCaptionFonts } from '../shared/caption-font-loading.js';
 import {
   rosterGridDimensions,
 } from '../shared/roster-layout.js';
 import { formatFighterJobCellError } from '../shared/fighter-job-ui.js';
 import { isPageScrollLocked, onPageScrollUnlock } from '../shared/page-scroll-lock.js';
+
+// Reveal the whole roster's names together, without flashing a different font.
+if (import.meta.env.DEV && new URLSearchParams(location.search).has('captionFallback')) {
+  document.documentElement.dataset.captionFont = 'fallback';
+} else {
+  document.documentElement.dataset.captionFont = 'loading';
+  void loadCaptionFonts(document.fonts).then(state => {
+    document.documentElement.dataset.captionFont = state;
+  });
+}
 
 const ACTION_ICON_ASSETS = import.meta.glob('./assets/ui/*.png', {
   eager: true,
@@ -21,11 +33,6 @@ function actionIconUrl(fileName) {
   return ACTION_ICON_ASSETS[`./assets/ui/${fileName}`] || '';
 }
 
-let captionFont = null;
-const captionFontReady = import('../src/fonts/ssb-name-font.js').then(module => {
-  captionFont = module;
-  return module;
-});
 const CELL_W = 45;
 const CELL_H = 43;
 const RULE = 2;
@@ -55,7 +62,6 @@ function installFindCurrentRule() {
 installFindCurrentRule();
 const STONE_BACKGROUND_SEED = 3075641479;
 const STATIC_BLEND = 0x30 / 255;
-const CAPTION_CHARS = /[^A-Z. ]/g;
 const RANDOM_NAME_POOL = Object.freeze([
   'ALEX', 'AMIR', 'ANNA', 'ARIA', 'ASH', 'AVA', 'BEAU', 'BEN',
   'BLAKE', 'CARA', 'CHLOE', 'COLE', 'DARA', 'DEV', 'ELI', 'ELLA',
@@ -241,179 +247,6 @@ function drawActionStatic(pixels) {
 }
 
 
-// Names with at least this many letters use the condensed cut of the font (the
-// game sets JIGGLYPUFF that way); shorter names fall back to it only when the
-// regular cut does not fit the tile. Letters always keep their natural gap:
-// a name that still doesn't fit is truncated rather than squeezed.
-const CONDENSE_FROM_LENGTH = 8;
-// First face column: the tiles start regular names at x=4 and JIGGLYPUFF at x=3.
-const CAPTION_ORIGIN = Object.freeze({ regular: 4, condensed: 3 });
-// Rightmost column the 1 px outline may reach (the tile's frame is column CELL_W-1).
-const CAPTION_RIGHT_LIMIT = CELL_W - 2;
-
-function layoutCaption(text, tracking = 0, cut = 'regular', squeeze = 0) {
-  if (!captionFont) return { width: text.length * 5 };
-  const layout = captionFont.layoutText(text, { exact: false, tracking, cut, squeeze });
-  if (!layout.glyphs.length) return { width: 0 };
-  const table = captionFont.glyphSet(cut);
-  let right = -Infinity;
-  for (const { id, x } of layout.glyphs) {
-    const glyph = table[id];
-    right = Math.max(right, x + glyph.ox + glyph.w);
-  }
-  // face origin -> last outline column inclusive (the glyph box carries one
-  // spare margin column past the outline)
-  return { width: right - 2 };
-}
-
-function normalizeCaption(value) {
-  return String(value).toUpperCase().replace(CAPTION_CHARS, '').trim();
-}
-
-// Fitting ladder: regular -> condensed (closing up to 2 non-colliding pairs)
-// -> extra-narrow (closing non-colliding pairs one at a time) -> truncate.
-// Squeezing where strokes won't merge beats cropping letters off.
-const CAPTION_LADDER = Object.freeze([
-  ['regular', 0], ['condensed', 0], ['condensed', 1], ['condensed', 2], ['narrow', 0],
-]);
-
-function fitCaption(value, rightLimit = CAPTION_RIGHT_LIMIT) {
-  let text = normalizeCaption(value);
-  const letters = text.replace(/[^A-Z]/g, '').length;
-  const fits = (cut, squeeze) => {
-    const width = layoutCaption(text, 0, cut, squeeze).width;
-    const originX = cut === 'regular' ? CAPTION_ORIGIN.regular : CAPTION_ORIGIN.condensed;
-    return originX + width <= rightLimit ? width : null;
-  };
-  const done = (cut, squeeze, width) => Object.freeze({
-    text, tracking: 0, cut, squeeze, condensed: cut !== 'regular', width: Math.max(1, width),
-  });
-  const ladder = letters >= CONDENSE_FROM_LENGTH ? CAPTION_LADDER.slice(1) : CAPTION_LADDER;
-  for (const [cut, squeeze] of ladder) {
-    const width = fits(cut, squeeze);
-    if (width !== null) return done(cut, squeeze, width);
-  }
-  for (let squeeze = 1; squeeze < letters; squeeze++) {
-    const width = fits('narrow', squeeze);
-    if (width !== null) return done('narrow', squeeze, width);
-  }
-  const maxSqueeze = Math.max(0, letters - 1);
-  while (text && fits('narrow', maxSqueeze) === null) text = text.slice(0, -1).trim();
-  return done('narrow', maxSqueeze, layoutCaption(text, 0, 'narrow', maxSqueeze).width);
-}
-
-function renderCaption(value, rightLimit = CAPTION_RIGHT_LIMIT) {
-  if (!captionFont) throw new Error('Caption font is not ready');
-  const layout = fitCaption(value, rightLimit);
-  const rendered = captionFont.renderIA(layout.text, {
-    exact: false,
-    tracking: layout.tracking,
-    cut: layout.cut,
-    squeeze: layout.squeeze,
-  });
-  const top = captionFont.SSB_NAME_FONT.faceRow - rendered.originY;
-  const height = Math.max(10, top + rendered.height);
-  const bitmapWidth = Math.max(1, layout.width + 2);
-  const pixels = new Uint8ClampedArray(bitmapWidth * height * 4);
-  if (rendered.width) {
-    const image = captionFont.toImageData(rendered);
-    for (let y = 0; y < rendered.height; y++) for (let x = 0; x < rendered.width; x++) {
-      const source = (y * rendered.width + x) * 4;
-      put(
-        pixels, bitmapWidth, x - rendered.originX, y + top,
-        image.data[source], image.data[source + 1],
-        image.data[source + 2], image.data[source + 3]
-      );
-    }
-  }
-  return Object.freeze({
-    ...layout, height, pixels, width: bitmapWidth,
-    originX: layout.condensed ? CAPTION_ORIGIN.condensed : CAPTION_ORIGIN.regular,
-  });
-}
-
-function drawLabel(dst, value) {
-  const caption = renderCaption(value);
-  if (!caption.text) return;
-  for (let y = 0; y < caption.height; y++) for (let x = 0; x < caption.width; x++) {
-    const source = (y * caption.width + x) * 4;
-    put(
-      dst, CELL_W, caption.originX + x, y,
-      caption.pixels[source], caption.pixels[source + 1],
-      caption.pixels[source + 2], caption.pixels[source + 3]
-    );
-  }
-}
-
-function scalePixels2x(pixels, width, height, smooth) {
-  const scaledWidth = width * 2;
-  const scaledHeight = height * 2;
-  const scaled = new Uint8ClampedArray(scaledWidth * scaledHeight * 4);
-  for (let y = 0; y < scaledHeight; y++) for (let x = 0; x < scaledWidth; x++) {
-    const sourceX = x >> 1;
-    const sourceY = y >> 1;
-    const target = (y * scaledWidth + x) * 4;
-    if (!smooth) {
-      const source = (sourceY * width + sourceX) * 4;
-      scaled.set(pixels.subarray(source, source + 4), target);
-      continue;
-    }
-    const nextX = Math.min(width - 1, sourceX + 1);
-    const nextY = Math.min(height - 1, sourceY + 1);
-    const fx = (x & 1) * 0.5;
-    const fy = (y & 1) * 0.5;
-    const samples = [
-      [sourceX, sourceY, (1 - fx) * (1 - fy)],
-      [nextX, sourceY, fx * (1 - fy)],
-      [sourceX, nextY, (1 - fx) * fy],
-      [nextX, nextY, fx * fy],
-    ];
-    let alpha = 0;
-    const premultiplied = [0, 0, 0];
-    for (const [sampleX, sampleY, weight] of samples) {
-      if (!weight) continue;
-      const source = (sampleY * width + sampleX) * 4;
-      const sampleAlpha = pixels[source + 3] / 255;
-      alpha += sampleAlpha * weight;
-      for (let channel = 0; channel < 3; channel++) {
-        premultiplied[channel] += pixels[source + channel] * sampleAlpha * weight;
-      }
-    }
-    if (alpha > 0) {
-      for (let channel = 0; channel < 3; channel++) {
-        scaled[target + channel] = Math.round(premultiplied[channel] / alpha);
-      }
-      scaled[target + 3] = Math.round(alpha * 255);
-    }
-  }
-  return Object.freeze({ width: scaledWidth, height: scaledHeight, pixels: scaled });
-}
-
-function blendPixelFrames(nearest, smooth, mix = 0.5) {
-  const pixels = new Uint8ClampedArray(nearest.pixels.length);
-  for (let index = 0; index < pixels.length; index += 4) {
-    const nearestAlpha = nearest.pixels[index + 3] / 255;
-    const smoothAlpha = smooth.pixels[index + 3] / 255;
-    const alpha = nearestAlpha * (1 - mix) + smoothAlpha * mix;
-    if (alpha > 0) for (let channel = 0; channel < 3; channel++) {
-      pixels[index + channel] = Math.round((
-        nearest.pixels[index + channel] * nearestAlpha * (1 - mix) +
-        smooth.pixels[index + channel] * smoothAlpha * mix
-      ) / alpha);
-    }
-    pixels[index + 3] = Math.round(alpha * 255);
-  }
-  return Object.freeze({ width: nearest.width, height: nearest.height, pixels });
-}
-
-function renderLabelFramebuffer(value) {
-  const native = new Uint8ClampedArray(CELL_W * CELL_H * 4);
-  drawLabel(native, value);
-  const nearest = scalePixels2x(native, CELL_W, CELL_H, false);
-  const smooth = scalePixels2x(native, CELL_W, CELL_H, true);
-  return blendPixelFrames(nearest, smooth);
-}
-
 function decodeReferenceRules() {
   const sourceWidth = 96;
   const sourceHeight = 92;
@@ -553,18 +386,15 @@ function renderSharedPanelRules(frameWidth, frameHeight, columns, rows) {
   return dst;
 }
 
-const PAINT_SCRATCH = document.createElement('canvas');
-
 function paintPixels(target, pixels, width, height) {
   // A zero/NaN size (hidden pane, collapsed frame before layout) makes
   // `new ImageData` throw. Skip the paint; the resize observers repaint once
   // the element has a real size.
   if (!Number.isInteger(width) || !Number.isInteger(height) || width <= 0 || height <= 0) return;
-  const canvas = typeof target.getContext === 'function' ? target : PAINT_SCRATCH;
+  const canvas = target;
   canvas.width = width;
   canvas.height = height;
   canvas.getContext('2d').putImageData(new ImageData(pixels, width, height), 0, 0);
-  if (canvas !== target) target.src = canvas.toDataURL('image/png');
 }
 
 function createImageLayer(className) {
@@ -660,6 +490,8 @@ function setFindableText(button, captionText) {
   const label = ensureLabel(button);
   // One span per distinct word, each squeezed to the tile width (monospace
   // advance ≈ 0.6em at font-size = tile height); see .replica-find-word.
+  if (label.dataset.findText === text) return;
+  label.dataset.findText = text;
   const words = [...new Set(text.split(/[\s·]+/).filter(Boolean))];
   label.replaceChildren(...words.map(word => {
     const span = document.createElement('span');
@@ -671,91 +503,38 @@ function setFindableText(button, captionText) {
   }));
 }
 
-// Synchronous once the caption font has loaded; the idle pre-render relies
-// on that so its deadline check measures real paint work.
-function paintCaptionNow(button, value) {
-  const source = normalizeCaption(value);
-  if (button.dataset.captionSource !== source) return;
-  const text = fitCaption(source).text;
-  setFindableText(button, text);
-  button.dataset.label = text;
-  let image = button.querySelector('.replica-caption-layer');
-  if (!image) {
-    image = createImageLayer('replica-caption-layer');
-    button.append(image);
-  }
-  const framebuffer = renderLabelFramebuffer(text);
-  paintPixels(image, framebuffer.pixels, framebuffer.width, framebuffer.height);
-  button.classList.add('has-bitmap-caption');
-}
-
-async function paintExactCaption(button, value) {
-  if (!captionFont) await captionFontReady;
-  paintCaptionNow(button, value);
-}
-
-const captionObserver = 'IntersectionObserver' in window
-  ? new IntersectionObserver(entries => {
-      for (const entry of entries) {
-        if (!entry.isIntersecting) continue;
-        void paintExactCaption(entry.target, entry.target.dataset.captionSource || '');
-        captionObserver.unobserve(entry.target);
-      }
-    }, { rootMargin: '600px 0px' })
-  : null;
-
-// Captions are bitmaps rendered on first sight, which is fine for a browse
-// but a fast scroll through 1000 tiles asks for hundreds of them in one
-// frame and the grid tears. Render the ones nobody has seen yet during idle
-// time, in roster order, so any later scroll only finds finished tiles.
-// Hard cap per idle slice on top of the deadline: a paint is ~1ms, so this
-// bounds the worst case (a fallback timer's fake deadline) to a few frames.
-const CAPTION_PRERENDER_BATCH = 24;
-let captionPrerenderHandle = 0;
-let captionPrerenderScheduled = false;
-function scheduleCaptionPrerender() {
-  if (captionPrerenderScheduled || !captionObserver) return;
-  captionPrerenderScheduled = true;
-  const idle = window.requestIdleCallback || ((fn) => setTimeout(() => fn({ timeRemaining: () => 8 }), 32));
-  const run = (deadline) => {
-    captionPrerenderHandle = 0;
-    const pending = [...cells.values()].filter(button =>
-      button.dataset.captionSource && !button.classList.contains('has-bitmap-caption'));
-    let painted = 0;
-    for (const button of pending) {
-      if (painted >= CAPTION_PRERENDER_BATCH) break;
-      if (deadline.timeRemaining() < 3 && painted > 0) break;
-      captionObserver.unobserve(button);
-      // Synchronous: the font is loaded by now, so the deadline check above
-      // sees the cost of each paint (an async paint returned at its first
-      // await and the whole roster was dispatched in one task).
-      paintCaptionNow(button, button.dataset.captionSource);
-      painted += 1;
-    }
-    if (painted < pending.length) captionPrerenderHandle = idle(run);
-    else captionPrerenderScheduled = false;
-  };
-  // Wait for the font once, up front, instead of inside each paint.
-  captionFontReady.then(() => { captionPrerenderHandle = idle(run); });
-}
-
+// Captions are normal text in a tiny shared webfont. Set all labels during
+// roster reconciliation; there is no per-tile bitmap, font promise, or idle queue.
 function setCellLabel(button, value) {
-  const source = normalizeCaption(value);
-  const alreadyRendered = button.classList.contains('has-bitmap-caption');
-  // Same caption, already painted: nothing to do. A roster re-sync must not
-  // re-render a thousand bitmaps.
-  if (alreadyRendered && button.dataset.captionSource === source) return button.dataset.label;
-  const text = captionFont ? fitCaption(source).text : source.slice(0, 8);
-  setFindableText(button, text);
-  button.dataset.label = text;
-  button.dataset.captionSource = source;
-  button.classList.remove('has-bitmap-caption');
-  if (!captionObserver || alreadyRendered || ['search', 'create'].includes(button.dataset.kind)) {
-    void paintExactCaption(button, source);
-  } else {
-    captionObserver.observe(button);
+  const caption = fitCaption(value);
+  setFindableText(button, caption.text);
+  button.dataset.label = caption.text;
+  let label = button.querySelector('.replica-caption-layer');
+  if (!label) {
+    label = document.createElement('span');
+    label.className = 'replica-caption-layer';
+    label.setAttribute('aria-hidden', 'true');
+    button.append(label);
   }
-  return text;
+  const signature = `${caption.cut}:${caption.squeeze}:${caption.text}`;
+  if (label.dataset.caption !== signature) {
+    label.dataset.caption = signature;
+    if (caption.squeeze) {
+      // Only selectively tightened names need explicit glyph positions.
+      // Ordinary names use native text shaping and the font's kerning table.
+      label.replaceChildren(...caption.glyphs.map(glyph => {
+        const span = document.createElement('span');
+        span.textContent = glyph.text;
+        span.style.left = `${glyph.x / 10}em`;
+        return span;
+      }));
+    } else label.textContent = caption.text;
+  }
+  label.classList.toggle('is-tightened', Boolean(caption.squeeze));
+  label.dataset.cut = caption.cut;
+  label.style.setProperty('--caption-left', `${100 * caption.originX / CELL_W}%`);
+  label.style.width = `${caption.width / 10}em`;
+  return caption.text;
 }
 
 function setNativePortrait(button, character) {
@@ -1166,7 +945,7 @@ function updateSearchTile(query = '') {
   const value = String(query).toUpperCase();
   const active = document.activeElement === fighterSearch;
   const caption = fitCaption(value || 'SEARCH');
-  const caretX = value ? Math.min(CELL_W - 2, (caption.condensed ? CAPTION_ORIGIN.condensed : CAPTION_ORIGIN.regular) + caption.width + 1) : 3;
+  const caretX = value ? Math.min(CELL_W - 2, caption.originX + caption.width + 1) : 3;
   searchCell.classList.toggle('is-searching', active);
   searchCell.classList.toggle('is-search-placeholder', active && !value);
   searchCell.style.setProperty('--search-caret-left', `${100 * caretX / CELL_W}%`);
@@ -1315,7 +1094,6 @@ async function syncCharacters(characters = []) {
   for (const button of staticFighterCells) {
     if (nextSlugs.has(button.dataset.rosterCharacter)) continue;
     cells.delete(button.dataset.character);
-    captionObserver?.unobserve(button);
     button.remove();
   }
 
@@ -1394,7 +1172,6 @@ async function syncCharacters(characters = []) {
   }
 
   filterRoster(fighterSearch?.value || '');
-  scheduleCaptionPrerender();
   return cells;
 }
 
@@ -1571,7 +1348,6 @@ async function syncJobs(jobs = []) {
     cells.delete(jobCellId(jobId));
     jobCells.delete(jobId);
     jobDetails.delete(jobId);
-    captionObserver?.unobserve(button);
     button.remove();
   }
   await Promise.all(renderedJobs.map(updateJobCell));
@@ -1695,8 +1471,8 @@ syncJobs(INITIAL_FIGHTER_JOBS).catch(error => {
   console.warn('Could not reconcile fighter jobs:', error);
 });
 
-// Debug hook: inspect how a name is fitted (regular vs condensed cut, tracking).
-window.__replicaCaption = Object.freeze({ fitCaption, renderCaption });
+// Debug hook: inspect the chosen font face and horizontal fit.
+window.__replicaCaption = Object.freeze({ fitCaption });
 
 window.__replicaMetrics = Object.freeze({
   get nativeGrid() { return currentGridLayout.width + 'x' + currentGridLayout.height; },
@@ -1706,8 +1482,8 @@ window.__replicaMetrics = Object.freeze({
   get cellElements() { return cells.size; },
   get mountedCellElements() { return mountedCells.size; },
   sharedRule: RULE + 'px',
-  captionRendering: 'viewport-lazy extracted SSB bitmap',
-  runtimeFontAssetRequests: 0,
+  captionRendering: 'native text with shared WOFF2 fonts',
+  runtimeFontAssetRequests: 3,
   get renderedCaptions() {
     return [...cells.values()].filter(cell =>
       cell.querySelector('.replica-caption-layer')

@@ -8,10 +8,7 @@ import consoleModelUrl from './assets/hybrid-four-port-console-fitted.glb?url';
 import cursorModelUrl from './assets/hand-cursor-meshy.glb?url';
 import tvModelUrl from './assets/tripo-crt-tv.glb?url';
 import { controlEmbeddedTrailer } from '../src/embedded-trailer.js';
-import {
-  generateStoneFromSeed,
-  stoneTileDataUrl,
-} from './stone-tile-pipeline/playground.js';
+import stoneBackgroundUrl from './assets/stone-background.png?url';
 
 const CARTRIDGE_INTRO_ENABLED =
   document.documentElement.classList.contains('is-cartridge-intro');
@@ -19,23 +16,10 @@ const CARTRIDGE_INTRO_ENABLED =
 // files through its own loaders; share one in-memory copy instead of
 // racing the HTTP cache for a second download of each.
 THREE.Cache.enabled = true;
-const STONE_BACKGROUND_SEED = 3075641479;
-const STONE_BACKGROUND_CANDIDATES = 96;
-let stoneBackgroundReady = false;
-
 function ensureStoneBackground() {
-  if (stoneBackgroundReady) return;
-  const result = generateStoneFromSeed(
-    STONE_BACKGROUND_SEED,
-    STONE_BACKGROUND_CANDIDATES,
-  );
-  document.body.style.setProperty(
-    '--stone-background-image',
-    `url("${stoneTileDataUrl(result.tile)}")`,
-  );
-  document.body.dataset.stoneSeed = String(result.masterSeed);
-  document.body.dataset.stoneVariant = String(result.variant);
-  stoneBackgroundReady = true;
+  // Baked by scripts/generate-stone-background.mjs from the same fixed seed.
+  // Ranking 96 procedural candidates here blocked input during every startup.
+  document.body.style.setProperty('--stone-background-image', `url("${stoneBackgroundUrl}")`);
 }
 
 // ---------------------------------------------------------------------------
@@ -2673,7 +2657,7 @@ function tick() {
   idleFrameCleared = false;
   const t = clock.elapsedTime;
 
-  if (!gameRunning) {
+  if (!gameRunning && CARTRIDGE_INTRO_ENABLED) {
   if (cartridgeState === CARTRIDGE_STATE.BOOTING && cartridgeInsertionTime >= 0) {
     const introElapsed = t - cartridgeInsertionTime;
     if (introElapsed >= CREDIT_REVEAL_DELAY) {

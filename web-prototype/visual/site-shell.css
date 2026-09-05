@@ -1,3 +1,24 @@
+@font-face {
+  font-family: 'Smash Caption Regular';
+  src: url('../src/fonts/smash-caption-regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Smash Caption Condensed';
+  src: url('../src/fonts/smash-caption-condensed.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Smash Caption Narrow';
+  src: url('../src/fonts/smash-caption-narrow.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 /* Canonical visual shell for the production React site. */
 * { margin: 0; padding: 0; box-sizing: border-box; }
   html, body { min-height: 100%; }
@@ -143,7 +164,6 @@
     transform: translateX(var(--capture-phase-x));
   }
   .replica-portrait-layer,
-  .replica-caption-layer,
   .replica-rule-layer,
   .flame-bridge-texture-layer {
     position: absolute;
@@ -165,7 +185,33 @@
     z-index: 0;
     object-fit: fill;
   }
-  .replica-caption-layer { z-index: 2; }
+  .replica-caption-layer {
+    position: absolute;
+    top: calc(2 * 100% / 43);
+    left: var(--caption-left, 8.889%);
+    z-index: 2;
+    display: block;
+    width: max-content;
+    height: 1em;
+    pointer-events: none;
+    white-space: nowrap;
+    font-family: 'Smash Caption Regular', ui-monospace, monospace;
+    font-size: calc(10 * 100cqh / 43);
+    font-weight: 400;
+    font-style: normal;
+    font-synthesis: none;
+    line-height: 1;
+    letter-spacing: 0;
+    color: rgb(146, 139, 114);
+    font-kerning: normal;
+    /* The font bakes the original 2x sharp/smooth pixel blend into its
+       color layers. A CSS blur would change its coverage and contrast. */
+  }
+  .replica-caption-layer.is-tightened > span { position: absolute; top: 0; }
+  .replica-caption-layer[data-cut="condensed"] { font-family: 'Smash Caption Condensed', ui-monospace, monospace; }
+  .replica-caption-layer[data-cut="narrow"] { font-family: 'Smash Caption Narrow', ui-monospace, monospace; }
+  html[data-caption-font="loading"] .replica-caption-layer { visibility: hidden; }
+  html[data-caption-font="fallback"] .replica-caption-layer { font-family: ui-monospace, monospace; }
   .replica-action-icon {
     position: absolute;
     inset: 0;
@@ -179,7 +225,7 @@
     pointer-events: none;
   }
   .replica-action-icon[hidden] { display: none; }
-  /* Invisible find-in-page target. The visible name is a bitmap; each WORD of
+  /* Full-name find-in-page target beneath the visible short caption; each WORD of
      the fighter's name(s) gets its own transparent span stacked over the tile,
      laid out as one line as tall as the tile in a monospace face and squeezed
      horizontally (--find-sx, set per word from its length) to the tile width.

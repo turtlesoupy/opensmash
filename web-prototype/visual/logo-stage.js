@@ -46,6 +46,7 @@ if (stage && canvas) {
   const faceCameraRotationX = Math.PI / 2;
   scene.add(logoRoot);
   let logoModel = null;
+  let logoShadersReady = false;
   let stageVisible = true;
   let previousFrameTime = 0;
   let pointerAvailable = false;
@@ -152,6 +153,15 @@ if (stage && canvas) {
         }
       });
       logoRoot.add(logoModel);
+      // The first visible draw otherwise waits synchronously for shader
+      // linking, freezing the cursor. Keep the image fallback while WebGL's
+      // parallel compiler finishes, and only then start drawing the model.
+      renderer.compileAsync(scene, camera).then(() => {
+        logoShadersReady = true;
+      }).catch(error => {
+        stage.dataset.modelState = 'fallback';
+        console.error('Could not prepare the Smash.fun logo shaders', error);
+      });
     },
     undefined,
     error => {
@@ -179,7 +189,7 @@ if (stage && canvas) {
 
   function renderLogo(now) {
     requestAnimationFrame(renderLogo);
-    if (!stageVisible) return;
+    if (!stageVisible || !logoShadersReady) return;
     // The engine shares this main thread (and, on phones, its audio
     // callbacks); re-rendering a logo the player is not looking at during a
     // match only steals frame time. The canvas keeps its last frame.
