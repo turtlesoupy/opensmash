@@ -61,95 +61,99 @@ What's in this repo:
 
 ## Native and ROM builds with character injection
 
-Run these commands from this repository's root. Keep a current `BattleShip/`
-checkout beside it, with its submodules initialized, or pass `--battleship PATH`.
-Supply your own US v1.0 ROM at `BattleShip/baserom.us.z64`, or pass `--rom PATH`.
-The ROM stays local. See [BUILDING.md](BUILDING.md) for platform prerequisites
-and all build options.
+You can play OpenSmash outside the browser in two ways: build a **native desktop
+game** through BattleShip, or create an **experimental N64 ROM** for an emulator
+or real console. Both can include website fighters and your own custom/private
+characters, including their portraits, names, emblems and announcer voices.
 
-### Native desktop game
+Both use `build.py` and the same character-selection arguments. The main
+difference is the roster: **native adds pages of custom fighters alongside the
+vanilla roster; ROM builds replace existing slots, up to 12, without extra pages.**
 
-Install BattleShip's CMake/compiler prerequisites, then build the full public
-website roster or select a subset by character slug:
+For either build, run commands from this repository's root with a current
+`BattleShip/` checkout alongside it and its submodules initialized. Put your own
+US v1.0 ROM at `BattleShip/baserom.us.z64`, or add `--rom /path/to/baserom.us.z64`
+to the commands below. Your ROM stays local. See [build setup](BUILDING.md#checkouts-and-prerequisites)
+for prerequisites and other checkout layouts.
+
+### Native: a desktop version of the website's game
+
+The native build runs through BattleShip and includes the full public website
+roster by default. Custom fighters appear on additional character-select pages;
+use L/R or the on-screen arrows to switch. Once built and downloaded, the game
+works offline.
+
+Install [BattleShip's platform prerequisites](https://github.com/turtlesoupy/BattleShip/blob/main/BUILDING.md), then:
 
 ```sh
+# Build with the full public roster:
 python3 build.py native
+
+# Or choose just a few website fighters:
 python3 build.py native --characters queen,50cent,abrahamlincoln
 ```
 
-The native build stages meshes, portraits, stock icons, emblems and announcer
-audio. The selector keeps vanilla fighters on page 0 and adds custom pages;
-use L/R or the on-screen arrows to switch. Assets load from disk as needed,
-and the prepared game can run offline.
+To include a custom or private fighter, copy **Character download URL** from its
+settings on the website. Use `--characters none` to include only your linked
+fighters, or specify public fighters to include alongside them:
 
-Outputs go to `build/native-PLATFORM-REGION-CONFIG/`. For example, on macOS:
+```sh
+python3 build.py native --characters none --character-url 'PASTE_DOWNLOAD_URL'
+python3 build.py native --characters queen,50cent --character-url 'PASTE_DOWNLOAD_URL'
+```
+
+Character IDs such as `queen` are website slugs. Repeat `--character-url` to add
+more links. These options choose the custom roster; native still keeps the
+original fighters available. See [custom-character links](BUILDING.md#private-characters-and-copied-links)
+for moveset defaults and link details.
+
+**To play**, open `Play.command` (macOS) or `Play.bat` (Windows) in the generated
+`build/native-PLATFORM-REGION-CONFIG/` folder. On any desktop platform, you can
+also run that folder's `play.py` with Python. For example, on macOS:
 
 ```sh
 python3 build/native-darwin-us-release/play.py
 ```
 
-You can also open `Play.command` on macOS or `Play.bat` on Windows. Use the
-generated launcher to enable injection. For an ordinary BattleShip build,
-use `python3 build.py native --vanilla` and run its executable directly.
+### ROM: bake a loadout into an N64 cartridge image
 
-### Custom and private character URLs
+The ROM build produces `build/rom/opensmash.z64` for an emulator or an N64 flash
+cartridge such as EverDrive. Choose a subset of fighters: each replaces one of
+the **12 original slots**, while unselected slots stay vanilla. There is no
+paginated selector in this build yet.
 
-Copy **Character download URL** from the character's settings on the website.
-Pass the quoted URL to either target; repeat `--character-url` for more fighters:
-
-```sh
-# Only this custom fighter, alongside the native game's vanilla roster:
-python3 build.py native --characters none --character-url 'PASTE_DOWNLOAD_URL'
-
-# Add a custom fighter to a selected public roster:
-python3 build.py native --characters queen,50cent --character-url 'PASTE_DOWNLOAD_URL'
-```
-
-For native builds, omit `--characters` to include the full public roster. For recognized
-custom download URLs, the importer discovers the manifest and companion UI,
-portrait and announcer files automatically. The UI pack contains the emblem;
-both targets validate the companion emblem and WAV. Private URLs use their
-existing access capability—anyone with the URL can download the character.
-Raw download URLs default to Mario's moveset; they do not carry the website's
-editable moveset setting.
-
-### Experimental N64 ROM
-
-Install the exporter dependencies and the decompilation's `vpk0cmd` tool, then
-choose the fighters to bake into the ROM:
+**The same `--characters` and `--character-url` options work here:** change
+`native` to `rom`. Unlike native, select a loadout rather than the full public
+roster. First install the extra [ROM build dependencies](BUILDING.md#hardware-rom-select-a-subset),
+including `vpk0cmd`:
 
 ```sh
 python3 -m venv .venv
 . .venv/bin/activate
 python3 -m pip install -r hardware-rom/requirements.txt
+
+# Bake selected website fighters into a ROM:
 python3 build.py rom --characters queen,50cent --vpk0 /path/to/vpk0cmd
 
-# A custom/private fighter can also be baked in:
+# Or bake in a custom/private fighter:
 python3 build.py rom --characters none --character-url 'PASTE_DOWNLOAD_URL' --vpk0 /path/to/vpk0cmd
 ```
 
-On Windows, activate `.venv\Scripts\Activate.ps1` instead. `--vpk0` is optional
-when the tool is at `BattleShip/decomp/tools/vpk0cmd` or on `PATH`.
+On Windows, activate `.venv\Scripts\Activate.ps1` instead. Omit `--vpk0` if the
+tool is installed at `BattleShip/decomp/tools/vpk0cmd` or on `PATH`.
 
-The output is `build/rom/opensmash.z64`. This target replaces up to **12 original
-fighter slots**; it does not yet add pages or augment the N64 roster. The builder
-assigns distinct available skeleton variants, preferring the website movesets;
-check `build/rom/characters.json` for the final slot assignments. For explicit
-slot assignments using local OSB5 files, see the
-[sample loadout](hardware-rom/loadout.json) and use
-`--loadout hardware-rom/loadout.json --assets /path/to/play`.
+The builder prefers each fighter's website moveset, but may reassign conflicting
+slots. Check `build/rom/characters.json` for the actual assignments. For precise
+control of replacement slots, see [local loadouts](hardware-rom/README.md).
 
-Models are simplified to 700 triangles by default (`--triangles` changes the
-budget). ROM injection uses rigid meshes with textured heads and vertex-colored
-bodies, and bakes the supplied
-portraits, custom name lettering, stock icons, menu/HUD emblems and announcer
-voices into the ROM. Voices are converted to N64 ADPCM at the correct game pitch. Builds receive a structural audit, but
-physical-hardware compatibility and memory limits remain experimental. See
-[ROM details and limitations](hardware-rom/README.md).
+**ROM support is experimental.** Meshes are simplified and use rigid joints;
+they do not yet have the native version's smooth skinning, so gaps can appear
+during animation. Hardware performance and memory limits still need testing.
+See [ROM details and limitations](hardware-rom/README.md).
 
-Both targets accept `--output-dir PATH` for separate builds and `--dry-run` to
-inspect commands without downloading assets or building. Generated outputs
-stay under the ignored `build/` directory by default.
+For either target, `--output-dir PATH` keeps different builds separate, and
+`--dry-run` previews the build commands. See [BUILDING.md](BUILDING.md) for all
+options, including vanilla native builds and local asset loadouts.
 
 ## Running the site
 
