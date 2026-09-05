@@ -59,12 +59,95 @@ What's in this repo:
 | `eval/` | Mesh eval harness (`EVAL.md`). |
 | `config/`, `docs/`, `assets/` | Docs and the style references the generator uses. `config/` holds local (gitignored) roster inclusion/exclusion lists. |
 
-## Native and ROM builds
+## Native and ROM builds with character injection
 
-Use `python3 build.py native` for BattleShip with the full paginated website
-roster, or `python3 build.py rom --characters queen,50cent` for a selected
-N64 loadout. Both accept `--character-url` for custom fighters. See [BUILDING.md](BUILDING.md)
-for prerequisites and options. These targets are independent of the site.
+Run these commands from this repository's root. Keep a current `BattleShip/`
+checkout beside it, with its submodules initialized, or pass `--battleship PATH`.
+Supply your own US v1.0 ROM at `BattleShip/baserom.us.z64`, or pass `--rom PATH`.
+The ROM stays local. See [BUILDING.md](BUILDING.md) for platform prerequisites
+and all build options.
+
+### Native desktop game
+
+Install BattleShip's CMake/compiler prerequisites, then build the full public
+website roster or select a subset by character slug:
+
+```sh
+python3 build.py native
+python3 build.py native --characters queen,50cent,abrahamlincoln
+```
+
+The native build stages meshes, portraits, stock icons, emblems and announcer
+audio. The selector keeps vanilla fighters on page 0 and adds custom pages;
+use L/R or the on-screen arrows to switch. Assets load from disk as needed,
+and the prepared game can run offline.
+
+Outputs go to `build/native-PLATFORM-REGION-CONFIG/`. For example, on macOS:
+
+```sh
+python3 build/native-darwin-us-release/play.py
+```
+
+You can also open `Play.command` on macOS or `Play.bat` on Windows. Use the
+generated launcher to enable injection. For an ordinary BattleShip build,
+use `python3 build.py native --vanilla` and run its executable directly.
+
+### Custom and private character URLs
+
+Copy **Character download URL** from the character's settings on the website.
+Pass the quoted URL to either target; repeat `--character-url` for more fighters:
+
+```sh
+# Only this custom fighter, alongside the native game's vanilla roster:
+python3 build.py native --characters none --character-url 'PASTE_DOWNLOAD_URL'
+
+# Add a custom fighter to a selected public roster:
+python3 build.py native --characters queen,50cent --character-url 'PASTE_DOWNLOAD_URL'
+```
+
+For native builds, omit `--characters` to include the full public roster. For recognized
+custom download URLs, the importer discovers the manifest and companion UI,
+portrait and announcer files automatically. The UI pack contains the emblem;
+native preparation validates both the emblem and WAV. Private URLs use their
+existing access capability—anyone with the URL can download the character.
+Raw download URLs default to Mario's moveset; they do not carry the website's
+editable moveset setting.
+
+### Experimental N64 ROM
+
+Install the exporter dependencies and the decompilation's `vpk0cmd` tool, then
+choose the fighters to bake into the ROM:
+
+```sh
+python3 -m venv .venv
+. .venv/bin/activate
+python3 -m pip install -r hardware-rom/requirements.txt
+python3 build.py rom --characters queen,50cent --vpk0 /path/to/vpk0cmd
+
+# A custom/private fighter can also be baked in:
+python3 build.py rom --characters none --character-url 'PASTE_DOWNLOAD_URL' --vpk0 /path/to/vpk0cmd
+```
+
+On Windows, activate `.venv\Scripts\Activate.ps1` instead. `--vpk0` is optional
+when the tool is at `BattleShip/decomp/tools/vpk0cmd` or on `PATH`.
+
+The output is `build/rom/opensmash.z64`. This target replaces up to **12 original
+fighter slots**; it does not yet add pages or augment the N64 roster. The builder
+assigns distinct available skeleton variants, preferring the website movesets;
+check `build/rom/characters.json` for the final slot assignments. For explicit
+slot assignments using local OSB5 files, see the
+[sample loadout](hardware-rom/loadout.json) and use
+`--loadout hardware-rom/loadout.json --assets /path/to/play`.
+
+Models are simplified to 700 triangles by default (`--triangles` changes the
+budget). ROM injection uses rigid, vertex-colored meshes; menu names, portraits,
+voices and emblems remain vanilla. Builds receive a structural audit, but
+physical-hardware compatibility and memory limits remain experimental. See
+[ROM details and limitations](hardware-rom/README.md).
+
+Both targets accept `--output-dir PATH` for separate builds and `--dry-run` to
+inspect commands without downloading assets or building. Generated outputs
+stay under the ignored `build/` directory by default.
 
 ## Running the site
 
