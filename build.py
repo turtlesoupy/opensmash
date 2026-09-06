@@ -31,7 +31,7 @@ def parser():
     rom.add_argument('--loadout', type=Path, help='Legacy local ROM loadout; bypass website character selection')
     rom.add_argument('--vpk0', type=Path, help='Default: decomp/tools/vpk0cmd, then PATH')
     rom.add_argument('--triangles', type=int, help='Per-fighter triangle budget (default: 700)')
-    rom.add_argument('--skinning', action='store_true', help='Experimental ROM-only skeletal skinning (requires a MIPS toolchain)')
+    rom.add_argument('--skinning', action=argparse.BooleanOptionalAction, default=True, help='ROM skeletal skinning (default: enabled; --no-skinning uses rigid joints)')
     native = targets.choices['native']
     native.add_argument('--vanilla', action='store_true', help='Build BattleShip without preparing a custom roster')
     native.add_argument('--version', choices=['us','jp'], default='us')
@@ -93,8 +93,8 @@ def plan(args):
                      '--triangles', str(args.triangles), '--output', str(artifact)],
                     [sys.executable, str(ROOT/'hardware-rom/verify_rom.py'), str(base), str(artifact),
                      '--loadout', str(loadout_path)]]
-    if args.target == 'rom' and getattr(args,'skinning',False):
-        for command in commands:command.append('--skinning')
+    if args.target == 'rom':
+        for command in commands:command.append('--skinning' if args.skinning else '--no-skinning')
     if output in (ROOT, engine) or output in ROOT.parents or output in engine.parents:
         raise ValueError('Use a dedicated output directory, not a repository root or its parent')
     if not getattr(args, 'vanilla', False) and not getattr(args, 'loadout', None):

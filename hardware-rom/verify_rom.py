@@ -167,7 +167,7 @@ if __name__ == '__main__':
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('base', type=Path)
     ap.add_argument('rom', type=Path)
-    ap.add_argument('--skinning', action='store_true')
+    ap.add_argument('--skinning', action=argparse.BooleanOptionalAction, default=True, help='Use skeletal skinning (default); --no-skinning selects rigid joints')
     ap.add_argument('--models', type=int, nargs='+', default=[296,323,332])
     ap.add_argument('--loadout', type=Path, help='Read model IDs from a generated loadout')
     args = ap.parse_args()

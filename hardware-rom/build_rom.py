@@ -244,7 +244,7 @@ def build(args):
     output = bytearray(original)
     report = []
     loadout = json.loads(args.loadout.read_text())
-    skinning = getattr(args,'skinning',False)
+    skinning = getattr(args,'skinning',True)
     module = None
     replacements = {}
     edited = {}
@@ -422,7 +422,7 @@ if __name__ == '__main__':
     ap.add_argument('--loadout', type=Path, required=True)
     ap.add_argument('--output', type=Path, required=True)
     ap.add_argument('--triangles', type=int)
-    ap.add_argument('--skinning', action='store_true')
+    ap.add_argument('--skinning', action=argparse.BooleanOptionalAction, default=True, help='Use skeletal skinning (default); --no-skinning selects rigid joints')
     args = ap.parse_args()
     if args.triangles is None:
         args.triangles = 700

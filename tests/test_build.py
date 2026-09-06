@@ -41,7 +41,15 @@ class BuildTests(unittest.TestCase):
             p.write_text(json.dumps([dict(model_file=323, asset='custom.osb',
                                           model_source='323_LuigiModel.c',main_source='221_LuigiMain.c')]))
             _, _, commands = build.plan(self.args('rom', '--loadout', str(p)))
-            self.assertEqual(commands[-1][-2:], ['--loadout',str(p.resolve())])
+            self.assertEqual(commands[-1][-3:], ['--loadout',str(p.resolve()),'--skinning'])
+
+    def test_rom_skinning_default_and_rigid_override_reach_builder_and_audit(self):
+        for flags,mode in [((), '--skinning'),(('--skinning',),'--skinning'),(('--no-skinning',),'--no-skinning')]:
+            _,_,commands=build.plan(self.args('rom',*flags))
+            for script in ('build_rom.py','verify_rom.py'):
+                command=next(c for c in commands if any(a.endswith(script) for a in c))
+                self.assertEqual(command[-1],mode)
+                self.assertNotIn('--no-skinning' if mode=='--skinning' else '--skinning',command)
 
     def test_native_preflight_does_not_create_output_when_inputs_missing(self):
         with tempfile.TemporaryDirectory() as tmp:

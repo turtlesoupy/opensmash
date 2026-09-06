@@ -24,7 +24,14 @@ loads `0x0fff` into the same register instead of reading the saved mask.
 These instructions lie outside the CIC checksum range. Saves are not
 rewritten by this patch. Existing game behavior still controls save writes.
 
-## Design and limitations
+## Default skinning path
+
+ROM builds use skeletal skinning and optimized triangle ordering by default.
+See [skinning setup, memory budgets, and validation](skinning/FORMAT.md).
+Use `--no-skinning` to build with the earlier rigid implementation described below.
+Both the top-level driver and the standalone builder/auditor accept this flag.
+
+## Rigid fallback design and limitations (`--no-skinning`)
 
 The head retains atlas detail through small per-triangle RGBA16 texture tiles;
 the body uses vertex colors. QEM simplification first welds

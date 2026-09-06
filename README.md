@@ -146,17 +146,12 @@ The builder prefers each fighter's website moveset, but may reassign conflicting
 slots. Check `build/rom/characters.json` for the actual assignments. For precise
 control of replacement slots, see [local loadouts](hardware-rom/README.md).
 
-**ROM support is experimental.** By default, meshes are simplified and use rigid
-joints, so gaps can appear during animation. Hardware performance and memory
-limits still need testing.
-See [ROM details and limitations](hardware-rom/README.md).
-
-ROM builds also offer experimental `--skinning`. It blends
-up to four joint influences per vertex to keep joints connected during animation.
-It requires an additional MIPS compiler and has a smaller loadout memory budget.
-The flag is off by default; the website, native target, and regular ROM output
-are unchanged. See [experimental ROM skinning](hardware-rom/skinning/FORMAT.md)
-for setup and validation status.
+**ROM support is experimental.** ROM builds use skeletal skinning by default,
+blending up to four joint influences per vertex. This requires a MIPS compiler;
+mesh detail and loadout size remain limited by memory and performance.
+Use `--no-skinning` for the earlier rigid-joint builder.
+See [skinning setup and validation](hardware-rom/skinning/FORMAT.md) and
+[ROM details](hardware-rom/README.md). Native and website builds are unaffected.
 
 For either target, `--output-dir PATH` keeps different builds separate, and
 `--dry-run` previews the build commands. See [BUILDING.md](BUILDING.md) for all

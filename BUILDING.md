@@ -122,6 +122,10 @@ movesets may be reassigned; `build/rom/characters.json` records the actual bases
 If there is no valid assignment, the build fails with a useful error. Private
 characters count toward the 12-slot limit.
 
+ROM builds use skeletal skinning by default and require LLVM with MIPS support,
+GNU MIPS binutils, and a host C++ compiler. See [skinning setup](hardware-rom/skinning/FORMAT.md).
+Use `--no-skinning` for the earlier rigid exporter without those compiler dependencies.
+
 The result is `build/rom/opensmash.z64`, a generated `loadout.json`, and hash/size
 reports. The exporter verifies the original US v1.0 ROM and audits the output
 before reporting success. `--triangles 700` controls the per-character triangle
@@ -135,11 +139,10 @@ emblems, plus announcer WAVs converted to N64 ADPCM. Local loadout entries may
 include `ui` and `voice` paths relative to `--assets`; omitted assets stay vanilla.
 Heads retain texture detail using small per-triangle tiles; bodies use vertex
 colors. Website loadouts enlarge menu previews by 15% (`menu_scale` in local
-loadouts overrides this without changing gameplay scale). This remains a rigid
-approximation. Movesets and move-specific
-props/forms remain vanilla. BattleShip's smooth
-skinning and canonical retargeting are not reproduced on the N64. See
-[ROM details](hardware-rom/README.md) for limitations.
+loadouts overrides this without changing gameplay scale). Skeletal skinning,
+canonical pose corrections, and accessory pinning are enabled by default;
+`--no-skinning` uses the earlier rigid approximation. Movesets and combat rules
+remain vanilla. See [ROM details](hardware-rom/README.md) for limitations.
 
 The earlier local OSB5 loadout format still works without network access:
 

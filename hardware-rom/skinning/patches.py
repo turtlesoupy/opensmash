@@ -1,4 +1,4 @@
-"""Strict NTSC-U code/graphics-reserve patches for opt-in skinning."""
+"""Strict NTSC-U code/graphics-reserve patches for skinned ROMs."""
 from pathlib import Path
 import struct
 

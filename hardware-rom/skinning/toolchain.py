@@ -1,4 +1,4 @@
-"""Build a self-contained, relocatable MIPS module only for opt-in ROMs."""
+"""Build a self-contained, relocatable MIPS module for skinned ROM builds."""
 from pathlib import Path
 import shutil
 import struct

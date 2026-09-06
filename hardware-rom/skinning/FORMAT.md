@@ -1,11 +1,11 @@
 # Experimental N64 skinning
 
-Skinning is opt-in. The website, native target, and regular ROM builds are
-unchanged. Enable it with `build.py rom --skinning`;
+ROM builds use skinning by default. Use `build.py rom --no-skinning` for the
+earlier rigid-joint builder. The website and native target are unaffected;
 all the usual loadout and private-character arguments still apply.
 
 ```sh
-python3 build.py rom --characters thomasdimson --skinning --vpk0 /path/to/vpk0cmd --output-dir build/skinned-rom
+python3 build.py rom --characters thomasdimson --vpk0 /path/to/vpk0cmd --output-dir build/skinned-rom
 ```
 
 The builder needs LLVM clang with a MIPS backend and GNU `mips-linux-gnu-as` /
@@ -98,7 +98,7 @@ slot. Emulator testing uses Ares v148 with Expansion Pak disabled. The user test
 and reported improved skinning. Hardware frame rate has not been measured.
 Never distribute the debug scene/roster ROMs.
 
-Regular rigid output is checked byte-for-byte against the production fixture at
+Rigid output (`--no-skinning`) is checked byte-for-byte against the production fixture at
 pipeline commit `5afc823` (SHA-256
 `2e1453bfa2c9391fb22bb7841902babb330145fae45b8c91acd266c51c04f760`).
 
@@ -106,8 +106,7 @@ pipeline commit `5afc823` (SHA-256
 
 The Thomas/Mario + Casey/Samus build passes the pose tests and runs character
 select and a four-CPU match in 4 MB Ares. At 700 triangles per fighter, that match
-currently draws roughly 17–20 frames per second; it is not ready as the default
-ROM path. Both characters currently use 8-pixel face tiles to fit the memory
+currently draws roughly 17–20 frames per second; this remains a performance limitation of the default ROM path. Both characters currently use 8-pixel face tiles to fit the memory
 budget. A four-character Joey/Thomas/Obama/Frida loadout builds and passes the
 structural audit at 250 triangles each. Its reordered successor was checked in
 Ares character select and a four-character match, then tested on the user's
