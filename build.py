@@ -30,7 +30,8 @@ def parser():
     rom.add_argument('--assets', type=Path, default=ROOT/'play')
     rom.add_argument('--loadout', type=Path, help='Legacy local ROM loadout; bypass website character selection')
     rom.add_argument('--vpk0', type=Path, help='Default: decomp/tools/vpk0cmd, then PATH')
-    rom.add_argument('--triangles', type=int, default=700)
+    rom.add_argument('--triangles', type=int, help='Per-fighter triangle budget (default: 700)')
+    rom.add_argument('--skinning', action='store_true', help='Experimental ROM-only skeletal skinning (requires a MIPS toolchain)')
     native = targets.choices['native']
     native.add_argument('--vanilla', action='store_true', help='Build BattleShip without preparing a custom roster')
     native.add_argument('--version', choices=['us','jp'], default='us')
@@ -68,6 +69,8 @@ def plan(args):
         required = [base, engine/'CMakeLists.txt'] + [engine/sm/'CMakeLists.txt' for sm in ('libultraship','torch')]
         required += [engine/'decomp/src/ft/ftmanager.c']
     else:
+        if args.triangles is None:
+            args.triangles = 700
         if not 32 <= args.triangles <= 2000:
             raise ValueError('--triangles must be between 32 and 2000')
         output = (args.output_dir or ROOT/'build/rom').resolve()
@@ -89,7 +92,9 @@ def plan(args):
                      '--assets', str(args.assets.resolve() if args.loadout else output), '--loadout', str(loadout_path),
                      '--triangles', str(args.triangles), '--output', str(artifact)],
                     [sys.executable, str(ROOT/'hardware-rom/verify_rom.py'), str(base), str(artifact),
-                     *(['--models', *[str(f['model_file']) for f in loadout]] if args.loadout else ['--loadout', str(loadout_path)])]]
+                     '--loadout', str(loadout_path)]]
+    if args.target == 'rom' and getattr(args,'skinning',False):
+        for command in commands:command.append('--skinning')
     if output in (ROOT, engine) or output in ROOT.parents or output in engine.parents:
         raise ValueError('Use a dedicated output directory, not a repository root or its parent')
     if not getattr(args, 'vanilla', False) and not getattr(args, 'loadout', None):

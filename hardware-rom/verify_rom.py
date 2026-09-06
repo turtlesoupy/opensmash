@@ -23,16 +23,23 @@ def walk(raw, first, internal):
     return result
 
 
-def verify(base, rom, fids, loadout=None):
+def verify(base, rom, fids, loadout=None, skinning=False):
     assert len(rom) <= 64*1024*1024 and len(rom) & (len(rom)-1) == 0
     from presentation import MENU_SCALE_TABLE, CTL, TBL, MODELS, EMBLEMS, EMBLEM_TABLES, voice_info
     table = [ENTRY.unpack_from(rom, TABLE+i*12) for i in range(COUNT+1)]
     old = [ENTRY.unpack_from(base, TABLE+i*12) for i in range(COUNT+1)]
     # All replacement assets can be resident together in character select.
     growth = sum(max(0,new[4]-prev[4])*4 for new,prev in zip(table[:-1],old[:-1]))
-    assert growth <= 352*1024, 'Character-select asset growth exceeds conservative budget'
+    if skinning:
+        from skinning.patches import patches, crc6103, ASSET_GROWTH_BUDGET
+    assert growth <= (ASSET_GROWTH_BUDGET if skinning else 352*1024), 'Character-select asset growth exceeds conservative budget'
     expected = bytearray(base)
-    extra_files = set()
+    extra_files = {163} if skinning else set()
+    common=None
+    if skinning:
+        ce=table[163];cs=DATA+(ce[0]&0x7fffffff)
+        assert not ce[0]&0x80000000
+        common=rom[cs:cs+ce[4]*4]
     for fighter in loadout or []:
         fk = MODELS.index(fighter['model_file'])
         factor = fighter.get('menu_scale',1)
@@ -75,6 +82,11 @@ def verify(base, rom, fids, loadout=None):
         offset = int(patch['rom_offset'], 16)
         assert struct.unpack_from('>I', expected, offset)[0] == int(patch['expected'], 16)
         struct.pack_into('>I', expected, offset, int(patch['replacement'], 16))
+    if skinning:
+        for at,old_bytes,new_bytes in patches(base):
+            assert expected[at:at+len(old_bytes)]==old_bytes
+            expected[at:at+len(new_bytes)]=new_bytes
+        expected[0x10:0x18]=crc6103(expected)
     assert expected[:TABLE] == rom[:TABLE], 'Unexpected game code/header change'
     assert expected[DATA:] == rom[DATA:len(base)], 'Original non-table data changed'
     totals = {}
@@ -96,6 +108,10 @@ def verify(base, rom, fids, loadout=None):
         pointers = walk(raw, entry[1], True)
         walk(raw, entry[3], False)
         if fid not in fids:
+            continue
+        if skinning:
+            from skinning.audit import audit_model
+            totals[fid]=audit_model(raw,pointers,common)
             continue
         # Appended DLs start with PipeSync, TextureOff, GeometryMode, Combine.
         count = 0
@@ -151,10 +167,11 @@ if __name__ == '__main__':
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('base', type=Path)
     ap.add_argument('rom', type=Path)
+    ap.add_argument('--skinning', action='store_true')
     ap.add_argument('--models', type=int, nargs='+', default=[296,323,332])
     ap.add_argument('--loadout', type=Path, help='Read model IDs from a generated loadout')
     args = ap.parse_args()
     loadout = json.loads(args.loadout.read_text()) if args.loadout else None
     if loadout is not None:
         args.models = [c['model_file'] for c in loadout]
-    print('PASS:', verify(args.base.read_bytes(), args.rom.read_bytes(), args.models, loadout))
+    print('PASS:', verify(args.base.read_bytes(), args.rom.read_bytes(), args.models, loadout, args.skinning))
