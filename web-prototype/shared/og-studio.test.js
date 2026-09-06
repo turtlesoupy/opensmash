@@ -47,11 +47,17 @@ test("fighter frames apply zoom and direct-manipulation offsets", () => {
 });
 
 test("transformed fighter hit testing follows the visible selection frame", () => {
-  const placements = OG_ROSTER_SLOTS.map((slot) => ({ zoom: slot.zoom, offsetX: 20, offsetY: 0 }));
+  const placements = OG_ROSTER_SLOTS.map((slot) => ({ slug: slot.id, zoom: slot.zoom, offsetX: 20, offsetY: 0 }));
   const frame = fighterFrame(OG_ROSTER_SLOTS.at(-1), placements.at(-1));
 
   assert.equal(fighterSlotAtPoint(frame.x + frame.width / 2, frame.y + frame.height / 2, placements), placements.length - 1);
   assert.equal(fighterSlotAtPoint(-100, -100, placements), -1);
+});
+
+test("empty fighter positions cannot be selected", () => {
+  const placements = OG_ROSTER_SLOTS.map((slot) => ({ slug: null, zoom: slot.zoom, offsetX: 0, offsetY: 0 }));
+  const frame = fighterFrame(OG_ROSTER_SLOTS.at(-1), placements.at(-1));
+  assert.equal(fighterSlotAtPoint(frame.x + frame.width / 2, frame.y + frame.height / 2, placements), -1);
 });
 
 test("body choices include Mario and only variants present in the fighter bundle", () => {
