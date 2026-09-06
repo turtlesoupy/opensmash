@@ -365,6 +365,10 @@ if (!canvas) {
         (settings.noiseStrength <= 0 && settings.flickerStrength <= 0 && settings.rollingStrength <= 0);
       const matchesViewport = canvas.width === Math.max(1, Math.round(innerWidth)) &&
         canvas.height === Math.max(1, Math.round(innerHeight));
+      // Focus can change while reduced motion keeps the shader image still.
+      // Update compositor state before the still-image early return so a
+      // running game never retains the menu's full-screen backdrop filter.
+      applyCompositeFilter(focusedGame);
       if (stillImage && renderedStill && matchesViewport) {
         animationFrame = requestAnimationFrame(render);
         return;
@@ -375,7 +379,6 @@ if (!canvas) {
       }
       lastDrawAt = milliseconds;
       renderedStill = stillImage;
-      applyCompositeFilter(focusedGame);
       resize();
       gl.clearColor(0, 0, 0, 0);
       gl.clear(gl.COLOR_BUFFER_BIT);

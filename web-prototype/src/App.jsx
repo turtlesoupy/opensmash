@@ -9,6 +9,7 @@ import FighterJobModal from "./FighterJobModal.jsx";
 import ModalPage from "./ModalPage.jsx";
 import RetroHome from "./RetroHome.jsx";
 import SettingsModal from "./SettingsModal.jsx";
+import { installPerformanceCapture } from "./performance-capture.js";
 import { matchesCharacterSearch } from "../shared/character-search.js";
 import { mergeCharactersBySlug } from "../shared/character-roster.js";
 import {
@@ -330,6 +331,7 @@ function CreateExperienceOverlay({ onAuthenticated, onClose, onCreated, onPlay, 
 }
 
 export default function App() {
+  useEffect(installPerformanceCapture, []);
   const isCreatePage = window.location.pathname.replace(/\/+$/, "") === "/create";
   const [trailerMode] = useState(() => (
     !isCreatePage && new URLSearchParams(window.location.search).get("trailer") === "1"
