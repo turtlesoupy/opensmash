@@ -175,6 +175,13 @@
       ? [Number(gamepad.axes?.[0]) || 0, Number(gamepad.axes?.[1]) || 0, 0, 0]
       : Array.from(gamepad.axes || [], (value) => Number(value) || 0);
     while (axes.length < 4) axes.push(0);
+    // Replace only explicitly mapped C-directions; preserve other native input.
+    for (const [control, index, sign] of [
+      ["cleft", 2, -1], ["cright", 2, 1], ["cup", 3, -1], ["cdown", 3, 1],
+    ]) {
+      if ((profile.buttons[control] !== undefined || profile.axes[control])
+        && axes[index] * sign > 0) axes[index] = 0;
+    }
     if (controlPressed(gamepad, originalButtons, profile, "cleft")) axes[2] = -1;
     if (controlPressed(gamepad, originalButtons, profile, "cright")) axes[2] = 1;
     if (controlPressed(gamepad, originalButtons, profile, "cup")) axes[3] = -1;

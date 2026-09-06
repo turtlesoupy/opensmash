@@ -181,3 +181,27 @@ test("eight-way hats activate adjacent directions on all four diagonals", () => 
     assert.ok(navigator.getGamepads()[0].buttons.every((button) => !button.pressed));
   }
 });
+
+test("a single standard override preserves other browser buttons and analog sticks", () => {
+  const gamepad = pad();
+  gamepad.axes = [0.25, -0.5, 0.6, -0.7];
+  const { api, navigator } = harness(gamepad);
+  api.saveProfile(gamepad.id, { mode: "standard", buttons: { a: 7 } });
+  const mapped = navigator.getGamepads()[0];
+  assert.equal(mapped.buttons[0].pressed, false);
+  assert.deepEqual(Array.from(mapped.axes), gamepad.axes);
+  assert.equal(mapped.buttons[1].pressed, gamepad.buttons[1].pressed);
+});
+
+test("a single C-direction override replaces native input only in that direction", () => {
+  const gamepad = pad();
+  const { api, navigator } = harness(gamepad);
+  api.saveProfile(gamepad.id, { mode: "standard", buttons: { cright: 7 } });
+  gamepad.axes = [0, 0, 0.8, -0.6];
+  assert.deepEqual(Array.from(navigator.getGamepads()[0].axes), [0, 0, 0, -0.6]);
+  gamepad.buttons[7].pressed = true;
+  assert.equal(navigator.getGamepads()[0].axes[2], 1);
+  gamepad.buttons[7].pressed = false;
+  gamepad.axes[2] = -0.8;
+  assert.equal(navigator.getGamepads()[0].axes[2], -0.8);
+});

@@ -59,12 +59,10 @@ export default function ControllerMapper({ pad, onBack, onSaved }) {
   const initialProfile = useMemo(() => api?.getProfile?.(pad.id) || null, [api, pad.id]);
   const initialSource = useMemo(() => api?.profileSource?.(pad.id) || "default", [api, pad.id]);
   const [step, setStep] = useState(-1);
-  const [mapping, setMapping] = useState(() => initialProfile?.mode === "custom"
-    ? { ...initialProfile.buttons }
-    : {});
-  const [axisMapping, setAxisMapping] = useState(() => initialProfile?.mode === "custom"
-    ? { ...initialProfile.axes }
-    : {});
+  const [mapping, setMapping] = useState(() => ({ ...initialProfile?.buttons }));
+  const [axisMapping, setAxisMapping] = useState(() => ({ ...initialProfile?.axes }));
+  const [singleControl, setSingleControl] = useState(false);
+  const [mode, setMode] = useState(initialProfile?.mode || "standard");
   const [hasProfile, setHasProfile] = useState(Boolean(initialProfile));
   const [message, setMessage] = useState(initialSource === "m64"
     ? "M64 detected — complete setup recommended"
@@ -91,8 +89,9 @@ export default function ControllerMapper({ pad, onBack, onSaved }) {
     function finishControl(nextMapping, nextAxisMapping) {
       setMapping(nextMapping);
       setAxisMapping(nextAxisMapping);
-      if (step === CONTROLS.length - 1) {
-        if (!api?.saveProfile?.(pad.id, { mode: "custom", buttons: nextMapping, axes: nextAxisMapping })) {
+      if (singleControl || step === CONTROLS.length - 1) {
+        if (!api?.saveProfile?.(pad.id, { mode, buttons: nextMapping, axes: nextAxisMapping })) {
+          restoreSavedMapping();
           setStep(-1);
           setMessage("Could not save mapping. Allow browser storage and try again.");
           return;
@@ -153,9 +152,26 @@ export default function ControllerMapper({ pad, onBack, onSaved }) {
       cancelled = true;
       window.cancelAnimationFrame(frame);
     };
-  }, [api, axisMapping, current, mapping, onSaved, pad, step]);
+  }, [api, axisMapping, current, mapping, onSaved, pad, step, singleControl, mode]);
+
+  function restoreSavedMapping() {
+    const profile = api?.getProfile?.(pad.id);
+    setMapping({ ...profile?.buttons });
+    setAxisMapping({ ...profile?.axes });
+    setMode(profile?.mode || "standard");
+  }
+
+  function beginSingleMapping(index) {
+    restoreSavedMapping();
+    neutralAxesRef.current = Array.from(rawPad(pad)?.axes || [], (value) => Number(value) || 0);
+    setSingleControl(true);
+    setMessage("Release the controls, then press the replacement button or move an axis");
+    setStep(index);
+  }
 
   function beginMapping() {
+    setSingleControl(false);
+    setMode("custom");
     neutralAxesRef.current = Array.from(rawPad(pad)?.axes || [], (value) => Number(value) || 0);
     setMapping({});
     setAxisMapping({});
@@ -169,6 +185,7 @@ export default function ControllerMapper({ pad, onBack, onSaved }) {
       return;
     }
     setHasProfile(true);
+    setMode("standard");
     setMapping({ a: 1, b: 0 });
     setAxisMapping({});
     setStep(-1);
@@ -181,6 +198,7 @@ export default function ControllerMapper({ pad, onBack, onSaved }) {
       setMessage("Could not reset mapping. Allow browser storage and try again.");
       return;
     }
+    setMode("standard");
     setHasProfile(false);
     setMapping({});
     setAxisMapping({});
@@ -200,7 +218,7 @@ export default function ControllerMapper({ pad, onBack, onSaved }) {
 
         {current ? (
           <div className="controller-map-capture">
-            <span className="controller-map-progress">{step + 1} / {CONTROLS.length}</span>
+            <span className="controller-map-progress">{singleControl ? "Remap one button" : `${step + 1} / ${CONTROLS.length}`}</span>
             <strong>Press {current.label}</strong>
             <small>Release each button before pressing the next one.</small>
           </div>
@@ -220,9 +238,14 @@ export default function ControllerMapper({ pad, onBack, onSaved }) {
           </div>
         )}
 
+        {!current && <p className="settings-subtitle">Select a control below to remap just that button.</p>}
         <div className="controller-map-ledger" aria-label="Mapped controls">
           {CONTROLS.map((control, index) => (
-            <span
+            <button
+              type="button"
+              disabled={Boolean(current)}
+              aria-label={`Remap ${control.label}`}
+              onClick={() => beginSingleMapping(index)}
               className={step === index ? "is-current" : mapping[control.id] !== undefined || axisMapping[control.id] ? "is-mapped" : ""}
               key={control.id}
             >
@@ -231,15 +254,15 @@ export default function ControllerMapper({ pad, onBack, onSaved }) {
                 ? `Button ${mapping[control.id]}`
                 : axisMapping[control.id]
                   ? `Axis ${axisMapping[control.id].index} ${AXIS_GLYPHS[control.id] || ""}`.trim()
-                  : "—"}</small>
-            </span>
+                  : mode === "standard" ? "Browser default" : "—"}</small>
+            </button>
           ))}
         </div>
       </section>
 
       <div className="advanced-actions controller-map-footer">
         {current && (
-          <button className="launch-flow-action" type="button" onClick={() => { setStep(-1); setMessage("Mapping cancelled"); }}>
+          <button className="launch-flow-action" type="button" onClick={() => { restoreSavedMapping(); setStep(-1); setMessage("Mapping cancelled"); }}>
             Cancel mapping
           </button>
         )}

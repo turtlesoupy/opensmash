@@ -13,12 +13,15 @@ export default function ModalPage({
   focusDelay = DEFAULT_FOCUS_DELAY,
   initialFocusRef,
   onRequestClose,
+  onClosing,
   open,
   ...props
 }) {
   const [isVisible, setIsVisible] = useState(false);
   const closingRef = useRef(false);
   const closeTimerRef = useRef(null);
+  const onClosingRef = useRef(onClosing);
+  onClosingRef.current = onClosing;
   const onRequestCloseRef = useRef(onRequestClose);
 
   useEffect(() => {
@@ -32,6 +35,7 @@ export default function ModalPage({
   const close = useCallback((complete) => {
     if (closingRef.current) return;
     closingRef.current = true;
+    onClosingRef.current?.();
     setIsVisible(false);
     window.clearTimeout(closeTimerRef.current);
     closeTimerRef.current = window.setTimeout(() => {

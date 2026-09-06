@@ -884,7 +884,9 @@ body:has(.advanced-overlay:not([hidden])) { overflow: hidden; }
   grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 6px;
 }
-.controller-map-ledger > span {
+.controller-map-ledger > button {
+  border: 0;
+  border-radius: 0;
   min-width: 0;
   min-height: 54px;
   display: grid;
@@ -897,11 +899,11 @@ body:has(.advanced-overlay:not([hidden])) { overflow: hidden; }
   color: #806e5d;
   text-align: center;
 }
-.controller-map-ledger > span.is-mapped {
+.controller-map-ledger > button.is-mapped {
   box-shadow: inset 0 0 0 1px rgba(255, 240, 181, .46);
   color: #fff2d6;
 }
-.controller-map-ledger > span.is-current {
+.controller-map-ledger > button.is-current {
   background: rgba(255, 128, 44, .12);
   box-shadow: inset 0 0 0 2px #fff0b5;
   color: #fff2d6;
@@ -2031,3 +2033,7 @@ body.retro-home.show-native-cursor * {
 .fighter-download input:focus-visible { outline: 2px solid #eac579; outline-offset: 3px; }
 .fighter-download-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .fighter-download-actions > * { flex: 1 1 150px; text-align: center; text-decoration: none; box-sizing: border-box; }
+
+.controller-map-ledger > button:not(:disabled) { cursor: pointer; }
+.controller-map-ledger > button:not(:disabled):hover,
+.controller-map-ledger > button:focus-visible { border-color: #a9c7ff; outline: 2px solid #a9c7ff; outline-offset: 2px; }

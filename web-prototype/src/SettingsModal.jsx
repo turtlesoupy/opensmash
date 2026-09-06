@@ -105,6 +105,7 @@ export default function SettingsModal({
       className="advanced-overlay"
       dismissOnBackdrop
       initialFocusRef={mainFirstRef}
+      onClosing={() => setMappingPad(null)}
       onRequestClose={onCancel}
       open={open}
       role="presentation"
@@ -397,7 +398,7 @@ export default function SettingsModal({
             <BackButton onClick={() => setPage("main")} />
           </div>
 
-          {page === "mapping" && mappingPad && (
+          {open && page === "mapping" && mappingPad && (
             <ControllerMapper
               pad={mappingPad}
               onBack={() => setPage("controllers")}
