@@ -568,7 +568,9 @@
   .arena-shell {
     --arena-content-width: min(100vw, 100vh);
     --content-section-space: clamp(20px, 2.5vw, 28px);
-    --shared-rule-overlap: 0px;
+    /* Match grid-replica.js: 2px rules, 45px cells, and 4/6/8 columns.
+       Reserve the shared video/grid border before the runtime initializes. */
+    --shared-rule-overlap: calc(200% / 190);
     position: relative;
     z-index: 1;
     width: var(--arena-content-width);
@@ -576,6 +578,12 @@
     padding-bottom: calc(var(--roster-layout-reserve, 0px) + 8px);
     margin-inline: auto;
     overflow-anchor: none;
+  }
+  @media (min-width: 640px) {
+    .arena-shell { --shared-rule-overlap: calc(200% / 284); }
+  }
+  @media (min-width: 800px) {
+    .arena-shell { --shared-rule-overlap: calc(200% / 378); }
   }
   .retro-site-header {
     position: relative;
@@ -1406,9 +1414,12 @@
   .flame-bridge-action:focus-visible {
     box-shadow: inset 0 0 0 2px rgba(255, 240, 181, .88);
   }
-  .intro-video-stage,
-  .retro-site-header,
-  .arena-surface {
+  /* The normal homepage starts at its final size. Only the cartridge intro
+     reveals these sections; applying its transform before React mounts causes
+     a small stepped zoom on every fresh homepage load. */
+  html.is-cartridge-intro .intro-video-stage,
+  html.is-cartridge-intro .retro-site-header,
+  html.is-cartridge-intro .arena-surface {
     opacity: 0;
     filter: brightness(0) contrast(1.25);
     transform: scale(1.008);
@@ -1418,10 +1429,10 @@
       filter 620ms steps(5, end),
       transform 620ms steps(5, end);
   }
-  body:not(.is-game-booted) { overflow-y: hidden; }
-  body.is-game-booted .intro-video-stage,
-  body.is-game-booted .retro-site-header,
-  body.is-game-booted .arena-surface {
+  html.is-cartridge-intro body:not(.is-game-booted) { overflow-y: hidden; }
+  html.is-cartridge-intro body.is-game-booted .intro-video-stage,
+  html.is-cartridge-intro body.is-game-booted .retro-site-header,
+  html.is-cartridge-intro body.is-game-booted .arena-surface {
     opacity: 1;
     filter: none;
     transform: none;
