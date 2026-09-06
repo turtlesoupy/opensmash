@@ -41,7 +41,7 @@ class BuildTests(unittest.TestCase):
             p.write_text(json.dumps([dict(model_file=323, asset='custom.osb',
                                           model_source='323_LuigiModel.c',main_source='221_LuigiMain.c')]))
             _, _, commands = build.plan(self.args('rom', '--loadout', str(p)))
-            self.assertEqual(commands[-1][-2:], ['--models','323'])
+            self.assertEqual(commands[-1][-2:], ['--loadout',str(p.resolve())])
 
     def test_native_preflight_does_not_create_output_when_inputs_missing(self):
         with tempfile.TemporaryDirectory() as tmp:

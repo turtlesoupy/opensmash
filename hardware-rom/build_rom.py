@@ -244,6 +244,8 @@ def build(args):
     output = bytearray(original)
     report = []
     loadout = json.loads(args.loadout.read_text())
+    skinning = getattr(args,'skinning',False)
+    module = None
     replacements = {}
     edited = {}
     suffixes = {}
@@ -255,6 +257,12 @@ def build(args):
         output[offset:offset+len(expected)] = replacement
         byte_patches.append(dict(offset=offset, expected=expected.hex(), replacement=replacement.hex()))
 
+    if skinning:
+        from skinning.toolchain import compile_modules
+        from skinning.export import weighted_mesh, patch_skin_model
+        from skinning.patches import patches, MODEL_GROWTH_BUDGET, ASSET_GROWTH_BUDGET, crc6103
+        module=compile_modules(args.decomp,args.output.parent/'mips-runtime')
+        for at,old,new in patches(original):patch(at,old,new)
     with tempfile.TemporaryDirectory() as tmp:
         def get(fid):
             if fid in edited:
@@ -275,6 +283,22 @@ def build(args):
             edited[fid] = Reloc(raw, chain(raw, entry[1]), chain(raw, entry[3]))
             suffixes[fid] = packed[entry[2]*4:]
             return edited[fid]
+
+        shared_growth = 0
+        def share_runtime(selected):
+            nonlocal shared_growth
+            if 'shared_offset' in selected:return
+            common=get(163)
+            original_size=len(common.data)
+            common.data.extend(bytes((-len(common.data))%16))
+            header=common.append(bytes(16))
+            code_at=common.append(selected['code'])
+            struct.pack_into('>4I',common.data,header,0x534b4331,selected['joint_cap'],len(selected['code']),code_at)
+            for at,target in selected['relocations'].items():common.internal[code_at+at]=code_at+target
+            if common.internal and max(common.internal.values())>len(common.data):
+                common.data.extend(bytes(max(common.internal.values())-len(common.data)))
+            selected['shared_offset']=code_at
+            shared_growth+=len(common.data)-original_size
 
         seen = set()
         sym = symbols(args.decomp) if any(f.get('ui') for f in loadout) else {}
@@ -300,14 +324,28 @@ def build(args):
             main_source = (args.decomp/'src/relocData'/fighter['main_source']).read_text()
             # CSS loads every fighter, not merely the four active players.
             # Share a conservative model-growth budget across the loadout.
-            model_budget = 320*1024 // len(loadout)
+            model_budget = (MODEL_GROWTH_BUDGET if skinning else 320*1024) // len(loadout)
+            if skinning:
+                used=sum(max(0,f['model_bytes_after']-f['model_bytes_before']) for f in report)
+                model_budget=(MODEL_GROWTH_BUDGET-used)//(len(loadout)-len(report))
             try:
                 for size in (12,8,4,0):
                     if size > requested:
                         continue
-                    parts, before, after = mesh_parts(asset,args.triangles,size)
+                    skin_stats={}
+                    if skinning:
+                        mesh=weighted_mesh(asset,args.triangles,size)
+                        selected=module['wide'] if len(mesh['joints'])>16 else module
+                        share_runtime(selected)
+                        model_budget=(MODEL_GROWTH_BUDGET-used-shared_growth)//(len(loadout)-len(report))
+                        before,after=mesh['source_faces'],mesh['triangles']
+                    else:
+                        parts, before, after = mesh_parts(asset,args.triangles,size)
                     try:
-                        blob, intern, extern = patch_model(raw, entries[fid], source, parts, main_source)
+                        if skinning:
+                            blob,intern,extern,skin_stats=patch_skin_model(raw,entries[fid],source,main_source,mesh,size,module)
+                        else:
+                            blob, intern, extern = patch_model(raw, entries[fid], source, parts, main_source)
                     except ValueError as exc:
                         if str(exc) not in ('Relocation exceeds 16-bit word range','Model exceeds reloc file limit'):
                             raise
@@ -320,12 +358,13 @@ def build(args):
                 presentation = patch_ui(fighter, args.assets, get, sym, patch) if fighter.get('ui') else {}
             except ValueError as exc:
                 raise ValueError(f'{fighter["name"]} on {fighter["slot"]}: {exc}') from exc
-            report.append(dict(fighter, source_sha256=hashlib.sha256(asset.read_bytes()).hexdigest(), triangles_before=before, triangles_after=after, face_texture_size=size, textured_triangles=sum(len(t)==3 for ts in parts.values() for t in ts), model_bytes_before=len(raw), model_bytes_after=len(blob), presentation=presentation))
+            report.append(dict(fighter, source_sha256=hashlib.sha256(asset.read_bytes()).hexdigest(), triangles_before=before, triangles_after=after, face_texture_size=size, textured_triangles=skin_stats.get('textured_triangles',0) if skinning else sum(len(t)==3 for ts in parts.values() for t in ts), skinning=skin_stats if skinning else None, model_bytes_before=len(raw), model_bytes_after=len(blob), presentation=presentation))
         for fid, reloc in edited.items():
             blob, intern, extern = reloc.finish()
             replacements[fid] = (blob + suffixes[fid], intern, extern, len(blob)//4)
     asset_growth = sum(max(0,r[3]*4-entries[fid][4]*4) for fid,r in replacements.items())
-    if asset_growth > 352*1024:
+    asset_budget = ASSET_GROWTH_BUDGET if skinning else 352*1024
+    if asset_growth > asset_budget:
         raise ValueError('Loadout exceeds the character-select asset budget; reduce --triangles or select fewer fighters')
     # Move ALL file bodies together so next-entry offsets remain meaningful
     # to the game's recursive external-dependency heap sizing. Keep original
@@ -359,14 +398,17 @@ def build(args):
         if struct.unpack_from('>I', output, offset)[0] != int(patch['expected'], 16):
             raise ValueError('Character-selection patch preimage mismatch')
         struct.pack_into('>I', output, offset, int(patch['replacement'], 16))
+    if skinning:
+        output[0x10:0x18]=crc6103(output)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_bytes(output)
     # The four selection-mask instructions lie beyond the CIC checksum range.
-    assert output[0x1000:0x101000] == original[0x1000:0x101000]
+    if not skinning:
+        assert output[0x1000:0x101000] == original[0x1000:0x101000]
     # Additional model bytes loaded for any four distinct fighter kinds.
     # This excludes vanilla scene heaps and is not a hardware RAM guarantee.
     deltas = sorted((r['model_bytes_after']-r['model_bytes_before'] for r in report), reverse=True)
-    result = dict(presentation_patches=byte_patches, replaced_files=sorted(replacements), max_four_fighter_model_growth_bytes=sum(deltas[:4]), all_fighter_model_growth_bytes=sum(deltas), character_select_asset_growth_bytes=asset_growth, character_select_asset_growth_budget_bytes=352*1024, rom_sha256=hashlib.sha256(output).hexdigest(), rom_bytes=len(output), loadout=report, validation='Built; emulator and physical hardware validation pending')
+    result = dict(presentation_patches=byte_patches, replaced_files=sorted(replacements), max_four_fighter_model_growth_bytes=sum(deltas[:4]), all_fighter_model_growth_bytes=sum(deltas), character_select_asset_growth_bytes=asset_growth, character_select_asset_growth_budget_bytes=asset_budget, rom_sha256=hashlib.sha256(output).hexdigest(), rom_bytes=len(output), loadout=report, validation='Built; emulator and physical hardware validation pending')
     args.output.with_suffix('.json').write_text(json.dumps(result, indent=2)+'\n')
     print(json.dumps(result, indent=2))
 
@@ -379,8 +421,11 @@ if __name__ == '__main__':
     ap.add_argument('--assets', type=Path, required=True)
     ap.add_argument('--loadout', type=Path, required=True)
     ap.add_argument('--output', type=Path, required=True)
-    ap.add_argument('--triangles', type=int, default=700)
+    ap.add_argument('--triangles', type=int)
+    ap.add_argument('--skinning', action='store_true')
     args = ap.parse_args()
+    if args.triangles is None:
+        args.triangles = 700
     if not 32 <= args.triangles <= 2000:
         ap.error('Triangle budget must be between 32 and 2000')
     build(args)
