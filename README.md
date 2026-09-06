@@ -61,6 +61,10 @@ What's in this repo:
 
 ## Native and ROM builds with character injection
 
+Playing on real N64 hardware:
+
+https://github.com/user-attachments/assets/97b41166-8646-4dd5-ab45-80ee5d275297
+
 You can play OpenSmash outside the browser in two ways: build a **native desktop
 game** through BattleShip, or create an **experimental N64 ROM** for an emulator
 or real console. Both can include website fighters and your own custom/private

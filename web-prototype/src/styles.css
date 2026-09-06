@@ -41,6 +41,9 @@ main { width: min(1600px, calc(100% - 40px)); margin: 0 auto; }
 .create-page .creator-section { flex: 1; }
 .create-retro-screen { background: #000; cursor: auto; }
 .create-retro-screen::before { background: #000; opacity: 1; }
+.crt-viewport-host { display: contents; }
+/* CSS fullscreen stays in the page, above the normal CRT overlay layer. */
+body.is-immersive #crt-viewport-canvas { z-index: 2501; }
 #crt-viewport-canvas {
   position: fixed;
   inset: 0;

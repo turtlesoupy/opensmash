@@ -1,5 +1,6 @@
 """Resolve website characters and stage an offline BattleShip roster (stdlib only)."""
 import argparse
+import copy
 from concurrent.futures import ThreadPoolExecutor
 import gzip
 import hashlib
@@ -14,6 +15,7 @@ import struct
 import urllib.error
 import urllib.parse
 import urllib.request
+import uuid
 
 FIGHTERS = ['mario', 'fox', 'donkey', 'samus', 'luigi', 'link', 'yoshi', 'captain', 'kirby', 'pikachu', 'purin', 'ness']
 # Visual tile order used by the native character-select screen.
@@ -291,12 +293,34 @@ def assign_rom(available, preferred):
 
 
 def prepare(args):
+    output = args.output.resolve()
+    # Resolve first: invalid selections must not create an output directory.
     characters = resolve(args.catalog, args.site, args.characters, args.character_url)
     if args.target == 'rom' and len(characters) > 12:
         raise ValueError(f'Catalog has {len(characters)} characters; this ROM exporter has 12 fixed slots, not runtime pagination. '
                          'Select up to 12 with --characters slug1,slug2 (private links count toward this limit).')
+    output.mkdir(parents=True, exist_ok=True)
+    generation = uuid.uuid4().hex
+    asset_prefix = Path('characters') / generation
+    with tempfile.TemporaryDirectory(prefix='.roster-staging-', dir=output) as temporary:
+        staged_args = copy.copy(args)
+        staged_args.output = Path(temporary)
+        count = stage_roster(staged_args, characters, output/'character-cache', asset_prefix)
+        # Old roster entries keep referring to their original generation.
+        # Moving within the output filesystem and replacing the entrypoint
+        # last avoids exposing a partially validated/replaced roster.
+        (output/'characters').mkdir(exist_ok=True)
+        os.replace(staged_args.output/asset_prefix, output/asset_prefix)
+        entrypoint = 'roster.txt' if args.target == 'native' else 'loadout.json'
+        for name in ('play.py', 'Play.command', 'Play.bat', 'characters.json', entrypoint):
+            staged = staged_args.output/name
+            if staged.exists():
+                os.replace(staged, output/name)
+    print(f'Prepared {count} characters' + (f' on {(count+11)//12} custom pages (+ vanilla)' if args.target == 'native' else ''), flush=True)
+
+
+def stage_roster(args, characters, cache, asset_prefix):
     output = args.output.resolve()
-    cache = output / 'character-cache'
     cache.mkdir(parents=True, exist_ok=True)
     print(f'Preparing {len(characters)} characters for {args.target}…', flush=True)
     # Files are cached on disk; retain only one fighter per worker in memory.
@@ -319,7 +343,7 @@ def prepare(args):
         assignments = assign_rom(available, [c['fkind'] for c in characters])
     rows, report, loadout = [], [], []
     for i, c in enumerate(characters):
-        folder = output / 'characters' / c['slug']
+        folder = output / asset_prefix / c['slug']
         folder.mkdir(parents=True, exist_ok=True)
         data = cached_asset(c['bundleUrl'], cache)
         fk = assignments[i] if args.target == 'rom' else c['fkind']
@@ -361,7 +385,7 @@ def prepare(args):
     else:
         (output/'loadout.json').write_text(json.dumps(loadout, indent=2)+'\n')
     (output/'characters.json').write_text(json.dumps(dict(target=args.target, count=len(report), characters=report), indent=2)+'\n')
-    print(f'Prepared {len(report)} characters' + (f' on {(len(report)+11)//12} custom pages (+ vanilla)' if args.target == 'native' else ''), flush=True)
+    return len(report)
 
 
 LAUNCHER = '''#!/usr/bin/env python3
