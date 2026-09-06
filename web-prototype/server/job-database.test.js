@@ -87,6 +87,7 @@ test("insert enforces the quota against stored jobs", async () => {
 // prove the insert path counts site-wide usage server-side instead of reading
 // every matching document.
 function fakeFirestore(seed) {
+  let transactionTail = Promise.resolve();
   const docs = new Map(seed.map((job) => [job.id, job]));
   const slugs = new Set(seed.map((job) => job.slug));
   const reads = { documents: 0, aggregations: 0 };
@@ -108,7 +109,8 @@ function fakeFirestore(seed) {
     doc: (id) => ({ kind: "doc", id }),
     firestore: {
       collection: (name) => ({ doc: (slug) => ({ kind: name.endsWith("Quota") ? "guard" : "slug", id: slug }) }),
-      runTransaction: async (run) => run({
+      runTransaction: (run) => {
+        const result = transactionTail.then(() => run({
         get: async (target) => {
           if (target.kind === "guard") return { exists: false };
           if (target.kind === "doc") return { exists: docs.has(target.id), data: () => structuredClone(docs.get(target.id)) };
@@ -126,10 +128,69 @@ function fakeFirestore(seed) {
           else docs.set(target.id, value);
         },
         set: (target, value) => { if (target.kind !== "guard") docs.set(target.id, structuredClone(value)); },
-      }),
+        }));
+        transactionTail = result.catch(() => {});
+        return result;
+      },
     },
   };
   return { collection, reads, docs };
+}
+
+for (const driver of ["local", "firestore"]) {
+  async function withRetryDatabase(run) {
+    if (driver === "local") return withDatabase(run);
+    const database = new FirestoreJobDatabase({ collectionName: "jobs" });
+    database.collection = fakeFirestore([]).collection;
+    return run(database);
+  }
+  const options = { quota: { maxActivePerOwner: 1, maxDailyPerOwner: 10,
+    maxGlobalActive: 200, maxGlobalDaily: 5000 }, maxManualRetries: 3 };
+  const failed = (id, ownerId = "owner") => ({ id, slug: id, ownerId, status: "failed",
+    createdAt: new Date(Date.now() - 2 * DAY).toISOString(), revision: 1,
+    retry: { automaticCounts: { moderation: 2, transient: 1 }, manualRetriesAt: [] } });
+  const DAY = 24 * 60 * 60 * 1000;
+
+  test(`[${driver}] concurrent retries admit only one job per owner`, async () => {
+    await withRetryDatabase(async (database) => {
+      await database.insert(failed("one"));
+      await database.insert(failed("two"));
+      const results = await Promise.allSettled([
+        database.retry("one", "owner", options), database.retry("two", "owner", options),
+      ]);
+      assert.equal(results.filter((result) => result.status === "fulfilled").length, 1);
+      assert.equal(results.find((result) => result.status === "rejected").reason.reason, "active");
+      const job = results.find((result) => result.status === "fulfilled").value;
+      assert.equal(job.retry.manualRetriesAt.length, 1);
+      assert.deepEqual(job.retry.automaticCounts, { moderation: 2, transient: 1 });
+    });
+  });
+
+  test(`[${driver}] retry cannot overwrite a claimed job or reset its retry budget`, async () => {
+    await withRetryDatabase(async (database) => {
+      await database.insert(failed("one"));
+      await database.retry("one", "owner", options);
+      await database.claim("one", "worker", 60);
+      await assert.rejects(database.retry("one", "owner", options), { status: 409 });
+      const current = driver === "local" ? await database.get("one")
+        : (await database.collection.firestore.runTransaction((tx) => tx.get(database.collection.doc("one")))).data();
+      assert.equal(current.lease.executionId, "worker");
+      assert.equal(current.retry.manualRetriesAt.length, 1);
+    });
+  });
+
+  test(`[${driver}] retry counts recent retries of old jobs toward the global daily limit`, async () => {
+    await withRetryDatabase(async (database) => {
+      const used = failed("used", "other");
+      used.retry.manualRetriesAt = [new Date().toISOString()];
+      await database.insert(used);
+      await database.insert(failed("one"));
+      await assert.rejects(database.retry("one", "owner", {
+        ...options, quota: { ...options.quota, maxGlobalDaily: 1 },
+      }), (error) => error.reason === "globalDaily");
+      await assert.rejects(database.retry("one", "stranger", options), { status: 404 });
+    });
+  });
 }
 
 test("firestore insert counts site-wide usage with aggregations, not document reads", async () => {
