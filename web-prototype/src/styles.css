@@ -1982,30 +1982,10 @@ body.retro-home.show-native-cursor * {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 11px;
+  width: 100%;
+  gap: 10px;
   margin-top: 22px;
 }
-.fighter-job-retry,
-.fighter-job-cancel {
-  box-sizing: border-box;
-  width: clamp(210px, 23vw, 300px);
-  min-width: clamp(210px, 23vw, 300px);
-  min-height: 48px;
-  background: #050303;
-}
-.fighter-job-retry,
-.fighter-job-delete,
-.fighter-job-cancel { box-sizing: border-box; }
-.fighter-job-delete {
-  width: clamp(210px, 23vw, 300px);
-  min-width: clamp(210px, 23vw, 300px);
-  min-height: 48px;
-  background: #050303;
-  color: #ff947a;
-}
-.fighter-job-delete.is-confirming { background: #3a1a14; color: #fff; }
-.fighter-job-retry[disabled],
-.fighter-job-delete[disabled] { opacity: .6; cursor: default; }
 .fighter-job-title,
 .fighter-job-headline,
 .fighter-job-facts,
@@ -2031,8 +2011,45 @@ body.retro-home.show-native-cursor * {
 .fighter-download { border-top: 1px solid #514735; padding-top: 22px; }
 .fighter-download input { box-sizing: border-box; width: 100%; min-width: 0; padding: 12px; border: 1px solid #817459; border-radius: 4px; background: #181714; color: #fff; font: 13px/1.5 monospace; }
 .fighter-download input:focus-visible { outline: 2px solid #eac579; outline-offset: 3px; }
-.fighter-download-actions { display: flex; flex-wrap: wrap; gap: 10px; }
-.fighter-download-actions > * { flex: 1 1 150px; text-align: center; text-decoration: none; box-sizing: border-box; }
+.fighter-download-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.fighter-download a { color: #eac579; text-underline-offset: 3px; }
+/* One size and alignment for buttons and download links, including Close's
+   inherited margin/width overrides from the shared launch controls. */
+.fighter-download-actions > .launch-flow-action,
+.fighter-job-actions > .launch-flow-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 calc((100% - 20px) / 3);
+  box-sizing: border-box;
+  width: auto;
+  min-width: 0;
+  height: 56px;
+  min-height: 56px;
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid #5d3a2b;
+  border-radius: 0;
+  background: #080504;
+  color: #fff2d6;
+  font: 600 16px/1.25 "Kanit", sans-serif !important;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+}
+.fighter-job-actions > .fighter-job-delete { color: #ff947a; }
+.fighter-job-actions > .fighter-job-delete.is-confirming { background: #3a1a14; color: #fff; }
+.fighter-download-actions > .launch-flow-action:disabled,
+.fighter-job-actions > .launch-flow-action:disabled { opacity: .5; cursor: default; }
+.fighter-download-actions > .launch-flow-action:hover:not(:disabled),
+.fighter-job-actions > .launch-flow-action:hover:not(:disabled) { background: #130907; border-color: #eac579; }
+.fighter-download-actions > .launch-flow-action:focus-visible,
+.fighter-job-actions > .launch-flow-action:focus-visible { outline: 2px solid #eac579; outline-offset: 3px; }
+@media (max-width: 480px) {
+  .fighter-download-actions > .launch-flow-action,
+  .fighter-job-actions > .launch-flow-action { flex-basis: 100%; }
+}
+
 
 .controller-map-ledger > button:not(:disabled) { cursor: pointer; }
 .controller-map-ledger > button:not(:disabled):hover,

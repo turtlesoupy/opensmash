@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { availableFighterTargets } from "../shared/fighter-targets.js";
+import { availableFighterTargets, CHARACTER_MESHES } from "../shared/fighter-targets.js";
 import ModalPage from "./ModalPage.jsx";
 import { formatFighterJobError } from "../shared/fighter-job-ui.js";
 
@@ -48,9 +48,15 @@ export default function FighterJobModal({ job, onClose, onDelete, onRetry, onSav
   const [retarget, setRetarget] = useState("mario");
   const [saving, setSaving] = useState(false);
   const [copyMessage, setCopyMessage] = useState("");
+  const [downloadFormat, setDownloadFormat] = useState(null);
+  const [downloadError, setDownloadError] = useState("");
+  const downloadRef = useRef(null);
   useEffect(() => {
     setRetarget(job?.character?.base || "mario");
     setCopyMessage("");
+    setDownloadError("");
+    setDownloadFormat(null);
+    return () => downloadRef.current?.abort();
   }, [open, job?.id]);
 
   const active = ACTIVE.has(job?.status);
@@ -80,6 +86,28 @@ export default function FighterJobModal({ job, onClose, onDelete, onRetry, onSav
   const elapsed = formatElapsed((Number.isFinite(endedAt) ? endedAt : now) - startedAt);
   const retryLabel = job.retry?.label || "Retry generation";
   const logTail = Array.isArray(job.logTail) ? job.logTail : [];
+
+  async function download(format) {
+    if (downloadRef.current && !downloadRef.current.signal.aborted) return;
+    const controller = new AbortController();
+    downloadRef.current = controller;
+    setDownloadFormat(format); setDownloadError("");
+    try {
+      const { characterDownload, saveDownload } = await import("./character-download.js");
+      const file = await characterDownload(downloadUrl, format, {
+        name: job.slug || job.character?.name || job.name,
+        fkind: CHARACTER_MESHES.find(target => target.value === retarget)?.fkind,
+      }, controller.signal);
+      if (!controller.signal.aborted) saveDownload(file);
+    } catch (error) {
+      if (!controller.signal.aborted) setDownloadError(error.message || "Could not prepare this download. Please try again.");
+    } finally {
+      if (downloadRef.current === controller) {
+        downloadRef.current = null;
+        if (!controller.signal.aborted) setDownloadFormat(null);
+      }
+    }
+  }
 
   async function retry(close) {
     if (!onRetry || retrying) return;
@@ -145,7 +173,7 @@ export default function FighterJobModal({ job, onClose, onDelete, onRetry, onSav
               <section className="fighter-settings">
                 <h3>Character settings</h3>
                 <p id="fighter-retarget-help">Choose the fighter whose moves and animations your character uses.</p>
-                <select id="fighter-retarget" aria-label="Target fighter" value={retarget} disabled={saving || deleting}
+                <select id="fighter-retarget" aria-label="Target fighter" value={retarget} disabled={saving || deleting || !!downloadFormat}
                   aria-describedby="fighter-retarget-help"
                   onChange={async (event) => {
                     const nextTarget = event.target.value;
@@ -172,8 +200,8 @@ export default function FighterJobModal({ job, onClose, onDelete, onRetry, onSav
 
             {job.status === "complete" && downloadUrl && (
               <section className="fighter-settings fighter-download" aria-labelledby="fighter-download-label">
-                <label id="fighter-download-label" htmlFor="fighter-download-url">Character download URL</label>
-                <p id="fighter-download-help">Download the character bundle (.osb6), including its available fighter targets.</p>
+                <label id="fighter-download-label" htmlFor="fighter-download-url">Play locally or download</label>
+                <p id="fighter-download-help">Play on your computer by following the <a href="https://github.com/turtlesoupy/opensmash/blob/main/BUILDING.md" target="_blank" rel="noopener noreferrer">local-build instructions on GitHub</a> and providing this character URL.</p>
                 <input id="fighter-download-url" type="url" readOnly value={downloadUrl}
                   aria-describedby="fighter-download-help" onFocus={(event) => event.target.select()} />
                 <div className="fighter-download-actions">
@@ -185,8 +213,13 @@ export default function FighterJobModal({ job, onClose, onDelete, onRetry, onSav
                       setCopyMessage("Select the URL above to copy it manually.");
                     }
                   }}>Copy URL</button>
-                  <a className="launch-flow-action" href={downloadUrl} download={`${job.slug}.osb6`}>Download character</a>
+                  <button className="launch-flow-action" type="button" disabled={!!downloadFormat || saving}
+                    onClick={() => download("osb6")}>{downloadFormat === "osb6" ? "Downloading OSB6…" : "Download OSB6"}</button>
+                  <button className="launch-flow-action" type="button" disabled={!!downloadFormat || saving}
+                    onClick={() => download("obj")}>{downloadFormat === "obj" ? "Preparing OBJ…" : "Download OBJ"}</button>
                 </div>
+                {downloadFormat && <p role="status">{downloadFormat === "obj" ? "Converting your character to OBJ…" : "Downloading your character…"}</p>}
+                {downloadError && <p role="alert">{downloadError}</p>}
                 {copyMessage && <p role="status">{copyMessage}</p>}
               </section>
             )}

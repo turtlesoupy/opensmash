@@ -62,6 +62,7 @@ export function parseOsb6Preview(input, requestedFkind) {
   if (!selected) throw new Error("Fighter bundle has no renderable targets");
   if (ascii(bytes, selected.offset) !== "OSB5") throw new Error("Invalid fighter target payload");
 
+  if (selected.length < 24) throw new Error("Truncated fighter bundle (mesh header)");
   const payload = selected.offset;
   checkedRange(bytes, payload, 24, "mesh header");
   const jointCount = view.getUint32(payload + 4, true);
@@ -73,6 +74,7 @@ export function parseOsb6Preview(input, requestedFkind) {
 
   const vertexOffset = payload + 24 + jointCount * 4;
   const triangleOffset = vertexOffset + vertexCount * 28;
+  if (triangleOffset + triangleCount * 8 > payload + selected.length) throw new Error("Truncated fighter bundle (mesh payload)");
   checkedRange(bytes, vertexOffset, vertexCount * 28, "vertices");
   checkedRange(bytes, triangleOffset, triangleCount * 8, "triangles");
 
@@ -101,6 +103,9 @@ export function parseOsb6Preview(input, requestedFkind) {
     indices[index * 3 + 1] = view.getUint16(at + 2, true);
     indices[index * 3 + 2] = view.getUint16(at + 4, true);
   }
+
+  if (positions.some(value => !Number.isFinite(value))) throw new Error("Invalid fighter vertex position");
+  if (indices.some(index => index >= vertexCount)) throw new Error("Invalid fighter triangle index");
 
   return {
     fkind: selected.fkind,
