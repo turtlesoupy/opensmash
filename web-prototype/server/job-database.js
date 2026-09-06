@@ -108,12 +108,12 @@ class LocalJobDatabase {
 
   async insert(job, { quota = null } = {}) {
     return withLocalQuotaLock(this.root, async () => {
-    const existing = await this.list();
-    if (existing.some((candidate) => candidate.slug === job.slug)) {
-      throw duplicateSlugError(job.slug);
-    }
-    if (quota) assertQuota(quotaUsage(existing, job.ownerId), quota);
-    await this.write(job);
+      const existing = await this.list();
+      if (existing.some((candidate) => candidate.slug === job.slug)) {
+        throw duplicateSlugError(job.slug);
+      }
+      if (quota) assertQuota(quotaUsage(existing, job.ownerId), quota);
+      await this.write(job);
     });
   }
 
