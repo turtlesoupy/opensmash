@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { mountFullscreenOverlay } from "../shared/fullscreen-overlay.js";
 import logoFallbackUrl from "../visual/assets/smash-the-weights-logo.png?url";
 import FlameAction from "./FlameAction.jsx";
 import MobileControls from "./MobileControls.jsx";
@@ -202,6 +203,12 @@ function GodRay() {
   );
 }
 
+function CrtViewport() {
+  const hostRef = useRef(null);
+  useLayoutEffect(() => mountFullscreenOverlay(hostRef.current, document), []);
+  return <div ref={hostRef} className="crt-viewport-host" />;
+}
+
 function RuntimeControls() {
   return (
     <>
@@ -216,7 +223,7 @@ function RuntimeControls() {
       </details>
       <details id="crt-tuner" hidden><summary>CRT viewport tuning</summary><div className="crt-tuner-body"><button type="button" data-crt-reset>Reset defaults</button></div></details>
       <canvas id="glove-canvas" />
-      <canvas id="crt-viewport-canvas" aria-hidden="true" />
+      <CrtViewport />
     </>
   );
 }
