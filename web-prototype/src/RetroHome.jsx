@@ -24,7 +24,7 @@ function ControllerCallouts() {
   return (
     <div id="controller-callouts" className="controller-callouts" aria-label="Keyboard controls">
       <svg id="controller-callout-lines" className="controller-callout-lines" aria-hidden="true">
-        {['stick', 'a', 'b', 'z', 'left-bumper', 'right-bumper'].map((control) => (
+        {['stick', 'dpad', 'a', 'b', 'c-buttons', 'z', 'left-bumper', 'right-bumper'].map((control) => (
           <g data-control-line={control} key={control}><line /><circle r="3" /></g>
         ))}
       </svg>
@@ -36,6 +36,18 @@ function ControllerCallouts() {
         </span>
         <span className="controller-key-alt" data-control-alt="stick" aria-hidden="true">or arrow keys</span>
       </div>
+      {[
+        ['dpad', [['dup', '↑'], ['dleft', '←'], ['ddown', '↓'], ['dright', '→']], 'D-pad'],
+        ['c-buttons', [['cup', 'C↑'], ['cleft', 'C←'], ['cdown', 'C↓'], ['cright', 'C→']], 'C buttons'],
+      ].map(([control, keys, label]) => (
+        <div className="controller-callout controller-extra-callout" data-control-callout={control} aria-label={label} key={control}>
+          <span className="controller-key-cluster controller-n64-cluster" aria-hidden="true">
+            {keys.map(([key, text]) => (
+              <kbd className="controller-keycap" data-control-key={key} key={key}>{text}</kbd>
+            ))}
+          </span>
+        </div>
+      ))}
       {[
         ['a', 'j', 'J or Ctrl: A button', 'or Ctrl'],
         ['b', 'k', 'K or Alt: B button', 'or Alt'],

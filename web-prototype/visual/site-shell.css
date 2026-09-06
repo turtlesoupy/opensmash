@@ -960,6 +960,24 @@
   .controller-callouts.is-z-reveal .controller-callout-lines g:not([data-control-line="z"]) {
     opacity: 0;
   }
+  .controller-extra-callout,
+  .controller-callout-lines g[data-control-line="dpad"],
+  .controller-callout-lines g[data-control-line="c-buttons"] {
+    opacity: 0;
+    visibility: hidden;
+  }
+  .controller-callouts.has-gamepad .controller-extra-callout,
+  .controller-callouts.has-gamepad .controller-callout-lines g[data-control-line="dpad"],
+  .controller-callouts.has-gamepad .controller-callout-lines g[data-control-line="c-buttons"] {
+    opacity: 1;
+    visibility: visible;
+  }
+  .controller-callouts.has-gamepad.is-z-reveal .controller-extra-callout,
+  .controller-callouts.has-gamepad.is-z-reveal .controller-callout-lines g[data-control-line="dpad"],
+  .controller-callouts.has-gamepad.is-z-reveal .controller-callout-lines g[data-control-line="c-buttons"] {
+    opacity: 0;
+    visibility: hidden;
+  }
   .controller-callout {
     position: absolute;
     display: grid;
@@ -1027,6 +1045,7 @@
   .controller-key-cluster .controller-keycap:nth-child(2) { grid-column: 1; grid-row: 2; }
   .controller-key-cluster .controller-keycap:nth-child(3) { grid-column: 2; grid-row: 2; }
   .controller-key-cluster .controller-keycap:nth-child(4) { grid-column: 3; grid-row: 2; }
+  .controller-n64-cluster .controller-keycap { font-size: 11px; }
   .launch-flow-title {
     max-width: min(720px, 90vw);
     color: #fff2d6;

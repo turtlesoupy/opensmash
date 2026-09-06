@@ -93,7 +93,9 @@ let keyboardLabelsLoad = null;
 // LB=L, RB/RT=R, left stick = W A S D.
 const PAD_BUTTON_CONTROLS = Object.freeze({ 0: 'j', 1: 'k', 6: 'l', 4: 'i', 5: 'o', 7: 'o' });
 const PAD_STICK_THRESHOLD = 0.5;
+const PAD_DPAD_CONTROLS = Object.freeze({ 12: 'dup', 13: 'ddown', 14: 'dleft', 15: 'dright' });
 const PAD_CONTROL_LABELS = Object.freeze({
+  m64: Object.freeze({ w: '↑', a: '←', s: '↓', d: '→', j: 'A', k: 'B', l: 'Z', i: 'L', o: 'R' }),
   xbox: Object.freeze({ w: '↑', a: '←', s: '↓', d: '→', j: 'A', k: 'B', l: 'LT', i: 'LB', o: 'RB' }),
   playstation: Object.freeze({ w: '↑', a: '←', s: '↓', d: '→', j: '✕', k: '○', l: 'L2', i: 'L1', o: 'R1' }),
   switch: Object.freeze({ w: '↑', a: '←', s: '↓', d: '→', j: 'B', k: 'A', l: 'ZL', i: 'L', o: 'R' }),
@@ -269,6 +271,7 @@ function hasGamepad() {
 
 function padControlLabels() {
   const ids = connectedGamepads().map(pad => pad.id).join(' ');
+  if (/(?:^|\b)m64[_ ]controller(?:\b|$)/i.test(ids)) return PAD_CONTROL_LABELS.m64;
   if (/dualsense|dualshock|playstation|sony|054c/i.test(ids)) return PAD_CONTROL_LABELS.playstation;
   if (/switch|nintendo|joy-con|057e/i.test(ids)) return PAD_CONTROL_LABELS.switch;
   return PAD_CONTROL_LABELS.xbox;
@@ -278,6 +281,7 @@ function padControlLabels() {
 // show that pad's button names instead (same positions, same checks).
 function applyControlLabels() {
   const pad = hasGamepad();
+  controllerCallouts?.classList.toggle('has-gamepad', pad);
   const labels = pad ? padControlLabels() : keyboardLabels;
   controlKeycaps.forEach(keycap => {
     if (keycap.dataset.keyLabel === undefined) keycap.dataset.keyLabel = keycap.textContent;
@@ -641,8 +645,10 @@ const controllerZAnchorPoint = [0, 0];
 const controllerZLabelPoint = [0, 0];
 const controllerCalloutLayout = Object.freeze({
   stick: Object.freeze({ anchor: [0.50, 0.55], label: [0.50, 0.34] }),
-  a: Object.freeze({ anchor: [0.67, 0.32], label: [0.72, 0.17] }),
-  b: Object.freeze({ anchor: [0.75, 0.40], label: [0.88, 0.36] }),
+  dpad: Object.freeze({ anchor: [0.27, 0.39], label: [0.12, 0.40] }),
+  a: Object.freeze({ anchor: [0.75, 0.40], label: [0.88, 0.36] }),
+  b: Object.freeze({ anchor: [0.67, 0.32], label: [0.72, 0.17] }),
+  'c-buttons': Object.freeze({ anchor: [0.80, 0.25], label: [0.91, 0.18] }),
   z: Object.freeze({
     anchor: [0.50, 0.72],
     label: [0.50, 0.94],
@@ -2262,7 +2268,7 @@ function resetControlCheck() {
   if (controlPrompt) {
     const pad = hasGamepad();
     controlPrompt.textContent = controlsPreviewMode
-      ? (pad ? 'Press the buttons on your controller or the mapped keys to try the controls'
+      ? (pad ? 'Press the shown buttons on your controller or the mapped keys to try the controls'
              : 'Press the mapped keys to try the controls')
       : (pad ? 'Press each button on your controller to continue'
              : 'Press each key on your keyboard to continue');
@@ -2293,7 +2299,7 @@ function padControlsNow() {
   const active = new Set();
   for (const pad of connectedGamepads()) {
     pad.buttons.forEach((button, index) => {
-      const control = PAD_BUTTON_CONTROLS[index];
+      const control = PAD_BUTTON_CONTROLS[index] || PAD_DPAD_CONTROLS[index];
       if (control && (button.pressed || button.value > 0.5)) active.add(control);
     });
     const x = pad.axes[0] || 0;
@@ -2302,6 +2308,12 @@ function padControlsNow() {
     if (y > PAD_STICK_THRESHOLD) active.add('s');
     if (x < -PAD_STICK_THRESHOLD) active.add('a');
     if (x > PAD_STICK_THRESHOLD) active.add('d');
+    const cx = pad.axes[2] || 0;
+    const cy = pad.axes[3] || 0;
+    if (cy < -PAD_STICK_THRESHOLD) active.add('cup');
+    if (cy > PAD_STICK_THRESHOLD) active.add('cdown');
+    if (cx < -PAD_STICK_THRESHOLD) active.add('cleft');
+    if (cx > PAD_STICK_THRESHOLD) active.add('cright');
   }
   return active;
 }
@@ -2340,7 +2352,7 @@ function registerControlInput(key, repeated) {
   if (firstPress) playLaunchSound(LAUNCH_SOUNDS.controllerPunch);
   const keycap = controlKeycaps.find(item => item.dataset.controlKey === key);
   keycap?.classList.add('is-complete', 'is-pressed');
-  if (completedControlKeys.size === REQUIRED_CONTROL_KEYS.length) {
+  if (REQUIRED_CONTROL_KEYS.every(control => completedControlKeys.has(control))) {
     if (controlsPreviewMode) {
       controlPrompt?.classList.add('is-complete');
       if (controlPrompt) {

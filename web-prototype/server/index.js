@@ -22,6 +22,7 @@ import {
 } from "./cache-policy.js";
 import { CREATION_DISABLED_MESSAGE, creationEnabled } from "./creation-switch.js";
 import { withInitialState } from "./html-state.js";
+import { withControllerRemap } from "./engine-html.js";
 import { resolveProjectPaths } from "./project-paths.js";
 import { assignRosterBases, bundleForBase, FIGHTERS, readOsb6Targets } from "./roster.js";
 import { characterAssetKind, engineBundleAssetKind, loadRemoteBakedRoster } from "./baked-remote.js";
@@ -487,6 +488,26 @@ async function serveFile(req, res, filePath, cacheControl = "no-store", extraHea
     } else {
       createReadStream(filePath).pipe(res);
     }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function serveEngineIndex(req, res, filePath, cacheControl, extraHeaders = {}) {
+  try {
+    const source = await readFile(filePath, "utf8");
+    const body = withControllerRemap(source);
+    const headers = {
+      "Content-Type": "text/html; charset=utf-8",
+      "Content-Length": Buffer.byteLength(body),
+      "Cache-Control": cacheControlForEnvironment(cacheControl, IS_PRODUCTION),
+      ...ENGINE_SECURITY_HEADERS,
+      ...extraHeaders,
+    };
+    res.writeHead(200, headers);
+    if (req.method === "HEAD") res.end();
+    else res.end(body);
     return true;
   } catch {
     return false;
@@ -1190,6 +1211,13 @@ async function handleRequest(req, res, vite) {
     }
     const filePath = safeFile(ENGINE_ROOT, relative);
     const cacheControl = engineCacheControl(relative, url.searchParams);
+    if (relative === "index.html" && filePath && (await serveEngineIndex(
+      req,
+      res,
+      filePath,
+      cacheControl,
+      edgeCacheHeaders(cacheControl, IS_PRODUCTION),
+    ))) return;
     if (filePath && (await serveFile(
       req,
       res,
