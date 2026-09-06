@@ -8,7 +8,6 @@ import consoleModelUrl from './assets/hybrid-four-port-console-fitted.glb?url';
 import cursorModelUrl from './assets/hand-cursor-meshy.glb?url';
 import tvModelUrl from './assets/tripo-crt-tv.glb?url';
 import { controlEmbeddedTrailer } from '../src/embedded-trailer.js';
-import stoneBackgroundUrl from './assets/stone-background.png?url';
 
 const CARTRIDGE_INTRO_ENABLED =
   document.documentElement.classList.contains('is-cartridge-intro');
@@ -16,11 +15,6 @@ const CARTRIDGE_INTRO_ENABLED =
 // files through its own loaders; share one in-memory copy instead of
 // racing the HTTP cache for a second download of each.
 THREE.Cache.enabled = true;
-function ensureStoneBackground() {
-  // Baked by scripts/generate-stone-background.mjs from the same fixed seed.
-  // Ranking 96 procedural candidates here blocked input during every startup.
-  document.body.style.setProperty('--stone-background-image', `url("${stoneBackgroundUrl}")`);
-}
 
 // ---------------------------------------------------------------------------
 // Renderer / scene — transparent overlay canvas above the page.
@@ -2506,7 +2500,6 @@ function setCartridgeState(next) {
   }
   if (next === CARTRIDGE_STATE.EJECTING) restartStarterVideoPlayback();
   const gameRunning = next === CARTRIDGE_STATE.RUNNING;
-  if (gameRunning) ensureStoneBackground();
   document.body.classList.toggle('is-game-booted', gameRunning);
   if (gameRunning) document.body.classList.add('is-intro-credit-visible');
   if (next !== CARTRIDGE_STATE.BOOTING && !gameRunning) {
