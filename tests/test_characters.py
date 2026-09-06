@@ -49,6 +49,46 @@ def custom_manifest():
 
 
 class CharacterTests(unittest.TestCase):
+    def test_failed_rebuild_preserves_existing_roster_and_assets(self):
+        for target in ('native', 'rom'):
+            with self.subTest(target=target), tempfile.TemporaryDirectory() as tmp:
+                output = Path(tmp)
+                args = type('Args', (), dict(target=target, output=output, catalog='unused',
+                    site='https://assets.test', characters=['one'], character_url=[]))()
+                with patch.object(c, 'resolve', return_value=[row('one', short='ONE')]), \
+                        patch.object(c, 'cached_asset', return_value=bundle()), \
+                        contextlib.redirect_stdout(io.StringIO()):
+                    c.prepare(args)
+                original = {p.relative_to(output): p.read_bytes() for p in output.rglob('*')
+                            if p.is_file() and 'character-cache' not in p.parts}
+                changed = bytearray(bundle())
+                changed[16:18] = b'\x00\x01'
+                with patch.object(c, 'resolve', return_value=[row('one', short='ONE', uiUrl='https://assets.test/bad')]), \
+                        patch.object(c, 'cached_asset', side_effect=lambda url, cache: b'bad UI' if url.endswith('/bad') else bytes(changed)), \
+                        contextlib.redirect_stdout(io.StringIO()):
+                    with self.assertRaisesRegex(ValueError, 'invalid uiUrl'):
+                        c.prepare(args)
+                self.assertEqual(original, {p.relative_to(output): p.read_bytes() for p in output.rglob('*')
+                                          if p.is_file() and 'character-cache' not in p.parts})
+                self.assertFalse(list(output.glob('.roster-staging-*')))
+
+    def test_successful_rebuild_switches_roster_without_overwriting_old_assets(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            output = Path(tmp)
+            args = type('Args', (), dict(target='native', output=output, catalog='unused',
+                site='https://assets.test', characters=['one'], character_url=[]))()
+            with patch.object(c, 'resolve', return_value=[row('one', short='ONE')]), \
+                    patch.object(c, 'cached_asset', return_value=bundle()), \
+                    contextlib.redirect_stdout(io.StringIO()):
+                c.prepare(args)
+                old_mesh = output/(output/'roster.txt').read_text().split('|')[2]
+                old_bytes = old_mesh.read_bytes()
+                c.prepare(args)
+            new_mesh = output/(output/'roster.txt').read_text().split('|')[2]
+            self.assertNotEqual(old_mesh, new_mesh)
+            self.assertEqual(old_mesh.read_bytes(), old_bytes)
+            self.assertEqual(new_mesh.read_bytes(), old_bytes)
+
     def test_private_build_link_and_unicode(self):
         raw=row('mine', ownerId='must-not-be-copied')
         raw['name']='私の fighter'
