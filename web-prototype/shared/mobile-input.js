@@ -36,7 +36,9 @@ export function dispatchGameKey(frame, code, pressed) {
     const frameWindow = frame?.contentWindow;
     const canvas = frame?.contentDocument?.getElementById("canvas");
     if (!frameWindow?.KeyboardEvent || !canvas) return false;
-    if (pressed) canvas.focus?.({ preventScroll: true });
+    // Synthetic events reach the engine through bubbling without focus. Moving
+    // focus into the iframe here can blur the touch deck and release its keys
+    // before this keydown is delivered, leaving an untracked key held in-game.
     canvas.dispatchEvent(new frameWindow.KeyboardEvent(pressed ? "keydown" : "keyup", {
       bubbles: true,
       cancelable: true,

@@ -31,7 +31,7 @@ test("mobile buttons dispatch matching keydown and keyup events to the engine ca
 
   assert.equal(dispatchGameKey(frame, "KeyJ", true), true);
   assert.equal(dispatchGameKey(frame, "KeyJ", false), true);
-  assert.deepEqual(focusOptions, { preventScroll: true });
+  assert.equal(focusOptions, null, "touch input must not steal focus from the touch deck");
   assert.deepEqual(events.map(({ type }) => type), ["keydown", "keyup"]);
   assert.deepEqual(events.map(({ options }) => options.code), ["KeyJ", "KeyJ"]);
   assert.deepEqual(events.map(({ options }) => options.key), ["j", "j"]);

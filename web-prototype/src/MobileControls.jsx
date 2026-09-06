@@ -104,6 +104,7 @@ export default function MobileControls({ active, frameRef, preview = false }) {
   }, [sendKey]);
 
   const releaseAll = useCallback(() => {
+    joystickPointerRef.current = null;
     heldCodesRef.current.forEach((code) => sendKey(code, false));
     heldCodesRef.current = new Set();
     joystickCodesRef.current = new Set();
