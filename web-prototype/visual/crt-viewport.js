@@ -1,3 +1,5 @@
+import { compileProgramAsync } from '../shared/shader-compilation.js';
+
 const canvas = document.getElementById('crt-viewport-canvas');
 const tuner = document.getElementById('crt-tuner');
 const requestedPreset = new URLSearchParams(location.search).get('crt') ?? window.__opensmashCrt ?? null;
@@ -81,6 +83,7 @@ function sanitizeSettings(candidate) {
   if (!candidate || typeof candidate !== 'object') return {};
   const safe = {};
   Object.keys(strongPreset).forEach((key) => {
+    if (!Object.hasOwn(candidate, key)) return;
     const value = clampSetting(key, candidate[key]);
     if (value !== undefined) safe[key] = value;
   });
@@ -142,32 +145,52 @@ function syncTuner() {
 if (!canvas) {
   if (tuner) tuner.hidden = true;
 } else {
-  const gl = canvas.getContext('webgl', {
-    alpha: true,
-    antialias: false,
-    depth: false,
-    stencil: false,
-    // Safari and Chromium disagree when a transparent WebGL canvas with
-    // straight-alpha color is promoted into a backdrop-filtered compositor
-    // layer. Keep the default framebuffer premultiplied and write matching
-    // premultiplied color below so the phosphor mask blends identically.
-    premultipliedAlpha: true,
-    powerPreference: 'low-power',
-  });
+  let gl = null;
+  let uniforms = null;
+  let ready = false;
+  let initialization = null;
+  let unavailable = false;
+  canvas.hidden = true;
+  canvas.style.display = 'none';
+  canvas.dataset.crtPreset = activePreset;
 
-  if (!gl) {
-    canvas.hidden = true;
-    canvas.style.display = 'none';
-    if (tuner) {
-      tuner.dataset.crtUnavailable = 'true';
-      tuner.querySelectorAll('input, button').forEach((control) => {
-        control.disabled = true;
-      });
-    }
-  } else {
-    canvas.dataset.crtActive = 'true';
-    canvas.dataset.crtPreset = activePreset;
+  function ensureRenderer() {
+    if (initialization) return initialization;
+    canvas.dataset.crtState = 'compiling';
+    initialization = initializeRenderer().then(() => {
+      ready = true;
+      canvas.dataset.crtActive = 'true';
+      canvas.dataset.crtState = 'ready';
+      // The user may have disabled the effect while compilation was pending.
+      setEnabled(settings.enabled);
+    }).catch(error => {
+      unavailable = true;
+      canvas.dataset.crtState = 'failed';
+      canvas.hidden = true;
+      canvas.style.display = 'none';
+      if (tuner) {
+        tuner.dataset.crtUnavailable = 'true';
+        tuner.querySelectorAll('input, button').forEach(control => { control.disabled = true; });
+      }
+      console.error('Could not prepare CRT viewport shaders', error);
+    });
+    return initialization;
+  }
 
+  async function initializeRenderer() {
+    gl = canvas.getContext('webgl', {
+      alpha: true,
+      antialias: false,
+      depth: false,
+      stencil: false,
+      // Safari and Chromium disagree when a transparent WebGL canvas with
+      // straight-alpha color is promoted into a backdrop-filtered compositor
+      // layer. Keep the default framebuffer premultiplied and write matching
+      // premultiplied color below so the phosphor mask blends identically.
+      premultipliedAlpha: true,
+      powerPreference: 'low-power',
+    });
+    if (!gl) throw new Error('WebGL is unavailable');
     const vertexSource = `
       attribute vec2 position;
       varying vec2 vUv;
@@ -268,26 +291,7 @@ if (!canvas) {
       }
     `;
 
-    function compileShader(type, source) {
-      const shader = gl.createShader(type);
-      gl.shaderSource(shader, source);
-      gl.compileShader(shader);
-      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        const message = gl.getShaderInfoLog(shader);
-        gl.deleteShader(shader);
-        throw new Error(`CRT viewport shader failed to compile: ${message}`);
-      }
-      return shader;
-    }
-
-    const program = gl.createProgram();
-    gl.attachShader(program, compileShader(gl.VERTEX_SHADER, vertexSource));
-    gl.attachShader(program, compileShader(gl.FRAGMENT_SHADER, fragmentSource));
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      throw new Error(`CRT viewport shader failed to link: ${gl.getProgramInfoLog(program)}`);
-    }
-
+    const program = await compileProgramAsync(gl, vertexSource, fragmentSource);
     const vertices = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vertices);
     gl.bufferData(
@@ -316,171 +320,175 @@ if (!canvas) {
       'rollingStrength',
       'motionSpeed',
     ];
-    const uniforms = Object.fromEntries(
+    uniforms = Object.fromEntries(
       uniformKeys.map((key) => [key, gl.getUniformLocation(program, key)]),
     );
-    const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    let animationFrame = 0;
-    // The last drawn frame is final (no animated noise/flicker/roll, the
-    // engine focused, or reduced motion): keep it until the viewport changes.
-    let renderedStill = false;
-    let lastDrawAt = -Infinity;
-    // Noise and flicker read the same at 30fps; every redraw makes the
-    // compositor re-run the full-viewport backdrop-filter, so halve them.
-    const FRAME_INTERVAL_MS = 30;
-    let appliedFilter = null;
+  }
 
-    function applyCompositeFilter(focusedGame = false) {
-      const filter = focusedGame ? 'none' : [
-        `blur(${settings.compositeBlur.toFixed(3)}px)`,
-        `saturate(${settings.saturation.toFixed(3)})`,
-        `contrast(${settings.contrast.toFixed(3)})`,
-        `brightness(${settings.brightness.toFixed(3)})`,
-      ].join(' ');
-      if (filter === appliedFilter) return;
-      appliedFilter = filter;
-      canvas.style.webkitBackdropFilter = filter;
-      canvas.style.backdropFilter = filter;
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let animationFrame = 0;
+  // The last drawn frame is final (no animated noise/flicker/roll, the
+  // engine focused, or reduced motion): keep it until the viewport changes.
+  let renderedStill = false;
+  let lastDrawAt = -Infinity;
+  // Noise and flicker read the same at 30fps; every redraw makes the
+  // compositor re-run the full-viewport backdrop-filter, so halve them.
+  const FRAME_INTERVAL_MS = 30;
+  let appliedFilter = null;
+
+  function applyCompositeFilter(focusedGame = false) {
+    const filter = focusedGame ? 'none' : [
+      `blur(${settings.compositeBlur.toFixed(3)}px)`,
+      `saturate(${settings.saturation.toFixed(3)})`,
+      `contrast(${settings.contrast.toFixed(3)})`,
+      `brightness(${settings.brightness.toFixed(3)})`,
+    ].join(' ');
+    if (filter === appliedFilter) return;
+    appliedFilter = filter;
+    canvas.style.webkitBackdropFilter = filter;
+    canvas.style.backdropFilter = filter;
+  }
+
+  function resize() {
+    // One shader pixel per CSS pixel keeps the phosphor lattice crisp and
+    // avoids a high-DPI full-screen fragment pass becoming needlessly hot.
+    const ratio = 1;
+    const width = Math.max(1, Math.round(innerWidth * ratio));
+    const height = Math.max(1, Math.round(innerHeight * ratio));
+    if (canvas.width !== width || canvas.height !== height) {
+      canvas.width = width;
+      canvas.height = height;
+      gl.viewport(0, 0, width, height);
     }
+    gl.uniform1f(uniforms.pixelRatio, ratio);
+  }
 
-    function resize() {
-      // One shader pixel per CSS pixel keeps the phosphor lattice crisp and
-      // avoids a high-DPI full-screen fragment pass becoming needlessly hot.
-      const ratio = 1;
-      const width = Math.max(1, Math.round(innerWidth * ratio));
-      const height = Math.max(1, Math.round(innerHeight * ratio));
-      if (canvas.width !== width || canvas.height !== height) {
-        canvas.width = width;
-        canvas.height = height;
-        gl.viewport(0, 0, width, height);
-      }
-      gl.uniform1f(uniforms.pixelRatio, ratio);
-    }
-
-    function render(milliseconds) {
-      animationFrame = 0;
-      if (!settings.enabled) return;
-      const focusedGame = document.body.classList.contains('is-game-running');
-      const stillImage = focusedGame || reducedMotion ||
-        (settings.noiseStrength <= 0 && settings.flickerStrength <= 0 && settings.rollingStrength <= 0);
-      const matchesViewport = canvas.width === Math.max(1, Math.round(innerWidth)) &&
-        canvas.height === Math.max(1, Math.round(innerHeight));
-      // Focus can change while reduced motion keeps the shader image still.
-      // Update compositor state before the still-image early return so a
-      // running game never retains the menu's full-screen backdrop filter.
-      applyCompositeFilter(focusedGame);
-      if (stillImage && renderedStill && matchesViewport) {
-        animationFrame = requestAnimationFrame(render);
-        return;
-      }
-      if (!stillImage && milliseconds - lastDrawAt < FRAME_INTERVAL_MS) {
-        animationFrame = requestAnimationFrame(render);
-        return;
-      }
-      lastDrawAt = milliseconds;
-      renderedStill = stillImage;
-      resize();
-      gl.clearColor(0, 0, 0, 0);
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.uniform1f(uniforms.time, milliseconds * 0.001);
-      gl.uniform1f(uniforms.intensity, settings.intensity);
-      gl.uniform1f(uniforms.scanlineStrength, settings.scanlineStrength);
-      gl.uniform1f(uniforms.scanlineSpacing, settings.scanlineSpacing);
-      gl.uniform1f(uniforms.grilleStrength, settings.grilleStrength);
-      gl.uniform1f(uniforms.vignetteStrength, settings.vignetteStrength);
-      gl.uniform1f(uniforms.bezelStrength, settings.bezelStrength);
-      gl.uniform1f(uniforms.cornerRadius, settings.cornerRadius);
-      gl.uniform1f(uniforms.noiseStrength, settings.noiseStrength);
-      gl.uniform1f(uniforms.flickerStrength, settings.flickerStrength);
-      gl.uniform1f(uniforms.rollingStrength, settings.rollingStrength);
-      gl.uniform1f(
-        uniforms.motionSpeed,
-        reducedMotion || focusedGame ? 0 : settings.motionSpeed,
-      );
-      gl.drawArrays(gl.TRIANGLES, 0, 6);
+  function render(milliseconds) {
+    animationFrame = 0;
+    if (!settings.enabled || !ready || unavailable) return;
+    const focusedGame = document.body.classList.contains('is-game-running');
+    const stillImage = focusedGame || reducedMotion ||
+      (settings.noiseStrength <= 0 && settings.flickerStrength <= 0 && settings.rollingStrength <= 0);
+    const matchesViewport = canvas.width === Math.max(1, Math.round(innerWidth)) &&
+      canvas.height === Math.max(1, Math.round(innerHeight));
+    // Focus can change while reduced motion keeps the shader image still.
+    // Update compositor state before the still-image early return so a
+    // running game never retains the menu's full-screen backdrop filter.
+    applyCompositeFilter(focusedGame);
+    if (stillImage && renderedStill && matchesViewport) {
       animationFrame = requestAnimationFrame(render);
+      return;
     }
-
-    function setEnabled(enabled) {
-      settings.enabled = Boolean(enabled);
-      canvas.hidden = !settings.enabled;
-      canvas.style.display = settings.enabled ? 'block' : 'none';
-      if (settings.enabled && !animationFrame) {
-        animationFrame = requestAnimationFrame(render);
-      } else if (!settings.enabled && animationFrame) {
-        cancelAnimationFrame(animationFrame);
-        animationFrame = 0;
-      }
+    if (!stillImage && milliseconds - lastDrawAt < FRAME_INTERVAL_MS) {
+      animationFrame = requestAnimationFrame(render);
+      return;
     }
+    lastDrawAt = milliseconds;
+    renderedStill = stillImage;
+    resize();
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.uniform1f(uniforms.time, milliseconds * 0.001);
+    gl.uniform1f(uniforms.intensity, settings.intensity);
+    gl.uniform1f(uniforms.scanlineStrength, settings.scanlineStrength);
+    gl.uniform1f(uniforms.scanlineSpacing, settings.scanlineSpacing);
+    gl.uniform1f(uniforms.grilleStrength, settings.grilleStrength);
+    gl.uniform1f(uniforms.vignetteStrength, settings.vignetteStrength);
+    gl.uniform1f(uniforms.bezelStrength, settings.bezelStrength);
+    gl.uniform1f(uniforms.cornerRadius, settings.cornerRadius);
+    gl.uniform1f(uniforms.noiseStrength, settings.noiseStrength);
+    gl.uniform1f(uniforms.flickerStrength, settings.flickerStrength);
+    gl.uniform1f(uniforms.rollingStrength, settings.rollingStrength);
+    gl.uniform1f(
+      uniforms.motionSpeed,
+      reducedMotion || focusedGame ? 0 : settings.motionSpeed,
+    );
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+    animationFrame = requestAnimationFrame(render);
+  }
 
-    function applySettings(nextSettings, options = {}) {
-      settings = { ...settings, ...sanitizeSettings(nextSettings) };
+  function setEnabled(enabled) {
+    settings.enabled = Boolean(enabled);
+    const visible = settings.enabled && ready && !unavailable;
+    canvas.hidden = !visible;
+    canvas.style.display = visible ? 'block' : 'none';
+    if (visible && !animationFrame) {
       renderedStill = false;
-      if (options.preset) activePreset = options.preset;
-      else activePreset = 'custom';
-      canvas.dataset.crtPreset = activePreset;
-      applyCompositeFilter();
-      setEnabled(settings.enabled);
-      syncTuner();
-      if (options.persist !== false) persistSettings();
+      animationFrame = requestAnimationFrame(render);
+    } else if (!visible && animationFrame) {
+      cancelAnimationFrame(animationFrame);
+      animationFrame = 0;
     }
+    if (settings.enabled && !ready && !unavailable) void ensureRenderer();
+  }
 
-    function applyPreset(name, persist = true) {
-      const nextPreset = name === 'soft' ? softPreset : strongPreset;
-      applySettings(nextPreset, { preset: name, persist });
-    }
-
-    if (tuner) {
-      tuner.addEventListener('input', (event) => {
-        const input = event.target.closest('[data-crt-setting]');
-        if (!input) return;
-        const key = input.dataset.crtSetting;
-        const value = input.type === 'checkbox' ? input.checked : input.value;
-        applySettings({ [key]: value });
-      });
-
-      tuner.querySelectorAll('[data-crt-preset]').forEach((button) => {
-        button.addEventListener('click', () => {
-          applyPreset(button.dataset.crtPreset);
-        });
-      });
-
-      tuner.querySelector('[data-crt-reset]')?.addEventListener('click', () => {
-        try {
-          localStorage.removeItem(storageKey);
-        } catch {
-          // Ignore storage restrictions; in-memory reset still succeeds.
-        }
-        applyPreset('strong', false);
-      });
-    }
-
-    window.__crtViewport = {
-      canvas,
-      presets: { strong: strongPreset, soft: softPreset },
-      get preset() { return activePreset; },
-      get settings() { return { ...settings }; },
-      set settings(value) { applySettings(value); },
-      applyPreset,
-      reset() {
-        try {
-          localStorage.removeItem(storageKey);
-        } catch {
-          // Ignore storage restrictions; in-memory reset still succeeds.
-        }
-        applyPreset('strong', false);
-      },
-      get intensity() { return settings.intensity; },
-      set intensity(value) { applySettings({ intensity: value }); },
-      get enabled() { return settings.enabled; },
-      set enabled(value) { applySettings({ enabled: value }); },
-    };
-
-    // The animation loop owns drawing-buffer resizes. Resizing it directly in
-    // the DOM resize event clears WebGL before the focused-game frame can be
-    // redrawn, and can make the frozen CRT treatment disappear permanently.
+  function applySettings(nextSettings, options = {}) {
+    settings = { ...settings, ...sanitizeSettings(nextSettings) };
+    renderedStill = false;
+    if (options.preset) activePreset = options.preset;
+    else activePreset = 'custom';
+    canvas.dataset.crtPreset = activePreset;
     applyCompositeFilter();
     setEnabled(settings.enabled);
     syncTuner();
+    if (options.persist !== false) persistSettings();
   }
+
+  function applyPreset(name, persist = true) {
+    const nextPreset = name === 'soft' ? softPreset : strongPreset;
+    applySettings(nextPreset, { preset: name, persist });
+  }
+
+  if (tuner) {
+    tuner.addEventListener('input', (event) => {
+      const input = event.target.closest('[data-crt-setting]');
+      if (!input) return;
+      const key = input.dataset.crtSetting;
+      const value = input.type === 'checkbox' ? input.checked : input.value;
+      applySettings({ [key]: value });
+    });
+
+    tuner.querySelectorAll('[data-crt-preset]').forEach((button) => {
+      button.addEventListener('click', () => {
+        applyPreset(button.dataset.crtPreset);
+      });
+    });
+
+    tuner.querySelector('[data-crt-reset]')?.addEventListener('click', () => {
+      try {
+        localStorage.removeItem(storageKey);
+      } catch {
+        // Ignore storage restrictions; in-memory reset still succeeds.
+      }
+      applyPreset('strong', false);
+    });
+  }
+
+  window.__crtViewport = {
+    canvas,
+    presets: { strong: strongPreset, soft: softPreset },
+    get preset() { return activePreset; },
+    get settings() { return { ...settings }; },
+    set settings(value) { applySettings(value); },
+    applyPreset,
+    reset() {
+      try {
+        localStorage.removeItem(storageKey);
+      } catch {
+        // Ignore storage restrictions; in-memory reset still succeeds.
+      }
+      applyPreset('strong', false);
+    },
+    get intensity() { return settings.intensity; },
+    set intensity(value) { applySettings({ intensity: value }); },
+    get enabled() { return settings.enabled; },
+    set enabled(value) { applySettings({ enabled: value }); },
+  };
+
+  // The animation loop owns drawing-buffer resizes. Resizing it directly in
+  // the DOM resize event clears WebGL before the focused-game frame can be
+  // redrawn, and can make the frozen CRT treatment disappear permanently.
+  applyCompositeFilter();
+  setEnabled(settings.enabled);
+  syncTuner();
 }

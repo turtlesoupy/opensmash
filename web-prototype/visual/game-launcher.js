@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { compileSceneAsync } from '../shared/shader-compilation.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import {
   clearControllerTutorialCompletion,
@@ -524,6 +525,7 @@ let flowMotionCompletion = null;
 let cartridgePromise = null;
 let consolePromise = null;
 let controllerPromise = null;
+let flowPostReady = null;
 let flowRenderTarget = null;
 let flowPostScene = null;
 let flowPostCamera = null;
@@ -865,13 +867,19 @@ function preloadFlowModels() {
   cartridgePromise ||= Promise.all([
     gltfLoader.loadAsync(cartridgeModelUrl),
     textureLoader.loadAsync(cartridgeLabelUrl),
-  ]).then(([gltf, texture]) => prepareCartridge(gltf, texture));
+  ]).then(([gltf, texture]) => prepareCartridge(gltf, texture)).then(prepareFlowShaders);
   consolePromise ||= gltfLoader
     .loadAsync(consoleModelUrl)
-    .then(prepareConsole);
+    .then(prepareConsole).then(prepareFlowShaders);
   controllerPromise ||= gltfLoader
     .loadAsync(controllerModelUrl)
-    .then(prepareController);
+    .then(prepareController).then(prepareFlowShaders);
+}
+
+async function prepareFlowShaders(model) {
+  await flowPostReady;
+  await compileSceneAsync(renderer, model, camera, scene, flowRenderTarget);
+  return model;
 }
 
 function ensureFlowRenderer() {
@@ -903,7 +911,12 @@ function ensureFlowRenderer() {
   face.position.set(-3.5, -2, 5);
   scene.add(face);
   resizeFlowRenderer();
+  flowPostReady = compileSceneAsync(renderer, flowPostScene, flowPostCamera, flowPostScene);
   preloadFlowModels();
+  // Some models may not be selected until much later; observe failures now.
+  for (const pending of [cartridgePromise, consolePromise, controllerPromise]) {
+    pending.catch(error => console.error('Could not prepare launch graphics', error));
+  }
 }
 
 function resizeFlowRenderer() {
@@ -1652,16 +1665,18 @@ async function beginConsoleDockTransition(completion) {
     return;
   }
   requestedModelKind = 'console-dock';
+  const sequence = flowSequence;
 
   let consoleModel;
   try {
     consoleModel = await consolePromise;
   } catch (error) {
+    if (sequence !== flowSequence || requestedModelKind !== 'console-dock' || overlay?.hidden) return;
     console.error('Could not load the console model; using the standard transition.', error);
     beginModelExit(completion);
     return;
   }
-  if (requestedModelKind !== 'console-dock' || !scene || overlay?.hidden) return;
+  if (sequence !== flowSequence || requestedModelKind !== 'console-dock' || !scene || overlay?.hidden) return;
 
   cartridgePressed = false;
   cartridgeDragging = false;
@@ -1942,8 +1957,17 @@ async function showFlowModel(kind, phase = 'enter') {
   ensureFlowRenderer();
   requestedModelKind = kind;
   overlay?.classList.remove('is-model-settled', 'is-upload-revealed');
-  const model = await (kind === 'cartridge' ? cartridgePromise : controllerPromise);
-  if (requestedModelKind !== kind || !scene) return;
+  const sequence = flowSequence;
+  let model;
+  try {
+    model = await (kind === 'cartridge' ? cartridgePromise : controllerPromise);
+  } catch (error) {
+    if (sequence === flowSequence && requestedModelKind === kind && !overlay?.hidden) {
+      APP_BRIDGE?.reportError?.(error);
+    }
+    return;
+  }
+  if (sequence !== flowSequence || requestedModelKind !== kind || !scene || overlay?.hidden) return;
   if (activeModel) scene.remove(activeModel);
   activeModel = model;
   activeModelKind = kind;
@@ -2835,5 +2859,5 @@ window.gameLauncher = Object.freeze({
   sync: syncRomResetButton,
 });
 
-preloadFlowModels();
+// Models begin loading in ensureFlowRenderer when a launch/control flow opens.
 syncRomResetButton();

@@ -1,11 +1,12 @@
 // Canonical hardware and background runtime for the production React site.
 import * as THREE from 'three';
+import { compileSceneAsync } from '../shared/shader-compilation.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
+import { createCursorRig, GLB_ALIGN } from '../shared/cursor-rig.js';
 import cartridgeLabelUrl from './assets/cartridge-label-art.webp?url';
 import cartridgeModelUrl from './assets/n64-cartridge-tripo.glb?url';
 import consoleModelUrl from './assets/hybrid-four-port-console-fitted.glb?url';
-import cursorModelUrl from './assets/hand-cursor-meshy.glb?url';
+import cursorModelUrl from './assets/hand-cursor-baked.glb?url';
 import tvModelUrl from './assets/tripo-crt-tv.glb?url';
 import { controlEmbeddedTrailer } from '../src/embedded-trailer.js';
 
@@ -15,6 +16,17 @@ const CARTRIDGE_INTRO_ENABLED =
 // files through its own loaders; share one in-memory copy instead of
 // racing the HTTP cache for a second download of each.
 THREE.Cache.enabled = true;
+const hardwareLoads = [];
+let hardwareShadersReady = false;
+function loadHardwareModel(url, onLoad, onError) {
+  const loaded = new Promise((resolve, reject) => {
+    new GLTFLoader().load(url, gltf => {
+      try { onLoad(gltf); resolve(); } catch (error) { reject(error); }
+    }, undefined, reject);
+  });
+  // A failed optional asset must not prevent the cursor from appearing.
+  hardwareLoads.push(loaded.catch(onError));
+}
 
 // ---------------------------------------------------------------------------
 // Renderer / scene — transparent overlay canvas above the page.
@@ -122,168 +134,172 @@ crtTuner?.addEventListener('toggle', () => {
 });
 syncAdvancedControl();
 
-const tvCabinetMaterial = new THREE.MeshStandardMaterial({
-  color: 0x444748,
-  roughness: 0.68,
-  metalness: 0.08,
-});
-const introVideoTexture = new THREE.DataTexture(
-  new Uint8Array([2, 2, 2, 255]),
-  1,
-  1,
-  THREE.RGBAFormat,
-);
-introVideoTexture.colorSpace = THREE.SRGBColorSpace;
-introVideoTexture.minFilter = THREE.LinearFilter;
-introVideoTexture.magFilter = THREE.LinearFilter;
-introVideoTexture.generateMipmaps = false;
-introVideoTexture.needsUpdate = true;
+let crtScreenMaterial = null;
+if (CARTRIDGE_INTRO_ENABLED) {
+  const tvCabinetMaterial = new THREE.MeshStandardMaterial({
+    color: 0x444748,
+    roughness: 0.68,
+    metalness: 0.08,
+  });
+  const introVideoTexture = new THREE.DataTexture(
+    new Uint8Array([2, 2, 2, 255]),
+    1,
+    1,
+    THREE.RGBAFormat,
+  );
+  introVideoTexture.colorSpace = THREE.SRGBColorSpace;
+  introVideoTexture.minFilter = THREE.LinearFilter;
+  introVideoTexture.magFilter = THREE.LinearFilter;
+  introVideoTexture.generateMipmaps = false;
+  introVideoTexture.needsUpdate = true;
 
-const crtScreenMaterial = new THREE.ShaderMaterial({
-  transparent: true,
-  depthWrite: true,
-  toneMapped: false,
-  uniforms: {
-    videoMap: { value: introVideoTexture },
-    time: { value: 0 },
-    videoResolution: { value: new THREE.Vector2(1280, 960) },
-    screenAspect: { value: 1.48 },
-    videoAspect: { value: 4 / 3 },
-  },
-  vertexShader: `
-    varying vec2 vUv;
-    varying vec3 vNormalView;
-    void main() {
-      vUv = uv;
-      vNormalView = normalize(normalMatrix * normal);
-      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-    }
-  `,
-  fragmentShader: `
-    uniform sampler2D videoMap;
-    uniform float time;
-    uniform vec2 videoResolution;
-    uniform float screenAspect;
-    uniform float videoAspect;
-    varying vec2 vUv;
-    varying vec3 vNormalView;
+  crtScreenMaterial = new THREE.ShaderMaterial({
+    transparent: true,
+    depthWrite: true,
+    toneMapped: false,
+    uniforms: {
+      videoMap: { value: introVideoTexture },
+      time: { value: 0 },
+      videoResolution: { value: new THREE.Vector2(1280, 960) },
+      screenAspect: { value: 1.48 },
+      videoAspect: { value: 4 / 3 },
+    },
+    vertexShader: `
+      varying vec2 vUv;
+      varying vec3 vNormalView;
+      void main() {
+        vUv = uv;
+        vNormalView = normalize(normalMatrix * normal);
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+      }
+    `,
+    fragmentShader: `
+      uniform sampler2D videoMap;
+      uniform float time;
+      uniform vec2 videoResolution;
+      uniform float screenAspect;
+      uniform float videoAspect;
+      varying vec2 vUv;
+      varying vec3 vNormalView;
 
-    float hash21(vec2 p) {
-      p = fract(p * vec2(123.34, 456.21));
-      p += dot(p, p + 45.32);
-      return fract(p.x * p.y);
-    }
-
-    void main() {
-      vec2 centered = vUv * 2.0 - 1.0;
-      vec2 rounded = abs(centered) - vec2(0.925, 0.89);
-      float roundedDistance = length(max(rounded, 0.0)) +
-        min(max(rounded.x, rounded.y), 0.0) - 0.075;
-      float edgeAlpha = 1.0 - smoothstep(-0.012, 0.006, roundedDistance);
-      if (edgeAlpha <= 0.001) discard;
-
-      float radius2 = dot(centered, centered);
-      vec2 curved = centered * (1.0 + radius2 * 0.055);
-      vec2 uv = curved * 0.5 + 0.5;
-
-      float aspectScale = screenAspect / videoAspect;
-      uv.y = (uv.y - 0.5) * aspectScale + 0.5;
-      if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
-        gl_FragColor = vec4(vec3(0.003), edgeAlpha);
-        return;
+      float hash21(vec2 p) {
+        p = fract(p * vec2(123.34, 456.21));
+        p += dot(p, p + 45.32);
+        return fract(p.x * p.y);
       }
 
-      float aberration = 0.0013 + radius2 * 0.0011;
-      float red = texture2D(videoMap, uv + vec2(aberration, 0.0)).r;
-      float green = texture2D(videoMap, uv).g;
-      float blue = texture2D(videoMap, uv - vec2(aberration, 0.0)).b;
-      vec3 color = vec3(red, green, blue);
+      void main() {
+        vec2 centered = vUv * 2.0 - 1.0;
+        vec2 rounded = abs(centered) - vec2(0.925, 0.89);
+        float roundedDistance = length(max(rounded, 0.0)) +
+          min(max(rounded.x, rounded.y), 0.0) - 0.075;
+        float edgeAlpha = 1.0 - smoothstep(-0.012, 0.006, roundedDistance);
+        if (edgeAlpha <= 0.001) discard;
 
-      float sourceLine = uv.y * videoResolution.y;
-      float scanline = 0.86 + 0.14 * sin(sourceLine * 3.14159265);
-      float fineLine = 0.96 + 0.04 * sin(sourceLine * 6.2831853 + time * 0.7);
-      float triad = mod(gl_FragCoord.x, 3.0);
-      vec3 phosphorMask = triad < 1.0 ? vec3(1.0, 0.82, 0.78)
-        : triad < 2.0 ? vec3(0.80, 1.0, 0.80)
-        : vec3(0.80, 0.84, 1.0);
-      float rollingBand = 1.0 + 0.035 * exp(-pow(
-        fract(uv.y - time * 0.085) - 0.5, 2.0) / 0.0045);
-      float vignette = pow(clamp(
-        16.0 * vUv.x * vUv.y * (1.0 - vUv.x) * (1.0 - vUv.y), 0.0, 1.0
-      ), 0.23);
-      float noise = (hash21(gl_FragCoord.xy + floor(time * 30.0)) - 0.5) * 0.025;
-      float flicker = 0.985 + 0.015 * sin(time * 47.0);
-      float glassFacing = 0.90 + 0.10 * abs(vNormalView.z);
+        float radius2 = dot(centered, centered);
+        vec2 curved = centered * (1.0 + radius2 * 0.055);
+        vec2 uv = curved * 0.5 + 0.5;
 
-      color *= scanline * fineLine * phosphorMask * rollingBand;
-      color = color * (0.90 + 0.14 * vignette) * flicker * glassFacing + noise;
-      color += vec3(0.018, 0.028, 0.040) * (1.0 - vignette);
-      gl_FragColor = vec4(max(color, 0.0), edgeAlpha);
-      #include <colorspace_fragment>
-    }
-  `,
-});
+        float aspectScale = screenAspect / videoAspect;
+        uv.y = (uv.y - 0.5) * aspectScale + 0.5;
+        if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
+          gl_FragColor = vec4(vec3(0.003), edgeAlpha);
+          return;
+        }
 
-function curvedScreenGeometry(width, height, depth) {
-  const geometry = new THREE.PlaneGeometry(width, height, 48, 36);
-  const position = geometry.attributes.position;
-  for (let index = 0; index < position.count; index += 1) {
-    const nx = position.getX(index) / (width * 0.5);
-    const ny = position.getY(index) / (height * 0.5);
-    const dome = Math.max(0, 1 - nx * nx) * Math.max(0, 1 - ny * ny);
-    position.setZ(index, depth * dome);
-  }
-  position.needsUpdate = true;
-  geometry.computeVertexNormals();
-  return geometry;
-}
+        float aberration = 0.0013 + radius2 * 0.0011;
+        float red = texture2D(videoMap, uv + vec2(aberration, 0.0)).r;
+        float green = texture2D(videoMap, uv).g;
+        float blue = texture2D(videoMap, uv - vec2(aberration, 0.0)).b;
+        vec3 color = vec3(red, green, blue);
 
-new GLTFLoader().load(tvModelUrl, gltf => {
-  const orientedModel = new THREE.Group();
-  const tvModel = gltf.scene;
-  orientedModel.add(tvModel);
+        float sourceLine = uv.y * videoResolution.y;
+        float scanline = 0.86 + 0.14 * sin(sourceLine * 3.14159265);
+        float fineLine = 0.96 + 0.04 * sin(sourceLine * 6.2831853 + time * 0.7);
+        float triad = mod(gl_FragCoord.x, 3.0);
+        vec3 phosphorMask = triad < 1.0 ? vec3(1.0, 0.82, 0.78)
+          : triad < 2.0 ? vec3(0.80, 1.0, 0.80)
+          : vec3(0.80, 0.84, 1.0);
+        float rollingBand = 1.0 + 0.035 * exp(-pow(
+          fract(uv.y - time * 0.085) - 0.5, 2.0) / 0.0045);
+        float vignette = pow(clamp(
+          16.0 * vUv.x * vUv.y * (1.0 - vUv.x) * (1.0 - vUv.y), 0.0, 1.0
+        ), 0.23);
+        float noise = (hash21(gl_FragCoord.xy + floor(time * 30.0)) - 0.5) * 0.025;
+        float flicker = 0.985 + 0.015 * sin(time * 47.0);
+        float glassFacing = 0.90 + 0.10 * abs(vNormalView.z);
 
-  // Tripo object models use +X as front, +Y as up, and +Z as width.
-  // Present those axes as +Z front, +Y up, and -X width for Three.js.
-  orientedModel.quaternion.setFromRotationMatrix(
-    new THREE.Matrix4().makeBasis(
-      new THREE.Vector3(0, 0, 1),
-      new THREE.Vector3(0, 1, 0),
-      new THREE.Vector3(-1, 0, 0)
-    )
-  );
-  orientedModel.updateMatrixWorld(true);
-
-  const initialBounds = new THREE.Box3().setFromObject(orientedModel);
-  const center = initialBounds.getCenter(new THREE.Vector3());
-  const size = initialBounds.getSize(new THREE.Vector3());
-  orientedModel.position.sub(center);
-  tvModel.traverse(object => {
-    if (!object.isMesh) return;
-    object.frustumCulled = false;
-    object.material = tvCabinetMaterial;
+        color *= scanline * fineLine * phosphorMask * rollingBand;
+        color = color * (0.90 + 0.14 * vignette) * flicker * glassFacing + noise;
+        color += vec3(0.018, 0.028, 0.040) * (1.0 - vignette);
+        gl_FragColor = vec4(max(color, 0.0), edgeAlpha);
+        #include <colorspace_fragment>
+      }
+    `,
   });
-  starterTvDisplay.add(orientedModel);
 
-  const screenWidth = size.x * 0.81;
-  const screenHeight = size.y * 0.60;
-  const screenDepth = Math.min(screenWidth, screenHeight) * 0.028;
-  const screen = new THREE.Mesh(
-    curvedScreenGeometry(screenWidth, screenHeight, screenDepth),
-    crtScreenMaterial
-  );
-  screen.name = 'LiveCrtVideoScreen';
-  screen.position.set(0, size.y * 0.095, size.z * 0.505);
-  screen.renderOrder = 3;
-  starterTvDisplay.add(screen);
+  function curvedScreenGeometry(width, height, depth) {
+    const geometry = new THREE.PlaneGeometry(width, height, 48, 36);
+    const position = geometry.attributes.position;
+    for (let index = 0; index < position.count; index += 1) {
+      const nx = position.getX(index) / (width * 0.5);
+      const ny = position.getY(index) / (height * 0.5);
+      const dome = Math.max(0, 1 - nx * nx) * Math.max(0, 1 - ny * ny);
+      position.setZ(index, depth * dome);
+    }
+    position.needsUpdate = true;
+    geometry.computeVertexNormals();
+    return geometry;
+  }
 
-  const targetHeight = 2.30;
-  starterTvDisplay.name = 'StarterCrtTelevision';
-  starterTvDisplay.scale.setScalar(targetHeight / size.y);
-  starterTvDisplay.position.y = -0.02;
-  mainHardwareTvUnitH = targetHeight;
-  resize();
-}, undefined, error => console.error('Could not load Tripo CRT television', error));
+  loadHardwareModel(tvModelUrl, gltf => {
+    const orientedModel = new THREE.Group();
+    const tvModel = gltf.scene;
+    orientedModel.add(tvModel);
+
+    // Tripo object models use +X as front, +Y as up, and +Z as width.
+    // Present those axes as +Z front, +Y up, and -X width for Three.js.
+    orientedModel.quaternion.setFromRotationMatrix(
+      new THREE.Matrix4().makeBasis(
+        new THREE.Vector3(0, 0, 1),
+        new THREE.Vector3(0, 1, 0),
+        new THREE.Vector3(-1, 0, 0)
+      )
+    );
+    orientedModel.updateMatrixWorld(true);
+
+    const initialBounds = new THREE.Box3().setFromObject(orientedModel);
+    const center = initialBounds.getCenter(new THREE.Vector3());
+    const size = initialBounds.getSize(new THREE.Vector3());
+    orientedModel.position.sub(center);
+    tvModel.traverse(object => {
+      if (!object.isMesh) return;
+      object.frustumCulled = false;
+      object.material = tvCabinetMaterial;
+    });
+    starterTvDisplay.add(orientedModel);
+
+    const screenWidth = size.x * 0.81;
+    const screenHeight = size.y * 0.60;
+    const screenDepth = Math.min(screenWidth, screenHeight) * 0.028;
+    const screen = new THREE.Mesh(
+      curvedScreenGeometry(screenWidth, screenHeight, screenDepth),
+      crtScreenMaterial
+    );
+    screen.name = 'LiveCrtVideoScreen';
+    screen.position.set(0, size.y * 0.095, size.z * 0.505);
+    screen.renderOrder = 3;
+    starterTvDisplay.add(screen);
+
+    const targetHeight = 2.30;
+    starterTvDisplay.name = 'StarterCrtTelevision';
+    starterTvDisplay.scale.setScalar(targetHeight / size.y);
+    starterTvDisplay.position.y = -0.02;
+    mainHardwareTvUnitH = targetHeight;
+    resize();
+  }, error => console.error('Could not load Tripo CRT television', error));
+
+}
 
 // ---------------------------------------------------------------------------
 // N64 retro pipeline: render tiny -> nearest-neighbor upscale, posterized
@@ -516,144 +532,11 @@ window.__shaderSettings = shaderSettings;
 
 // ---------------------------------------------------------------------------
 // Rig: bone skeleton retargeted onto the Meshy GLB's anatomy (hand-local
-// space at the GLB_ALIGN transform below). Rest pose IS the point pose.
+// space defined in cursor-rig.js). Rest pose IS the point pose.
 // ---------------------------------------------------------------------------
-const fingerDefs = [
-  { x: -1.15, y: 0.35, z: -0.1,  r: 0.34, l1: 0.55, l2: 0.45, curl: 1.0, name: 'pinky'  },
-  { x: -0.55, y: 0.45, z: -0.05, r: 0.36, l1: 0.6,  l2: 0.5,  curl: 1.0, name: 'ring'   },
-  { x:  0.05, y: 0.5,  z: 0,     r: 0.38, l1: 0.65, l2: 0.5,  curl: 1.0, name: 'middle' },
-  { x:  0.7,  y: 0.55, z: 0.1,   r: 0.36, l1: 0.9,  l2: 0.65, curl: 0.0, name: 'index'  },
-];
-const INDEX_REST_Z = -0.95;   // index lean (rad clockwise from vertical)
-
-const rootBone = new THREE.Bone();           // palm + cuff
-const bones = [rootBone];
-const rigs = [];
-for (const d of fingerDefs) {
-  const base = new THREE.Bone();
-  base.position.set(d.x, d.y, d.z);
-  const knuckle = new THREE.Bone();
-  knuckle.position.set(0, d.l1, 0);
-  base.add(knuckle);
-  rootBone.add(base);
-  bones.push(base, knuckle);
-  rigs.push({ def: d, base, knuckle, jig: { a: 0, v: 0, phase: Math.random() * Math.PI * 2 } });
-}
-const thumbDef = { r: 0.3, l1: 0.6, l2: 0.45, curl: 0, name: 'thumb' };
-{
-  const base = new THREE.Bone();
-  base.position.set(0.25, 0.75, -0.2);
-  const knuckle = new THREE.Bone();
-  knuckle.position.set(0, thumbDef.l1, 0);
-  base.add(knuckle);
-  rootBone.add(base);
-  bones.push(base, knuckle);
-  rigs.push({ def: thumbDef, base, knuckle, jig: { a: 0, v: 0, phase: Math.random() * Math.PI * 2 } });
-}
-
-// Extra curl applied on top of the rest pose (tucks the GLB's authored
-// up-thumb etc.; zeroed while binding so it acts as a live delta).
-const poseTweak = { pinky: 0, ring: 0, middle: 0, thumb: 0 };
-
-// Grip (closed-fist) parameters, tuned against assets/hand_grab.png with the
-// capture/compare loop — an orientation sweep plus per-joint refinement.
-const GRIP = {
-  indexCurl: 1.25, indexKnuckle: 1.25, indexZ: -0.10,
-  fistTighten: 0.22,
-  thumbX: -1.15, thumbY: 0.15, thumbZ: -1.15, thumbKnuckle: 0.55,
-  scale: 0.90,
-};
+const { rootBone, bones, rigs, poseTweak, poseFingers, GRIP, POINT } = createCursorRig();
 window.__grip = GRIP;
-
-// Default-pose scale, tuned the same way against assets/hand_point.png.
-const POINT = { scale: 1.00 };
 window.__point = POINT;
-
-// Pose the skeleton across three poses that share one rig:
-//   tap  0..1  the click gesture — whole-hand tilt into the page, fingers
-//              barely move (this is what pointerdown drives)
-//   grip 0..1  a real closed fist matching the game's grab sprite, available
-//              via setGrip() for pick-up style interactions
-function poseFingers(tap, grip) {
-  grip = grip || 0;
-  for (const f of rigs) {
-    const d = f.def, jig = f.jig;
-    if (d.name === 'thumb') {
-      // rest = the GLB's authored up-thumb (bind capsule lies along it);
-      // poseTweak.thumb is the live fold that tucks it against the fist
-      const x = THREE.MathUtils.lerp(THREE.MathUtils.lerp(-0.35, -0.3, tap), GRIP.thumbX, grip);
-      const y = THREE.MathUtils.lerp(0, GRIP.thumbY, grip);
-      const z = THREE.MathUtils.lerp(THREE.MathUtils.lerp(-0.05, -0.02, tap), GRIP.thumbZ, grip);
-      f.base.rotation.set(x + poseTweak.thumb + jig.a * 0.5, y, z);
-      f.knuckle.rotation.x =
-        THREE.MathUtils.lerp(THREE.MathUtils.lerp(0.1, 0.15, tap), GRIP.thumbKnuckle, grip)
-        + poseTweak.thumb * 0.25 + jig.a;
-    } else if (d.name === 'index') {
-      // tap: a whisper of compression. grip: folds down into the fist
-      // (negative X is inward on this rig; positive splays the tip out).
-      const tapCurl = THREE.MathUtils.lerp(0, 0.18, tap);
-      f.base.rotation.x = THREE.MathUtils.lerp(tapCurl * 1.15, -GRIP.indexCurl, grip) + jig.a;
-      f.base.rotation.z = THREE.MathUtils.lerp(
-        THREE.MathUtils.lerp(INDEX_REST_Z, INDEX_REST_Z - 0.08, tap), GRIP.indexZ, grip);
-      f.knuckle.rotation.x =
-        THREE.MathUtils.lerp(tapCurl * 1.35, -GRIP.indexCurl * GRIP.indexKnuckle, grip);
-    } else {
-      const curl = THREE.MathUtils.lerp(1.05, 1.07, tap) + GRIP.fistTighten * grip
-                 + jig.a + poseTweak[d.name];
-      f.base.rotation.x = curl * 1.15;
-      f.knuckle.rotation.x = curl * 1.35;
-    }
-  }
-}
-poseFingers(0, 0);
-rootBone.updateMatrixWorld(true);
-
-// ---------------------------------------------------------------------------
-// Skinning shapes: capsules from the posed bones + palm/cuff root shapes,
-// used for distance-based vertex weights on the GLB mesh.
-// ---------------------------------------------------------------------------
-const V = (x, y, z) => new THREE.Vector3(x, y, z);
-
-const capsules = [];
-for (const f of rigs) {
-  const d = f.def;
-  const a1 = f.base.getWorldPosition(new THREE.Vector3());
-  const b1 = f.knuckle.getWorldPosition(new THREE.Vector3());
-  const b2 = f.knuckle.localToWorld(V(0, d.l2, 0));
-  capsules.push({ a: a1, b: b1, r: d.r, bone: bones.indexOf(f.base) });
-  capsules.push({ a: b1.clone(), b: b2, r: d.r * (d.name === 'index' ? 0.62 : 0.85), bone: bones.indexOf(f.knuckle) });
-}
-
-function sdCapsule(p, a, b, r) {
-  const pax = p.x - a.x, pay = p.y - a.y, paz = p.z - a.z;
-  const bax = b.x - a.x, bay = b.y - a.y, baz = b.z - a.z;
-  const h = Math.max(0, Math.min(1,
-    (pax * bax + pay * bay + paz * baz) / (bax * bax + bay * bay + baz * baz)));
-  const dx = pax - bax * h, dy = pay - bay * h, dz = paz - baz * h;
-  return Math.sqrt(dx * dx + dy * dy + dz * dz) - r;
-}
-function sdEllipsoid(p, cx, cy, cz, rx, ry, rz) {
-  const ox = p.x - cx, oy = p.y - cy, oz = p.z - cz;
-  const x = ox / rx, y = oy / ry, z = oz / rz;
-  const k0 = Math.sqrt(x * x + y * y + z * z);
-  const k1 = Math.sqrt(x / rx * (x / rx) + y / ry * (y / ry) + z / rz * (z / rz));
-  return k1 > 0 ? k0 * (k0 - 1) / k1 : -Math.min(rx, ry, rz);
-}
-const CUFF_ROT = 0.45, CUFF_C = V(-1.0, -1.35, 0), CUFF_R = 0.8, CUFF_r = 0.45;
-function sdCuffTorus(p) {
-  const qx0 = p.x - CUFF_C.x, qy0 = p.y - CUFF_C.y, qz = p.z - CUFF_C.z;
-  const c = Math.cos(CUFF_ROT), s = Math.sin(CUFF_ROT);
-  const qx = qx0 * c + qy0 * s, qy = -qx0 * s + qy0 * c;
-  const lxz = Math.sqrt(qx * qx + qz * qz) - CUFF_R;
-  return Math.sqrt(lxz * lxz + qy * qy) - CUFF_r;
-}
-const cuffCapA = V(-1.0, -1.6, 0), cuffCapB = V(-1.0, -1.3, 0);
-function sdRoot(p) {
-  return Math.min(
-    sdEllipsoid(p, 0, -0.3, 0, 1.9, 1.2, 1.0),
-    sdCuffTorus(p),
-    sdCapsule(p, cuffCapA, cuffCapB, 0.7));
-}
 
 const gloveMat = new THREE.MeshStandardMaterial({
   color: 0xe9e9ec, roughness: 0.9, metalness: 0.0,
@@ -867,20 +750,24 @@ function updateHardwareThirdsLayout() {
   hardwareInset.style.setProperty('--cartridge-home-top', `${insetY(1 / 2)}px`);
   hardwareInset.style.setProperty('--console-home-top', `${insetY(5 / 6)}px`);
 }
-updateHardwareThirdsLayout();
-window.addEventListener('resize', updateHardwareThirdsLayout);
+if (CARTRIDGE_INTRO_ENABLED) {
+  updateHardwareThirdsLayout();
+  window.addEventListener('resize', updateHardwareThirdsLayout);
+}
 
 const cartridgeRig = new THREE.Group();
 const cartridgeVisual = new THREE.Group();
-const cartridgeLight = new THREE.DirectionalLight(0xfff0d4, 2.65);
-cartridgeLight.position.set(-0.45, 3.2, 1.35);
-cartridgeLight.target.position.set(0, 0, 0);
-const cartridgeFillLight = new THREE.DirectionalLight(0xa5b9e6, 0.48);
-cartridgeFillLight.position.set(1.35, -0.15, 1.6);
-cartridgeFillLight.target = cartridgeLight.target;
-cartridgeRig.add(
-  cartridgeVisual, cartridgeLight, cartridgeFillLight, cartridgeLight.target
-);
+if (CARTRIDGE_INTRO_ENABLED) {
+  const cartridgeLight = new THREE.DirectionalLight(0xfff0d4, 2.65);
+  cartridgeLight.position.set(-0.45, 3.2, 1.35);
+  cartridgeLight.target.position.set(0, 0, 0);
+  const cartridgeFillLight = new THREE.DirectionalLight(0xa5b9e6, 0.48);
+  cartridgeFillLight.position.set(1.35, -0.15, 1.6);
+  cartridgeFillLight.target = cartridgeLight.target;
+  cartridgeRig.add(
+    cartridgeVisual, cartridgeLight, cartridgeFillLight, cartridgeLight.target
+  );
+}
 scene.add(cartridgeRig);
 cartridgeRig.visible = CARTRIDGE_INTRO_ENABLED;
 
@@ -891,38 +778,18 @@ const consoleInviteQuaternion = new THREE.Quaternion();
 const consoleBaseQuaternion = new THREE.Quaternion();
 const consoleIdleQuaternion = new THREE.Quaternion();
 const consoleIdleEuler = new THREE.Euler();
-const consoleLight = new THREE.DirectionalLight(0xffead0, 2.2);
-consoleLight.position.set(-1.2, 3.5, 2.8);
-consoleLight.target.position.set(0, 0, 0);
-const consoleFillLight = new THREE.DirectionalLight(0x9db7e8, 0.42);
-consoleFillLight.position.set(2.2, 0.4, 2.1);
-consoleFillLight.target = consoleLight.target;
-consoleRig.add(consoleVisual, consoleLight, consoleFillLight, consoleLight.target);
+if (CARTRIDGE_INTRO_ENABLED) {
+  const consoleLight = new THREE.DirectionalLight(0xffead0, 2.2);
+  consoleLight.position.set(-1.2, 3.5, 2.8);
+  consoleLight.target.position.set(0, 0, 0);
+  const consoleFillLight = new THREE.DirectionalLight(0x9db7e8, 0.42);
+  consoleFillLight.position.set(2.2, 0.4, 2.1);
+  consoleFillLight.target = consoleLight.target;
+  consoleRig.add(consoleVisual, consoleLight, consoleFillLight, consoleLight.target);
+}
 scene.add(consoleRig);
 consoleRig.visible = CARTRIDGE_INTRO_ENABLED;
 
-const cartridgeMaterial = new THREE.MeshStandardMaterial({
-  color: 0xb8b5ba,
-  emissive: 0x121116,
-  emissiveIntensity: 0.16,
-  roughness: 0.84,
-  metalness: 0,
-});
-const cartridgeLabelTexture = new THREE.TextureLoader().load(
-  cartridgeLabelUrl
-);
-cartridgeLabelTexture.colorSpace = THREE.SRGBColorSpace;
-cartridgeLabelTexture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
-const cartridgeLabelMaterial = new THREE.MeshBasicMaterial({
-  map: cartridgeLabelTexture,
-  transparent: true,
-  alphaTest: 0.02,
-  depthWrite: false,
-  side: THREE.DoubleSide,
-  polygonOffset: true,
-  polygonOffsetFactor: -4,
-  polygonOffsetUnits: -4,
-});
 const CARTRIDGE_LABEL_PANEL = Object.freeze({
   width: 0.48046875,
   height: 0.587890625,
@@ -930,20 +797,46 @@ const CARTRIDGE_LABEL_PANEL = Object.freeze({
   centerY: 0.015625,
   centerZ: 0.0087890625,
 });
-const funLetterMaterials = {
-  FUN_F: new THREE.MeshStandardMaterial({
-    color: 0x111824, emissive: 0x1687ff, emissiveIntensity: 0,
-    roughness: 0.48, metalness: 0,
-  }),
-  FUN_U: new THREE.MeshStandardMaterial({
-    color: 0x211d0c, emissive: 0xffcf20, emissiveIntensity: 0,
-    roughness: 0.48, metalness: 0,
-  }),
-  FUN_N: new THREE.MeshStandardMaterial({
-    color: 0x251012, emissive: 0xff2d24, emissiveIntensity: 0,
-    roughness: 0.48, metalness: 0,
-  }),
-};
+let cartridgeMaterial, cartridgeLabelMaterial, funLetterMaterials;
+if (CARTRIDGE_INTRO_ENABLED) {
+  cartridgeMaterial = new THREE.MeshStandardMaterial({
+    color: 0xb8b5ba,
+    emissive: 0x121116,
+    emissiveIntensity: 0.16,
+    roughness: 0.84,
+    metalness: 0,
+  });
+  const cartridgeLabelTexture = new THREE.TextureLoader().load(
+    cartridgeLabelUrl
+  );
+  cartridgeLabelTexture.colorSpace = THREE.SRGBColorSpace;
+  cartridgeLabelTexture.anisotropy = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  cartridgeLabelMaterial = new THREE.MeshBasicMaterial({
+    map: cartridgeLabelTexture,
+    transparent: true,
+    alphaTest: 0.02,
+    depthWrite: false,
+    side: THREE.DoubleSide,
+    polygonOffset: true,
+    polygonOffsetFactor: -4,
+    polygonOffsetUnits: -4,
+  });
+  funLetterMaterials = {
+    FUN_F: new THREE.MeshStandardMaterial({
+      color: 0x111824, emissive: 0x1687ff, emissiveIntensity: 0,
+      roughness: 0.48, metalness: 0,
+    }),
+    FUN_U: new THREE.MeshStandardMaterial({
+      color: 0x211d0c, emissive: 0xffcf20, emissiveIntensity: 0,
+      roughness: 0.48, metalness: 0,
+    }),
+    FUN_N: new THREE.MeshStandardMaterial({
+      color: 0x251012, emissive: 0xff2d24, emissiveIntensity: 0,
+      roughness: 0.48, metalness: 0,
+    }),
+  };
+
+}
 
 const CARTRIDGE_STATE = Object.freeze({
   FREE: 'free',
@@ -1134,295 +1027,301 @@ let consoleMouthAnchor = null;
 // stays on the cartridge's spinning front plane while its tail can curl toward
 // the console without inheriting that rotation all the way down.
 // ---------------------------------------------------------------------------
-const CARTRIDGE_WISP_COUNT = 14;
-const CARTRIDGE_WISP_TRAIL_SEGMENTS = 5;
-const cartridgeWispSeeds = Array.from({ length: CARTRIDGE_WISP_COUNT }, (_, index) => {
-  const hash = value => {
-    const x = Math.sin(value * 127.1 + 311.7) * 43758.5453;
-    return x - Math.floor(x);
+// Allocate the intro's particle buffers and shaders only for that route.
+const updateCartridgeWisps = CARTRIDGE_INTRO_ENABLED ? createCartridgeWisps() : () => {};
+function createCartridgeWisps() {
+  const CARTRIDGE_WISP_COUNT = 14;
+  const CARTRIDGE_WISP_TRAIL_SEGMENTS = 5;
+  const cartridgeWispSeeds = Array.from({ length: CARTRIDGE_WISP_COUNT }, (_, index) => {
+    const hash = value => {
+      const x = Math.sin(value * 127.1 + 311.7) * 43758.5453;
+      return x - Math.floor(x);
+    };
+    return {
+      phase: index / CARTRIDGE_WISP_COUNT + hash(index + 1) * 0.045,
+      speed: 0.13 + hash(index + 7) * 0.055,
+      across: hash(index + 13) * 2 - 1,
+      curl: hash(index + 23) * 2 - 1,
+      hue: hash(index + 31),
+    };
+  });
+
+  const cartridgeWispLinePositions = new Float32Array(
+    CARTRIDGE_WISP_COUNT * CARTRIDGE_WISP_TRAIL_SEGMENTS * 2 * 3
+  );
+  const cartridgeWispLineColors = new Float32Array(cartridgeWispLinePositions.length);
+  const cartridgeWispLineAlphas = new Float32Array(
+    CARTRIDGE_WISP_COUNT * CARTRIDGE_WISP_TRAIL_SEGMENTS * 2
+  );
+  const cartridgeWispPointPositions = new Float32Array(CARTRIDGE_WISP_COUNT * 3);
+  const cartridgeWispPointColors = new Float32Array(CARTRIDGE_WISP_COUNT * 3);
+  const cartridgeWispPointAlphas = new Float32Array(CARTRIDGE_WISP_COUNT);
+
+  const cartridgeWispLineGeometry = new THREE.BufferGeometry();
+  cartridgeWispLineGeometry.setAttribute(
+    'position', new THREE.BufferAttribute(cartridgeWispLinePositions, 3).setUsage(THREE.DynamicDrawUsage)
+  );
+  cartridgeWispLineGeometry.setAttribute(
+    'color', new THREE.BufferAttribute(cartridgeWispLineColors, 3).setUsage(THREE.DynamicDrawUsage)
+  );
+  cartridgeWispLineGeometry.setAttribute(
+    'alpha', new THREE.BufferAttribute(cartridgeWispLineAlphas, 1).setUsage(THREE.DynamicDrawUsage)
+  );
+
+  const cartridgeWispPointGeometry = new THREE.BufferGeometry();
+  cartridgeWispPointGeometry.setAttribute(
+    'position', new THREE.BufferAttribute(cartridgeWispPointPositions, 3).setUsage(THREE.DynamicDrawUsage)
+  );
+  cartridgeWispPointGeometry.setAttribute(
+    'color', new THREE.BufferAttribute(cartridgeWispPointColors, 3).setUsage(THREE.DynamicDrawUsage)
+  );
+  cartridgeWispPointGeometry.setAttribute(
+    'alpha', new THREE.BufferAttribute(cartridgeWispPointAlphas, 1).setUsage(THREE.DynamicDrawUsage)
+  );
+
+  const cartridgeWispVertexShader = `
+    attribute vec3 color;
+    attribute float alpha;
+    varying vec3 vColor;
+    varying float vAlpha;
+    void main() {
+      vColor = color;
+      vAlpha = alpha;
+      gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+    }
+  `;
+  const cartridgeWispMaterialOptions = {
+    transparent: true,
+    depthWrite: false,
+    depthTest: true,
+    blending: THREE.AdditiveBlending,
+    toneMapped: false,
   };
-  return {
-    phase: index / CARTRIDGE_WISP_COUNT + hash(index + 1) * 0.045,
-    speed: 0.13 + hash(index + 7) * 0.055,
-    across: hash(index + 13) * 2 - 1,
-    curl: hash(index + 23) * 2 - 1,
-    hue: hash(index + 31),
-  };
-});
+  const cartridgeWispLineMaterial = new THREE.ShaderMaterial({
+    ...cartridgeWispMaterialOptions,
+    vertexShader: cartridgeWispVertexShader,
+    fragmentShader: `
+      varying vec3 vColor;
+      varying float vAlpha;
+      void main() {
+        if (vAlpha < 0.01) discard;
+        gl_FragColor = vec4(vColor, vAlpha);
+      }
+    `,
+  });
+  const cartridgeWispPointMaterial = new THREE.ShaderMaterial({
+    ...cartridgeWispMaterialOptions,
+    vertexShader: cartridgeWispVertexShader.replace(
+      'gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
+      `vec4 viewPosition = modelViewMatrix * vec4(position, 1.0);
+       gl_Position = projectionMatrix * viewPosition;
+       gl_PointSize = mix(2.2, 3.7, alpha);`
+    ),
+    fragmentShader: `
+      varying vec3 vColor;
+      varying float vAlpha;
+      void main() {
+        float radius = length(gl_PointCoord - vec2(0.5));
+        float glow = 1.0 - smoothstep(0.08, 0.5, radius);
+        float alpha = vAlpha * glow;
+        if (alpha < 0.01) discard;
+        gl_FragColor = vec4(vColor * (1.0 + glow * 0.35), alpha);
+      }
+    `,
+  });
+  const cartridgeWispLines = new THREE.LineSegments(
+    cartridgeWispLineGeometry, cartridgeWispLineMaterial
+  );
+  const cartridgeWispPoints = new THREE.Points(
+    cartridgeWispPointGeometry, cartridgeWispPointMaterial
+  );
+  cartridgeWispLines.frustumCulled = false;
+  cartridgeWispPoints.frustumCulled = false;
+  cartridgeWispLines.renderOrder = 3;
+  cartridgeWispPoints.renderOrder = 4;
+  scene.add(cartridgeWispLines, cartridgeWispPoints);
 
-const cartridgeWispLinePositions = new Float32Array(
-  CARTRIDGE_WISP_COUNT * CARTRIDGE_WISP_TRAIL_SEGMENTS * 2 * 3
-);
-const cartridgeWispLineColors = new Float32Array(cartridgeWispLinePositions.length);
-const cartridgeWispLineAlphas = new Float32Array(
-  CARTRIDGE_WISP_COUNT * CARTRIDGE_WISP_TRAIL_SEGMENTS * 2
-);
-const cartridgeWispPointPositions = new Float32Array(CARTRIDGE_WISP_COUNT * 3);
-const cartridgeWispPointColors = new Float32Array(CARTRIDGE_WISP_COUNT * 3);
-const cartridgeWispPointAlphas = new Float32Array(CARTRIDGE_WISP_COUNT);
+  let cartridgeWispVisibility = 0;
+  let cartridgeWispRouteLength = 0;
+  const cartridgeWispSource = new THREE.Vector3();
+  const cartridgeWispTarget = new THREE.Vector3();
+  const cartridgeWispControlA = new THREE.Vector3();
+  const cartridgeWispControlB = new THREE.Vector3();
+  const cartridgeWispAcross = new THREE.Vector3();
+  const cartridgeWispDown = new THREE.Vector3();
+  const cartridgeWispSlotAcross = new THREE.Vector3();
+  const cartridgeWispRoute = new THREE.Vector3();
+  const cartridgeWispTwirlA = new THREE.Vector3();
+  const cartridgeWispTwirlB = new THREE.Vector3();
+  const cartridgeWispScale = new THREE.Vector3();
+  const cartridgeWispSampleA = new THREE.Vector3();
+  const cartridgeWispSampleB = new THREE.Vector3();
+  const cartridgeWispColor = new THREE.Color();
+  const cartridgeWispWarm = new THREE.Color(0xfff1c7);
+  const cartridgeWispCool = new THREE.Color(0xa9dfff);
+  const cartridgeWispLocal = new THREE.Vector3();
 
-const cartridgeWispLineGeometry = new THREE.BufferGeometry();
-cartridgeWispLineGeometry.setAttribute(
-  'position', new THREE.BufferAttribute(cartridgeWispLinePositions, 3).setUsage(THREE.DynamicDrawUsage)
-);
-cartridgeWispLineGeometry.setAttribute(
-  'color', new THREE.BufferAttribute(cartridgeWispLineColors, 3).setUsage(THREE.DynamicDrawUsage)
-);
-cartridgeWispLineGeometry.setAttribute(
-  'alpha', new THREE.BufferAttribute(cartridgeWispLineAlphas, 1).setUsage(THREE.DynamicDrawUsage)
-);
-
-const cartridgeWispPointGeometry = new THREE.BufferGeometry();
-cartridgeWispPointGeometry.setAttribute(
-  'position', new THREE.BufferAttribute(cartridgeWispPointPositions, 3).setUsage(THREE.DynamicDrawUsage)
-);
-cartridgeWispPointGeometry.setAttribute(
-  'color', new THREE.BufferAttribute(cartridgeWispPointColors, 3).setUsage(THREE.DynamicDrawUsage)
-);
-cartridgeWispPointGeometry.setAttribute(
-  'alpha', new THREE.BufferAttribute(cartridgeWispPointAlphas, 1).setUsage(THREE.DynamicDrawUsage)
-);
-
-const cartridgeWispVertexShader = `
-  attribute vec3 color;
-  attribute float alpha;
-  varying vec3 vColor;
-  varying float vAlpha;
-  void main() {
-    vColor = color;
-    vAlpha = alpha;
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  function cartridgeWispSmoothstep(edge0, edge1, value) {
+    const x = THREE.MathUtils.clamp((value - edge0) / (edge1 - edge0), 0, 1);
+    return x * x * (3 - 2 * x);
   }
-`;
-const cartridgeWispMaterialOptions = {
-  transparent: true,
-  depthWrite: false,
-  depthTest: true,
-  blending: THREE.AdditiveBlending,
-  toneMapped: false,
-};
-const cartridgeWispLineMaterial = new THREE.ShaderMaterial({
-  ...cartridgeWispMaterialOptions,
-  vertexShader: cartridgeWispVertexShader,
-  fragmentShader: `
-    varying vec3 vColor;
-    varying float vAlpha;
-    void main() {
-      if (vAlpha < 0.01) discard;
-      gl_FragColor = vec4(vColor, vAlpha);
-    }
-  `,
-});
-const cartridgeWispPointMaterial = new THREE.ShaderMaterial({
-  ...cartridgeWispMaterialOptions,
-  vertexShader: cartridgeWispVertexShader.replace(
-    'gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);',
-    `vec4 viewPosition = modelViewMatrix * vec4(position, 1.0);
-     gl_Position = projectionMatrix * viewPosition;
-     gl_PointSize = mix(2.2, 3.7, alpha);`
-  ),
-  fragmentShader: `
-    varying vec3 vColor;
-    varying float vAlpha;
-    void main() {
-      float radius = length(gl_PointCoord - vec2(0.5));
-      float glow = 1.0 - smoothstep(0.08, 0.5, radius);
-      float alpha = vAlpha * glow;
-      if (alpha < 0.01) discard;
-      gl_FragColor = vec4(vColor * (1.0 + glow * 0.35), alpha);
-    }
-  `,
-});
-const cartridgeWispLines = new THREE.LineSegments(
-  cartridgeWispLineGeometry, cartridgeWispLineMaterial
-);
-const cartridgeWispPoints = new THREE.Points(
-  cartridgeWispPointGeometry, cartridgeWispPointMaterial
-);
-cartridgeWispLines.frustumCulled = false;
-cartridgeWispPoints.frustumCulled = false;
-cartridgeWispLines.renderOrder = 3;
-cartridgeWispPoints.renderOrder = 4;
-scene.add(cartridgeWispLines, cartridgeWispPoints);
 
-let cartridgeWispVisibility = 0;
-let cartridgeWispRouteLength = 0;
-const cartridgeWispSource = new THREE.Vector3();
-const cartridgeWispTarget = new THREE.Vector3();
-const cartridgeWispControlA = new THREE.Vector3();
-const cartridgeWispControlB = new THREE.Vector3();
-const cartridgeWispAcross = new THREE.Vector3();
-const cartridgeWispDown = new THREE.Vector3();
-const cartridgeWispSlotAcross = new THREE.Vector3();
-const cartridgeWispRoute = new THREE.Vector3();
-const cartridgeWispTwirlA = new THREE.Vector3();
-const cartridgeWispTwirlB = new THREE.Vector3();
-const cartridgeWispScale = new THREE.Vector3();
-const cartridgeWispSampleA = new THREE.Vector3();
-const cartridgeWispSampleB = new THREE.Vector3();
-const cartridgeWispColor = new THREE.Color();
-const cartridgeWispWarm = new THREE.Color(0xfff1c7);
-const cartridgeWispCool = new THREE.Color(0xa9dfff);
-const cartridgeWispLocal = new THREE.Vector3();
+  function writeCartridgeWispVector(array, offset, vector) {
+    array[offset] = vector.x;
+    array[offset + 1] = vector.y;
+    array[offset + 2] = vector.z;
+  }
 
-function cartridgeWispSmoothstep(edge0, edge1, value) {
-  const x = THREE.MathUtils.clamp((value - edge0) / (edge1 - edge0), 0, 1);
-  return x * x * (3 - 2 * x);
-}
-
-function writeCartridgeWispVector(array, offset, vector) {
-  array[offset] = vector.x;
-  array[offset + 1] = vector.y;
-  array[offset + 2] = vector.z;
-}
-
-function sampleCartridgeWisp(progress, seed, target) {
-  const inverse = 1 - progress;
-  const a = inverse * inverse * inverse;
-  const b = 3 * inverse * inverse * progress;
-  const c = 3 * inverse * progress * progress;
-  const d = progress * progress * progress;
-  target.set(
-    cartridgeWispSource.x * a + cartridgeWispControlA.x * b +
-      cartridgeWispControlB.x * c + cartridgeWispTarget.x * d,
-    cartridgeWispSource.y * a + cartridgeWispControlA.y * b +
-      cartridgeWispControlB.y * c + cartridgeWispTarget.y * d,
-    cartridgeWispSource.z * a + cartridgeWispControlA.z * b +
-      cartridgeWispControlB.z * c + cartridgeWispTarget.z * d
-  );
-
-  // Begin flat in the cartridge's face plane, then wind that plane around the
-  // source-to-slot route. The radius closes completely at the slot mouth.
-  const radius = cartridgeWispRouteLength * (0.018 + Math.abs(seed.curl) * 0.014) *
-    Math.sin(Math.PI * progress) * cartridgeWispSmoothstep(0, 0.28, progress);
-  const angle = seed.curl * 1.35 + progress * progress * Math.PI * 3.2;
-  target.addScaledVector(cartridgeWispTwirlA, Math.cos(angle) * radius);
-  target.addScaledVector(cartridgeWispTwirlB, Math.sin(angle) * radius);
-  return target;
-}
-
-function updateCartridgeWisps(now, dt) {
-  const hasHardware = cartridgeModel && consoleModel && cartridgeUnitH && cartridgeUnitW;
-  if (!hasHardware) return;
-
-  cartridgeRig.updateMatrixWorld(true);
-  cartridgeVisual.getWorldScale(cartridgeWispScale);
-  cartridgeWispTarget.copy(cartridgeSocketWorld);
-
-  cartridgeWispLocal.set(0, -cartridgeUnitH * 0.52, 0);
-  cartridgeWispSource.copy(cartridgeWispLocal);
-  cartridgeVisual.localToWorld(cartridgeWispSource);
-  const distanceVisibility = cartridgeWispSmoothstep(
-    0.16, 0.72, cartridgeWispSource.distanceTo(cartridgeWispTarget)
-  );
-  const cartridgeRestingAtHome = cartridgeState === CARTRIDGE_STATE.FREE &&
-    !cartridgePressed && !cartridgeDragging && !cartridgeRouteActive &&
-    cartridgePhysicsReady &&
-    cartridgePhysicsPosition.distanceToSquared(cartridgeTarget) < 0.0016 &&
-    cartridgeVelocity.lengthSq() < 0.0225;
-  const visibilityGoal = prefersReducedMotion || !cartridgeRestingAtHome
-    ? 0
-    : distanceVisibility;
-  const visibilityRate = visibilityGoal < cartridgeWispVisibility ? 12 : 3.4;
-  cartridgeWispVisibility += (visibilityGoal - cartridgeWispVisibility) *
-    Math.min(1, dt * visibilityRate);
-  cartridgeWispLines.visible = cartridgeWispVisibility > 0.01;
-  cartridgeWispPoints.visible = cartridgeWispVisibility > 0.01;
-
-  // Transform the cartridge's emitter plane and the console slot width without
-  // translation. The fitted assets use local +Z as their horizontal axis.
-  cartridgeWispAcross.set(0, 0, 1).transformDirection(cartridgeVisual.matrixWorld);
-  cartridgeWispDown.set(0, -1, 0).transformDirection(cartridgeVisual.matrixWorld);
-  cartridgeWispSlotAcross.set(0, 0, 1).transformDirection(consoleVisual.matrixWorld);
-
-  const emitterHalfWidth = cartridgeUnitW * cartridgeWispScale.z * 0.36;
-  const slotHalfWidth = cartridgeUnitW * cartridgeWispScale.z * 0.42;
-  let lineVertex = 0;
-  for (let index = 0; index < CARTRIDGE_WISP_COUNT; index += 1) {
-    const seed = cartridgeWispSeeds[index];
-    const progress = (now * seed.speed + seed.phase) % 1;
-
-    cartridgeWispLocal.set(
-      cartridgeUnitD * 0.51,
-      -cartridgeUnitH * 0.52,
-      cartridgeUnitW * seed.across * 0.34
+  function sampleCartridgeWisp(progress, seed, target) {
+    const inverse = 1 - progress;
+    const a = inverse * inverse * inverse;
+    const b = 3 * inverse * inverse * progress;
+    const c = 3 * inverse * progress * progress;
+    const d = progress * progress * progress;
+    target.set(
+      cartridgeWispSource.x * a + cartridgeWispControlA.x * b +
+        cartridgeWispControlB.x * c + cartridgeWispTarget.x * d,
+      cartridgeWispSource.y * a + cartridgeWispControlA.y * b +
+        cartridgeWispControlB.y * c + cartridgeWispTarget.y * d,
+      cartridgeWispSource.z * a + cartridgeWispControlA.z * b +
+        cartridgeWispControlB.z * c + cartridgeWispTarget.z * d
     );
+
+    // Begin flat in the cartridge's face plane, then wind that plane around the
+    // source-to-slot route. The radius closes completely at the slot mouth.
+    const radius = cartridgeWispRouteLength * (0.018 + Math.abs(seed.curl) * 0.014) *
+      Math.sin(Math.PI * progress) * cartridgeWispSmoothstep(0, 0.28, progress);
+    const angle = seed.curl * 1.35 + progress * progress * Math.PI * 3.2;
+    target.addScaledVector(cartridgeWispTwirlA, Math.cos(angle) * radius);
+    target.addScaledVector(cartridgeWispTwirlB, Math.sin(angle) * radius);
+    return target;
+  }
+
+  function updateCartridgeWisps(now, dt) {
+    const hasHardware = cartridgeModel && consoleModel && cartridgeUnitH && cartridgeUnitW;
+    if (!hasHardware) return;
+
+    cartridgeRig.updateMatrixWorld(true);
+    cartridgeVisual.getWorldScale(cartridgeWispScale);
+    cartridgeWispTarget.copy(cartridgeSocketWorld);
+
+    cartridgeWispLocal.set(0, -cartridgeUnitH * 0.52, 0);
     cartridgeWispSource.copy(cartridgeWispLocal);
     cartridgeVisual.localToWorld(cartridgeWispSource);
+    const distanceVisibility = cartridgeWispSmoothstep(
+      0.16, 0.72, cartridgeWispSource.distanceTo(cartridgeWispTarget)
+    );
+    const cartridgeRestingAtHome = cartridgeState === CARTRIDGE_STATE.FREE &&
+      !cartridgePressed && !cartridgeDragging && !cartridgeRouteActive &&
+      cartridgePhysicsReady &&
+      cartridgePhysicsPosition.distanceToSquared(cartridgeTarget) < 0.0016 &&
+      cartridgeVelocity.lengthSq() < 0.0225;
+    const visibilityGoal = prefersReducedMotion || !cartridgeRestingAtHome
+      ? 0
+      : distanceVisibility;
+    const visibilityRate = visibilityGoal < cartridgeWispVisibility ? 12 : 3.4;
+    cartridgeWispVisibility += (visibilityGoal - cartridgeWispVisibility) *
+      Math.min(1, dt * visibilityRate);
+    cartridgeWispLines.visible = cartridgeWispVisibility > 0.01;
+    cartridgeWispPoints.visible = cartridgeWispVisibility > 0.01;
 
-    // Preserve each particle's place across the emitter and deliver it to the
-    // corresponding place across the cartridge aperture, rather than pulling
-    // every strand into the socket's center point.
-    cartridgeWispTarget.copy(cartridgeSocketWorld)
-      .addScaledVector(cartridgeWispSlotAcross, slotHalfWidth * seed.across);
-    cartridgeWispRoute.subVectors(cartridgeWispTarget, cartridgeWispSource);
-    cartridgeWispRouteLength = Math.max(0.001, cartridgeWispRoute.length());
-    cartridgeWispRoute.divideScalar(cartridgeWispRouteLength);
-    cartridgeWispTwirlA.copy(cartridgeWispAcross)
-      .addScaledVector(cartridgeWispRoute, -cartridgeWispAcross.dot(cartridgeWispRoute));
-    if (cartridgeWispTwirlA.lengthSq() < 0.0001) {
-      cartridgeWispTwirlA.set(1, 0, 0)
-        .addScaledVector(cartridgeWispRoute, -cartridgeWispRoute.x);
+    // Transform the cartridge's emitter plane and the console slot width without
+    // translation. The fitted assets use local +Z as their horizontal axis.
+    cartridgeWispAcross.set(0, 0, 1).transformDirection(cartridgeVisual.matrixWorld);
+    cartridgeWispDown.set(0, -1, 0).transformDirection(cartridgeVisual.matrixWorld);
+    cartridgeWispSlotAcross.set(0, 0, 1).transformDirection(consoleVisual.matrixWorld);
+
+    const emitterHalfWidth = cartridgeUnitW * cartridgeWispScale.z * 0.36;
+    const slotHalfWidth = cartridgeUnitW * cartridgeWispScale.z * 0.42;
+    let lineVertex = 0;
+    for (let index = 0; index < CARTRIDGE_WISP_COUNT; index += 1) {
+      const seed = cartridgeWispSeeds[index];
+      const progress = (now * seed.speed + seed.phase) % 1;
+
+      cartridgeWispLocal.set(
+        cartridgeUnitD * 0.51,
+        -cartridgeUnitH * 0.52,
+        cartridgeUnitW * seed.across * 0.34
+      );
+      cartridgeWispSource.copy(cartridgeWispLocal);
+      cartridgeVisual.localToWorld(cartridgeWispSource);
+
+      // Preserve each particle's place across the emitter and deliver it to the
+      // corresponding place across the cartridge aperture, rather than pulling
+      // every strand into the socket's center point.
+      cartridgeWispTarget.copy(cartridgeSocketWorld)
+        .addScaledVector(cartridgeWispSlotAcross, slotHalfWidth * seed.across);
+      cartridgeWispRoute.subVectors(cartridgeWispTarget, cartridgeWispSource);
+      cartridgeWispRouteLength = Math.max(0.001, cartridgeWispRoute.length());
+      cartridgeWispRoute.divideScalar(cartridgeWispRouteLength);
+      cartridgeWispTwirlA.copy(cartridgeWispAcross)
+        .addScaledVector(cartridgeWispRoute, -cartridgeWispAcross.dot(cartridgeWispRoute));
+      if (cartridgeWispTwirlA.lengthSq() < 0.0001) {
+        cartridgeWispTwirlA.set(1, 0, 0)
+          .addScaledVector(cartridgeWispRoute, -cartridgeWispRoute.x);
+      }
+      cartridgeWispTwirlA.normalize();
+      cartridgeWispTwirlB.crossVectors(cartridgeWispRoute, cartridgeWispTwirlA).normalize();
+
+      const launchDistance = Math.min(cartridgeWispRouteLength * 0.24, 0.62);
+      const arrivalLift = Math.min(cartridgeWispRouteLength * 0.18, 0.48);
+      cartridgeWispControlA.copy(cartridgeWispSource)
+        .addScaledVector(cartridgeWispDown, launchDistance)
+        .addScaledVector(cartridgeWispAcross, emitterHalfWidth * seed.curl * 0.26);
+      cartridgeWispControlB.copy(cartridgeWispTarget)
+        .addScaledVector(cartridgeWispRoute, -arrivalLift);
+
+      cartridgeWispColor.copy(cartridgeWispCool).lerp(cartridgeWispWarm, seed.hue);
+      const pointAlpha = cartridgeWispVisibility *
+        cartridgeWispSmoothstep(0.015, 0.12, progress) *
+        (1 - cartridgeWispSmoothstep(0.72, 0.995, progress));
+      sampleCartridgeWisp(progress, seed, cartridgeWispSampleA);
+      writeCartridgeWispVector(cartridgeWispPointPositions, index * 3, cartridgeWispSampleA);
+      writeCartridgeWispVector(cartridgeWispPointColors, index * 3, cartridgeWispColor);
+      cartridgeWispPointAlphas[index] = pointAlpha;
+
+      for (let segment = 0; segment < CARTRIDGE_WISP_TRAIL_SEGMENTS; segment += 1) {
+        const frontProgress = progress - segment * 0.018;
+        const backProgress = progress - (segment + 1) * 0.018;
+        const frontValid = frontProgress >= 0;
+        const backValid = backProgress >= 0;
+        sampleCartridgeWisp(Math.max(0, frontProgress), seed, cartridgeWispSampleA);
+        sampleCartridgeWisp(Math.max(0, backProgress), seed, cartridgeWispSampleB);
+        const trailFade = 1 - segment / CARTRIDGE_WISP_TRAIL_SEGMENTS;
+        const frontAlpha = frontValid ? cartridgeWispVisibility * trailFade *
+          cartridgeWispSmoothstep(0.015, 0.12, frontProgress) *
+          (1 - cartridgeWispSmoothstep(0.68, 0.995, frontProgress)) : 0;
+        const backAlpha = backValid ? cartridgeWispVisibility * trailFade * 0.72 *
+          cartridgeWispSmoothstep(0.015, 0.12, backProgress) *
+          (1 - cartridgeWispSmoothstep(0.68, 0.995, backProgress)) : 0;
+        writeCartridgeWispVector(
+          cartridgeWispLinePositions, lineVertex * 3, cartridgeWispSampleA
+        );
+        writeCartridgeWispVector(
+          cartridgeWispLineColors, lineVertex * 3, cartridgeWispColor
+        );
+        cartridgeWispLineAlphas[lineVertex] = frontAlpha;
+        lineVertex += 1;
+        writeCartridgeWispVector(
+          cartridgeWispLinePositions, lineVertex * 3, cartridgeWispSampleB
+        );
+        writeCartridgeWispVector(
+          cartridgeWispLineColors, lineVertex * 3, cartridgeWispColor
+        );
+        cartridgeWispLineAlphas[lineVertex] = backAlpha;
+        lineVertex += 1;
+      }
     }
-    cartridgeWispTwirlA.normalize();
-    cartridgeWispTwirlB.crossVectors(cartridgeWispRoute, cartridgeWispTwirlA).normalize();
 
-    const launchDistance = Math.min(cartridgeWispRouteLength * 0.24, 0.62);
-    const arrivalLift = Math.min(cartridgeWispRouteLength * 0.18, 0.48);
-    cartridgeWispControlA.copy(cartridgeWispSource)
-      .addScaledVector(cartridgeWispDown, launchDistance)
-      .addScaledVector(cartridgeWispAcross, emitterHalfWidth * seed.curl * 0.26);
-    cartridgeWispControlB.copy(cartridgeWispTarget)
-      .addScaledVector(cartridgeWispRoute, -arrivalLift);
-
-    cartridgeWispColor.copy(cartridgeWispCool).lerp(cartridgeWispWarm, seed.hue);
-    const pointAlpha = cartridgeWispVisibility *
-      cartridgeWispSmoothstep(0.015, 0.12, progress) *
-      (1 - cartridgeWispSmoothstep(0.72, 0.995, progress));
-    sampleCartridgeWisp(progress, seed, cartridgeWispSampleA);
-    writeCartridgeWispVector(cartridgeWispPointPositions, index * 3, cartridgeWispSampleA);
-    writeCartridgeWispVector(cartridgeWispPointColors, index * 3, cartridgeWispColor);
-    cartridgeWispPointAlphas[index] = pointAlpha;
-
-    for (let segment = 0; segment < CARTRIDGE_WISP_TRAIL_SEGMENTS; segment += 1) {
-      const frontProgress = progress - segment * 0.018;
-      const backProgress = progress - (segment + 1) * 0.018;
-      const frontValid = frontProgress >= 0;
-      const backValid = backProgress >= 0;
-      sampleCartridgeWisp(Math.max(0, frontProgress), seed, cartridgeWispSampleA);
-      sampleCartridgeWisp(Math.max(0, backProgress), seed, cartridgeWispSampleB);
-      const trailFade = 1 - segment / CARTRIDGE_WISP_TRAIL_SEGMENTS;
-      const frontAlpha = frontValid ? cartridgeWispVisibility * trailFade *
-        cartridgeWispSmoothstep(0.015, 0.12, frontProgress) *
-        (1 - cartridgeWispSmoothstep(0.68, 0.995, frontProgress)) : 0;
-      const backAlpha = backValid ? cartridgeWispVisibility * trailFade * 0.72 *
-        cartridgeWispSmoothstep(0.015, 0.12, backProgress) *
-        (1 - cartridgeWispSmoothstep(0.68, 0.995, backProgress)) : 0;
-      writeCartridgeWispVector(
-        cartridgeWispLinePositions, lineVertex * 3, cartridgeWispSampleA
-      );
-      writeCartridgeWispVector(
-        cartridgeWispLineColors, lineVertex * 3, cartridgeWispColor
-      );
-      cartridgeWispLineAlphas[lineVertex] = frontAlpha;
-      lineVertex += 1;
-      writeCartridgeWispVector(
-        cartridgeWispLinePositions, lineVertex * 3, cartridgeWispSampleB
-      );
-      writeCartridgeWispVector(
-        cartridgeWispLineColors, lineVertex * 3, cartridgeWispColor
-      );
-      cartridgeWispLineAlphas[lineVertex] = backAlpha;
-      lineVertex += 1;
-    }
+    cartridgeWispLineGeometry.attributes.position.needsUpdate = true;
+    cartridgeWispLineGeometry.attributes.color.needsUpdate = true;
+    cartridgeWispLineGeometry.attributes.alpha.needsUpdate = true;
+    cartridgeWispPointGeometry.attributes.position.needsUpdate = true;
+    cartridgeWispPointGeometry.attributes.color.needsUpdate = true;
+    cartridgeWispPointGeometry.attributes.alpha.needsUpdate = true;
   }
 
-  cartridgeWispLineGeometry.attributes.position.needsUpdate = true;
-  cartridgeWispLineGeometry.attributes.color.needsUpdate = true;
-  cartridgeWispLineGeometry.attributes.alpha.needsUpdate = true;
-  cartridgeWispPointGeometry.attributes.position.needsUpdate = true;
-  cartridgeWispPointGeometry.attributes.color.needsUpdate = true;
-  cartridgeWispPointGeometry.attributes.alpha.needsUpdate = true;
+  return updateCartridgeWisps;
 }
 
 cartridgeControl.addEventListener('pointerenter', () => { cartridgeHovered = true; });
@@ -1831,73 +1730,76 @@ cartridgeControl.addEventListener('keyup', e => {
   }
 });
 
-new GLTFLoader().load(cartridgeModelUrl, (gltf) => {
-  cartridgeModel = gltf.scene;
-  const bounds = new THREE.Box3().setFromObject(cartridgeModel);
-  const center = bounds.getCenter(new THREE.Vector3());
-  const size = bounds.getSize(new THREE.Vector3());
-  cartridgeModel.position.sub(center);
-  cartridgeModel.traverse(o => {
-    if (!o.isMesh) return;
-    o.frustumCulled = false;
-    o.material = cartridgeMaterial;
-  });
-  const labelArtwork = new THREE.Mesh(
-    new THREE.PlaneGeometry(CARTRIDGE_LABEL_PANEL.width, CARTRIDGE_LABEL_PANEL.height),
-    cartridgeLabelMaterial
-  );
-  labelArtwork.name = 'CartridgeLabelArtwork';
-  labelArtwork.position.set(
-    CARTRIDGE_LABEL_PANEL.frontX,
-    CARTRIDGE_LABEL_PANEL.centerY,
-    CARTRIDGE_LABEL_PANEL.centerZ
-  );
-  labelArtwork.rotation.y = Math.PI * 0.5;
-  labelArtwork.renderOrder = 1;
-  cartridgeModel.add(labelArtwork);
-  cartridgeVisual.add(cartridgeModel);
-  cartridgeUnitH = size.y;
-  cartridgeUnitW = size.z;
-  cartridgeUnitD = size.x;
-  resize();
-}, undefined, error => console.error('Could not load cartridge GLB', error));
+if (CARTRIDGE_INTRO_ENABLED) {
+  loadHardwareModel(cartridgeModelUrl, (gltf) => {
+    cartridgeModel = gltf.scene;
+    const bounds = new THREE.Box3().setFromObject(cartridgeModel);
+    const center = bounds.getCenter(new THREE.Vector3());
+    const size = bounds.getSize(new THREE.Vector3());
+    cartridgeModel.position.sub(center);
+    cartridgeModel.traverse(o => {
+      if (!o.isMesh) return;
+      o.frustumCulled = false;
+      o.material = cartridgeMaterial;
+    });
+    const labelArtwork = new THREE.Mesh(
+      new THREE.PlaneGeometry(CARTRIDGE_LABEL_PANEL.width, CARTRIDGE_LABEL_PANEL.height),
+      cartridgeLabelMaterial
+    );
+    labelArtwork.name = 'CartridgeLabelArtwork';
+    labelArtwork.position.set(
+      CARTRIDGE_LABEL_PANEL.frontX,
+      CARTRIDGE_LABEL_PANEL.centerY,
+      CARTRIDGE_LABEL_PANEL.centerZ
+    );
+    labelArtwork.rotation.y = Math.PI * 0.5;
+    labelArtwork.renderOrder = 1;
+    cartridgeModel.add(labelArtwork);
+    cartridgeVisual.add(cartridgeModel);
+    cartridgeUnitH = size.y;
+    cartridgeUnitW = size.z;
+    cartridgeUnitD = size.x;
+    resize();
+  }, error => console.error('Could not load cartridge GLB', error));
 
-new GLTFLoader().load(consoleModelUrl, (gltf) => {
-  consoleModel = gltf.scene;
-  consoleSnapAnchor = consoleModel.getObjectByName('CartridgeSnapAnchor');
-  consoleMouthAnchor = consoleModel.getObjectByName('CartridgeMouthAnchor');
-  hardwareInset.dataset.snapAnchor = consoleSnapAnchor && consoleMouthAnchor
-    ? 'ready'
-    : 'missing';
-  const bounds = new THREE.Box3().setFromObject(consoleModel);
-  const center = bounds.getCenter(new THREE.Vector3());
-  const size = bounds.getSize(new THREE.Vector3());
-  consoleModel.position.sub(center);
-  consoleModel.traverse(o => {
-    if (!o.isMesh) return;
-    o.frustumCulled = false;
-    const letterKey = Object.keys(funLetterMaterials).find(key => o.name.startsWith(key));
-    if (letterKey) o.material = funLetterMaterials[letterKey];
-  });
-  consoleVisual.add(consoleModel);
-  // In glTF/Three.js the fitted asset is +X front, +Y up, and +Z width.
-  // Map those axes to a slightly elevated front view: the top faces the
-  // camera while the controller ports remain readable along the lower edge.
-  const consoleFront = new THREE.Vector3(0, -0.42, 0.907).normalize();
-  const consoleUp = new THREE.Vector3(0, 0.907, 0.42).normalize();
-  const consoleWidth = new THREE.Vector3(-1, 0, 0);
-  consoleVisual.quaternion.setFromRotationMatrix(
-    new THREE.Matrix4().makeBasis(consoleFront, consoleUp, consoleWidth)
-  );
-  consoleRestQuaternion.copy(consoleVisual.quaternion);
-  const consoleInviteFront = new THREE.Vector3(0, -0.30, 0.954).normalize();
-  const consoleInviteUp = new THREE.Vector3(0, 0.954, 0.30).normalize();
-  consoleInviteQuaternion.setFromRotationMatrix(
-    new THREE.Matrix4().makeBasis(consoleInviteFront, consoleInviteUp, consoleWidth)
-  );
-  consoleUnitW = size.z;
-  resize();
-}, undefined, error => console.error('Could not load fitted console GLB', error));
+  loadHardwareModel(consoleModelUrl, (gltf) => {
+    consoleModel = gltf.scene;
+    consoleSnapAnchor = consoleModel.getObjectByName('CartridgeSnapAnchor');
+    consoleMouthAnchor = consoleModel.getObjectByName('CartridgeMouthAnchor');
+    hardwareInset.dataset.snapAnchor = consoleSnapAnchor && consoleMouthAnchor
+      ? 'ready'
+      : 'missing';
+    const bounds = new THREE.Box3().setFromObject(consoleModel);
+    const center = bounds.getCenter(new THREE.Vector3());
+    const size = bounds.getSize(new THREE.Vector3());
+    consoleModel.position.sub(center);
+    consoleModel.traverse(o => {
+      if (!o.isMesh) return;
+      o.frustumCulled = false;
+      const letterKey = Object.keys(funLetterMaterials).find(key => o.name.startsWith(key));
+      if (letterKey) o.material = funLetterMaterials[letterKey];
+    });
+    consoleVisual.add(consoleModel);
+    // In glTF/Three.js the fitted asset is +X front, +Y up, and +Z width.
+    // Map those axes to a slightly elevated front view: the top faces the
+    // camera while the controller ports remain readable along the lower edge.
+    const consoleFront = new THREE.Vector3(0, -0.42, 0.907).normalize();
+    const consoleUp = new THREE.Vector3(0, 0.907, 0.42).normalize();
+    const consoleWidth = new THREE.Vector3(-1, 0, 0);
+    consoleVisual.quaternion.setFromRotationMatrix(
+      new THREE.Matrix4().makeBasis(consoleFront, consoleUp, consoleWidth)
+    );
+    consoleRestQuaternion.copy(consoleVisual.quaternion);
+    const consoleInviteFront = new THREE.Vector3(0, -0.30, 0.954).normalize();
+    const consoleInviteUp = new THREE.Vector3(0, 0.954, 0.30).normalize();
+    consoleInviteQuaternion.setFromRotationMatrix(
+      new THREE.Matrix4().makeBasis(consoleInviteFront, consoleInviteUp, consoleWidth)
+    );
+    consoleUnitW = size.z;
+    resize();
+  }, error => console.error('Could not load fitted console GLB', error));
+
+}
 
 let mesh = null;   // set when the GLB loads
 let pointerTipIndex = -1;
@@ -1913,134 +1815,32 @@ function pinPointerTip() {
 }
 
 // ---------------------------------------------------------------------------
-// GLB hand (Meshy): welded, lightly smoothed, aligned into hand-local space,
-// distance-skinned to the retargeted skeleton.
+// Baked Meshy hand: welding, smoothing, normals and bone weights are prepared
+// offline by scripts/generate-cursor.mjs. Only bind and animate on the client.
 // ---------------------------------------------------------------------------
-const GLB_ALIGN = {
-  scale: 2.4,
-  rotX: 0, rotY: 0, rotZ: -0.55,
-  offX: 0, offY: 0, offZ: 0,
-  tweak: { thumb: 2.2, middle: 0.2, ring: 0.15, pinky: 0.1 },
-};
-window.__glbAlign = GLB_ALIGN;
-
-new GLTFLoader().load(cursorModelUrl, (gltf) => {
-  let src = null;
-  gltf.scene.traverse(o => { if (o.isMesh && !src) src = o; });
-  if (!src) return;
-  let g = src.geometry.clone();
-  for (const name of ['tangent', 'uv', 'normal', 'uv1', 'uv2', 'color'])
-    if (g.getAttribute(name)) g.deleteAttribute(name);
-  g = mergeVertices(g, 1e-4);
-
-  // Light Laplacian smoothing — a touch, to match our soft blob style.
-  {
-    const posAttr = g.getAttribute('position');
-    const idx = g.getIndex().array;
-    const n = posAttr.count;
-    const pts = posAttr.array;
-    const neighbors = Array.from({ length: n }, () => new Set());
-    for (let i = 0; i < idx.length; i += 3) {
-      const a = idx[i], b = idx[i + 1], c = idx[i + 2];
-      neighbors[a].add(b).add(c); neighbors[b].add(a).add(c); neighbors[c].add(a).add(b);
-    }
-    for (let iter = 0; iter < 2; iter++) {
-      const next = pts.slice();
-      for (let vi = 0; vi < n; vi++) {
-        let sx = 0, sy = 0, sz = 0;
-        const nb = neighbors[vi];
-        for (const nn of nb) { sx += pts[nn * 3]; sy += pts[nn * 3 + 1]; sz += pts[nn * 3 + 2]; }
-        const inv = 1 / nb.size, L = 0.45;
-        next[vi * 3]     += (sx * inv - pts[vi * 3]) * L;
-        next[vi * 3 + 1] += (sy * inv - pts[vi * 3 + 1]) * L;
-        next[vi * 3 + 2] += (sz * inv - pts[vi * 3 + 2]) * L;
-      }
-      pts.set(next);
-    }
-    posAttr.needsUpdate = true;
-  }
-
-  window.__applyGlb = () => {
-    const A = window.__glbAlign;
-    const g2 = g.clone();
-    const m = new THREE.Matrix4()
-      .makeTranslation(A.offX, A.offY, A.offZ)
-      .multiply(new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(A.rotX, A.rotY, A.rotZ)))
-      .multiply(new THREE.Matrix4().makeScale(A.scale, A.scale, A.scale));
-    g2.applyMatrix4(m);
-    g2.computeVertexNormals();
-
-    // Distance-skin to our bones with capsule weighting.
-    const posAttr = g2.getAttribute('position');
-    const n = posAttr.count;
-    const si = new Uint16Array(n * 4);
-    const sw = new Float32Array(n * 4);
-    const p = new THREE.Vector3();
-    const dists = new Array(bones.length);
-    for (let vi = 0; vi < n; vi++) {
-      p.fromBufferAttribute(posAttr, vi);
-      dists.fill(Infinity);
-      dists[0] = sdRoot(p);
-      for (const c of capsules) {
-        const d = sdCapsule(p, c.a, c.b, c.r);
-        if (d < dists[c.bone]) dists[c.bone] = d;
-      }
-      const scored = dists.map((d, bi) => ({ bi, w: Math.pow(Math.max(d + 0.05, 0.01), -4) }));
-      scored.sort((a, b) => b.w - a.w);
-      let total = 0;
-      for (let k = 0; k < 4; k++) total += scored[k].w;
-      for (let k = 0; k < 4; k++) {
-        si[vi * 4 + k] = scored[k].bi;
-        sw[vi * 4 + k] = scored[k].w / total;
-      }
-    }
-    g2.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(si, 4));
-    g2.setAttribute('skinWeight', new THREE.Float32BufferAttribute(sw, 4));
-
-    // Rest pose (tweaks zeroed: the GLB's authored pose IS the bind pose;
-    // tweaks then act as live deltas that tuck thumb + tighten fingers).
-    poseTweak.pinky = poseTweak.ring = poseTweak.middle = poseTweak.thumb = 0;
-    for (const f of rigs) { f.jig.a = 0; f.jig.v = 0; }
-    poseFingers(0);
-    const newMesh = new THREE.SkinnedMesh(g2, gloveMat);
-    newMesh.frustumCulled = false;
-    newMesh.renderOrder = 1000;
-    newMesh.add(rootBone);
-    newMesh.updateMatrixWorld(true);
-    newMesh.bind(new THREE.Skeleton(bones));
-    if (mesh) hand.remove(mesh);
-    mesh = newMesh;
-    hand.add(mesh);
-    Object.assign(poseTweak, A.tweak || {});
-
-    g2.computeBoundingBox();
-    handUnitH = (g2.boundingBox.max.y - g2.boundingBox.min.y) * hand.scale.y;
-
-    // Hotspot: extreme vertex along the index direction (up-right). Measure
-    // the live skinned point rather than the undeformed geometry, then move
-    // the mesh itself so every outer transform pivots around the fingertip.
-    {
-      const posAttr2 = g2.getAttribute('position');
-      const dirX = Math.sin(-INDEX_REST_Z), dirY = Math.cos(-INDEX_REST_Z);
-      let bestS = -1e9;
-      pointerTipIndex = 0;
-      for (let vi = 0; vi < posAttr2.count; vi++) {
-        const x = posAttr2.getX(vi), y = posAttr2.getY(vi);
-        const sscore = x * dirX + y * dirY;
-        if (sscore > bestS) { bestS = sscore; pointerTipIndex = vi; }
-      }
-      for (const f of rigs) { f.jig.a = 0; f.jig.v = 0; }
-      poseFingers(0, 0);
-      hand.position.set(0, 0, 0);
-      pinPointerTip();
-    }
-    resize();
-    customCursorMeshReady = true;
-    syncCustomCursorAvailability();
-  };
-  window.__applyGlb();
-}, undefined, error => {
-  console.error('Could not load hand cursor GLB', error);
+loadHardwareModel(cursorModelUrl, (gltf) => {
+  let source = null;
+  gltf.scene.traverse(object => { if (object.isMesh && !source) source = object; });
+  if (!source) return;
+  const geometry = source.geometry;
+  pointerTipIndex = source.userData.pointerTipIndex;
+  poseFingers(0);
+  mesh = new THREE.SkinnedMesh(geometry, gloveMat);
+  mesh.frustumCulled = false;
+  mesh.renderOrder = 1000;
+  mesh.add(rootBone);
+  mesh.updateMatrixWorld(true);
+  mesh.bind(new THREE.Skeleton(bones));
+  hand.add(mesh);
+  Object.assign(poseTweak, GLB_ALIGN.tweak);
+  geometry.computeBoundingBox();
+  handUnitH = (geometry.boundingBox.max.y - geometry.boundingBox.min.y) * hand.scale.y;
+  poseFingers(0, 0);
+  pinPointerTip();
+  resize();
+  // The native cursor stays active until both render passes are compiled.
+}, error => {
+  console.error('Could not load baked hand cursor GLB', error);
   customCursorMeshReady = false;
   syncCustomCursorAvailability();
 });
@@ -2048,7 +1848,7 @@ new GLTFLoader().load(cursorModelUrl, (gltf) => {
 window.__dbg = { scene, camera, rt, renderer, bones, rigs, hand, wrist, glove, gloveLog,
   gloveState: () => ({ hidden: gloveHidden, presence: glovePresence, inside: lastPointer.inside,
     fallback: fallbackCursorEl?.tagName }),
-  qPoint, qGrab, capsules, cartridgeRig, cartridgeVisual,
+  qPoint, qGrab, cartridgeRig, cartridgeVisual,
   consoleRig, consoleVisual, funLetterMaterials };
 
 // ---------------------------------------------------------------------------
@@ -2626,6 +2426,7 @@ if (!CARTRIDGE_INTRO_ENABLED || DBG.includes('skipboot')) {
 let idleFrameCleared = false;
 function tick() {
   requestAnimationFrame(tick);
+  if (!hardwareShadersReady) return;
   if (window.innerWidth && renderer.domElement.width !== window.innerWidth) resize();
   const rawDt = clock.getDelta();
   const dt = Math.min(rawDt, 1 / 30);
@@ -2951,6 +2752,33 @@ function tick() {
     renderer.render(postScene, postCam);
   }
 
-  crtScreenMaterial.uniforms.time.value = t;
+  if (crtScreenMaterial) crtScreenMaterial.uniforms.time.value = t;
 }
+// Include hidden poof materials and both cursor-light states: entering/leaving
+// an iframe changes visibility, and Three.js specializes shaders by light count.
+async function prepareHardwareShaders() {
+  await Promise.all(hardwareLoads);
+  for (const renderTarget of [null, rt]) {
+    for (const visible of [false, true]) {
+      const previousVisibility = glove.visible;
+      let compilation;
+      try {
+        glove.visible = visible;
+        compilation = compileSceneAsync(renderer, scene, camera, scene, renderTarget);
+      } finally {
+        glove.visible = previousVisibility;
+      }
+      await compilation;
+    }
+  }
+  await compileSceneAsync(renderer, postScene, postCam, postScene);
+  hardwareShadersReady = true;
+  customCursorMeshReady = Boolean(mesh);
+  syncCustomCursorAvailability();
+}
+prepareHardwareShaders().catch(error => {
+  console.error('Could not prepare hardware shaders', error);
+  customCursorMeshReady = false;
+  syncCustomCursorAvailability();
+});
 tick();
