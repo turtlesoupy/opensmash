@@ -14,6 +14,7 @@ import {
   uploaderToken,
 } from "./fighter-jobs.js";
 import { createTurnstileVerifier } from "./turnstile.js";
+import { prepareRetry } from "./job-database.js";
 
 // Keep the in-process queue from spawning the real pipeline during tests.
 process.env.FIGHTER_WORKER_DISABLED = "1";
@@ -46,6 +47,12 @@ async function harness({ storedJobs = [], moderator = async () => ({ status: "ap
     list: async () => storedJobs,
     insert: async () => {},
     save: async (job) => { saved.push(job); },
+    retry: async (id, ownerId, options) => {
+      const records = new Map([...storedJobs, ...saved].map((job) => [job.id, job]));
+      const job = prepareRetry(records.get(id), ownerId, [...records.values()], options);
+      saved.push(job);
+      return job;
+    },
     watch,
   };
   const objectStore = {

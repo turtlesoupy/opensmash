@@ -1131,34 +1131,14 @@ export function createFighterJobs({
   // limit. Automatic reroll/transient budgets carry over between attempts, so
   // a job can never exceed 1 + manual + automatic worker executions.
   async function retry(id, ownerId) {
-    const job = ownedJob(id, ownerId);
-    if (!job) throw new HttpError(404, "Fighter job not found.");
-    if (ACTIVE_JOB_STATUSES.has(job.status)) throw new HttpError(409, "That fighter is already being generated.");
-    if (job.status === "complete") throw new HttpError(409, "That fighter is already complete.");
-    const manualRetriesAt = job.retry?.manualRetriesAt || [];
-    if (manualRetriesAt.length >= maxManualRetries) {
-      throw new HttpError(429, "This fighter has used all of its retries. Create a new fighter instead.");
-    }
+    let job;
     try {
-      assertQuota(quotaUsage(jobs.values(), job.ownerId, { pending }), limits);
+      job = await jobDatabase.retry(id, ownerId, { quota: limits, maxManualRetries });
     } catch (error) {
       throw httpErrorFrom(error);
     }
-    job.status = "queued";
-    job.stage = "queued";
-    job.stageLabel = workerBusy ? "Waiting for the current fighter" : "Queued to resume";
-    job.progress = 0;
-    job.error = null;
-    job.retry = {
-      automaticCounts: job.retry?.automaticCounts || { moderation: 0, transient: 0 },
-      nextAttemptAt: null,
-      label: null,
-      manualRetriesAt: [...manualRetriesAt, new Date().toISOString()],
-    };
-    job.completedAt = null;
-    job.dispatch = null;
-    job.lease = null;
-    await saveJob(job);
+    jobs.set(job.id, normalizeStoredJob(job));
+    events.emit(job.id, jobSnapshot(job));
     await dispatch(job);
     return publicJob(job);
   }

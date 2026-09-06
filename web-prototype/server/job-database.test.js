@@ -107,9 +107,11 @@ function fakeFirestore(seed) {
     ...query([]),
     doc: (id) => ({ kind: "doc", id }),
     firestore: {
-      collection: () => ({ doc: (slug) => ({ kind: "slug", id: slug }) }),
+      collection: (name) => ({ doc: (slug) => ({ kind: name.endsWith("Quota") ? "guard" : "slug", id: slug }) }),
       runTransaction: async (run) => run({
         get: async (target) => {
+          if (target.kind === "guard") return { exists: false };
+          if (target.kind === "doc") return { exists: docs.has(target.id), data: () => structuredClone(docs.get(target.id)) };
           if (target.kind === "slug") return { exists: slugs.has(target.id) };
           const rows = [...docs.values()].filter((job) => matches(job, target.filters));
           if (target.kind === "aggregate") {
@@ -123,6 +125,7 @@ function fakeFirestore(seed) {
           if (target.kind === "slug") slugs.add(target.id);
           else docs.set(target.id, value);
         },
+        set: (target, value) => { if (target.kind !== "guard") docs.set(target.id, structuredClone(value)); },
       }),
     },
   };

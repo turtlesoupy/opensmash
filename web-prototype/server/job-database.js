@@ -4,6 +4,35 @@ import { randomUUID } from "node:crypto";
 import { ACTIVE_JOB_STATUSES } from "./job-protocol.js";
 import { DAY_MS, assertQuota, quotaUsage } from "./job-quota.js";
 
+export function prepareRetry(job, ownerId, jobs, { quota, maxManualRetries }) {
+  const reject = (status, message) => { throw Object.assign(new Error(message), { status }); };
+  if (!job || job.ownerId !== ownerId) reject(404, "Fighter job not found.");
+  if (ACTIVE_JOB_STATUSES.has(job.status)) reject(409, "That fighter is already being generated.");
+  if (job.status === "complete") reject(409, "That fighter is already complete.");
+  const retries = job.retry?.manualRetriesAt || [];
+  if (retries.length >= maxManualRetries) reject(429, "This fighter has used all of its retries. Create a new fighter instead.");
+  assertQuota(quotaUsage(jobs, ownerId), quota);
+  const now = new Date().toISOString();
+  return {
+    ...job, status: "queued", stage: "queued", stageLabel: "Queued to resume",
+    progress: 0, error: null, completedAt: null, dispatch: null, lease: null,
+    revision: (job.revision || 0) + 1, updatedAt: now,
+    retry: { automaticCounts: job.retry?.automaticCounts || { moderation: 0, transient: 0 },
+      nextAttemptAt: null, label: null, manualRetriesAt: [...retries, now] },
+  };
+}
+
+// Local mode runs in one process, but separate adapters can share a root.
+const localQuotaLocks = new Map();
+async function withLocalQuotaLock(root, run) {
+  const key = path.resolve(root);
+  const previous = localQuotaLocks.get(key) || Promise.resolve();
+  const current = previous.catch(() => {}).then(run);
+  localQuotaLocks.set(key, current);
+  try { return await current; }
+  finally { if (localQuotaLocks.get(key) === current) localQuotaLocks.delete(key); }
+}
+
 function duplicateSlugError(slug) {
   const error = new Error(`A fighter with slug '${slug}' already exists.`);
   error.code = "DUPLICATE_SLUG";
@@ -78,12 +107,23 @@ class LocalJobDatabase {
   }
 
   async insert(job, { quota = null } = {}) {
+    return withLocalQuotaLock(this.root, async () => {
     const existing = await this.list();
     if (existing.some((candidate) => candidate.slug === job.slug)) {
       throw duplicateSlugError(job.slug);
     }
     if (quota) assertQuota(quotaUsage(existing, job.ownerId), quota);
     await this.write(job);
+    });
+  }
+
+  async retry(id, ownerId, options) {
+    return withLocalQuotaLock(this.root, async () => {
+      const jobs = await this.list();
+      const updated = prepareRetry(jobs.find((job) => job.id === id), ownerId, jobs, options);
+      await this.write(updated);
+      return updated;
+    });
   }
 
   async save(job, { executionId = null } = {}) {
@@ -149,6 +189,8 @@ export class FirestoreJobDatabase {
     const jobRef = this.collection.doc(job.id);
     const slugRef = this.collection.firestore.collection(`${this.collectionName}Slugs`).doc(job.slug);
     await this.collection.firestore.runTransaction(async (transaction) => {
+      const guard = this.collection.firestore.collection(`${this.collectionName}Quota`).doc("admission");
+      await transaction.get(guard);
       const slug = await transaction.get(slugRef);
       if (slug.exists) throw duplicateSlugError(job.slug);
       if (quota) {
@@ -176,6 +218,23 @@ export class FirestoreJobDatabase {
       }
       transaction.create(slugRef, { jobId: job.id, createdAt: job.createdAt });
       transaction.create(jobRef, job);
+      transaction.set(guard, { updatedAt: job.updatedAt || job.createdAt });
+    });
+  }
+
+  async retry(id, ownerId, options) {
+    return this.collection.firestore.runTransaction(async (transaction) => {
+      // Share the admission guard with creation so retries cannot race new
+      // uploads (including when an account has no active documents yet).
+      const guard = this.collection.firestore.collection(`${this.collectionName}Quota`).doc("admission");
+      await transaction.get(guard);
+      // Retries must count retries of older jobs too, not only recent creations.
+      const snapshot = await transaction.get(this.collection);
+      const jobs = snapshot.docs.map((document) => document.data());
+      const updated = prepareRetry(jobs.find((job) => job.id === id), ownerId, jobs, options);
+      transaction.set(this.collection.doc(id), updated);
+      transaction.set(guard, { updatedAt: updated.updatedAt });
+      return updated;
     });
   }
 
