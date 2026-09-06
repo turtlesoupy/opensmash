@@ -12,9 +12,10 @@ function harness(gamepad) {
     setItem(key, value) { values.set(key, String(value)); },
   };
   const navigator = { getGamepads: () => [gamepad] };
-  const window = {};
+  const listeners = {};
+  const window = { addEventListener(type, fn) { listeners[type] = fn; } };
   vm.runInNewContext(source, { window, navigator, localStorage, Proxy, Reflect, Object, Array, Number, Boolean, JSON, String, Set });
-  return { api: window.openSmashControllerRemap, navigator, localStorage };
+  return { api: window.openSmashControllerRemap, navigator, localStorage, listeners };
 }
 
 function pad() {
@@ -204,4 +205,28 @@ test("a single C-direction override replaces native input only in that direction
   gamepad.buttons[7].pressed = false;
   gamepad.axes[2] = -0.8;
   assert.equal(navigator.getGamepads()[0].axes[2], -0.8);
+});
+
+
+test("polling caches configuration while storage events update other frames", () => {
+  const gamepad = pad();
+  const { api, navigator, localStorage, listeners } = harness(gamepad);
+  api.saveProfile(gamepad.id, { mode: "standard", buttons: { a: 1, b: 0 } });
+  const profile = api.getProfile(gamepad.id);
+  let reads = 0;
+  const getItem = localStorage.getItem;
+  localStorage.getItem = key => { reads++; return getItem(key); };
+  for (let i = 0; i < 120; i++) navigator.getGamepads();
+  assert.equal(reads, 0);
+  assert.equal(api.getProfile(gamepad.id), profile);
+  localStorage.setItem(api.storageKey, JSON.stringify({version: 1, profiles: {}}));
+  listeners.storage({ key: api.storageKey });
+  assert.equal(navigator.getGamepads()[0], gamepad);
+  assert.equal(reads, 1);
+  localStorage.setItem(api.storageKey, JSON.stringify({version: 1, profiles: { [gamepad.id]: {mode: "custom", buttons: {a: 0}} }}));
+  listeners.storage({ key: api.storageKey });
+  assert.equal(navigator.getGamepads()[0].buttons[0].pressed, true);
+  localStorage.setItem(api.storageKey, "");
+  listeners.storage({ key: null });
+  assert.equal(navigator.getGamepads()[0], gamepad);
 });

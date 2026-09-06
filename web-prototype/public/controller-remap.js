@@ -20,6 +20,10 @@
     "cup", "cdown", "cleft", "cright",
     "dup", "ddown", "dleft", "dright",
   ]);
+  const PRESSED_BUTTON = Object.freeze({ pressed: true, touched: true, value: 1 });
+  const BUTTON_ENTRIES = Object.entries(BUTTON_TARGETS);
+  const C_DIRECTIONS = [["cleft", 2, -1], ["cright", 2, 1], ["cup", 3, -1], ["cdown", 3, 1]];
+  const M64_PROFILE = Object.freeze({ mode: "standard", buttons: Object.freeze({ a: 1, b: 0 }), axes: Object.freeze({}) });
   const M64_ID = /(?:^|\b)M64[_ ]Controller(?:\b|$)/i;
 
   const nativeGetGamepads = typeof navigator.getGamepads === "function"
@@ -27,12 +31,18 @@
     : () => [];
   let cachedJson = null;
   let cachedProfiles = {};
+  let profilesLoaded = false;
+  const resolvedProfiles = new Map();
+  const calibration = new WeakMap();
 
   function readProfiles() {
+    if (profilesLoaded) return cachedProfiles;
+    profilesLoaded = true;
     let json = "";
     try { json = localStorage.getItem(STORAGE_KEY) || ""; } catch { return {}; }
     if (json === cachedJson) return cachedProfiles;
     cachedJson = json;
+    resolvedProfiles.clear();
     try {
       const parsed = JSON.parse(json);
       cachedProfiles = parsed && parsed.version === 1 && parsed.profiles && typeof parsed.profiles === "object"
@@ -49,6 +59,8 @@
     try { localStorage.setItem(STORAGE_KEY, payload); } catch { return false; }
     cachedJson = payload;
     cachedProfiles = profiles;
+    profilesLoaded = true;
+    resolvedProfiles.clear();
     return true;
   }
 
@@ -74,15 +86,25 @@
 
   function getProfile(id) {
     const key = String(id || "");
-    const saved = normalizedProfile(readProfiles()[key]);
-    if (saved?.mode === "disabled") return null;
-    if (saved) return saved;
-    return M64_ID.test(key) ? { mode: "standard", buttons: { a: 1, b: 0 }, axes: {} } : null;
+    readProfiles();
+    if (!resolvedProfiles.has(key)) {
+      const saved = normalizedProfile(cachedProfiles[key]);
+      const profile = saved?.mode === "disabled" ? null : saved || (M64_ID.test(key) ? M64_PROFILE : null);
+      if (profile) {
+        Object.values(profile.axes).forEach(Object.freeze);
+        Object.freeze(profile.buttons);
+        Object.freeze(profile.axes);
+        Object.freeze(profile);
+      }
+      resolvedProfiles.set(key, profile);
+    }
+    return resolvedProfiles.get(key);
   }
 
   function profileSource(id) {
     const key = String(id || "");
-    const saved = normalizedProfile(readProfiles()[key]);
+    readProfiles();
+    const saved = normalizedProfile(cachedProfiles[key]);
     if (saved?.mode === "disabled") return "default";
     if (saved) return "custom";
     return M64_ID.test(key) ? "m64" : "default";
@@ -109,23 +131,27 @@
   function buttonValue(button) {
     if (!button) return EMPTY_BUTTON;
     const value = Number(button.value) || 0;
-    return {
-      pressed: Boolean(button.pressed || value > 0.5),
-      touched: Boolean(button.touched),
-      value,
-    };
+    const pressed = Boolean(button.pressed || value > 0.5);
+    const touched = Boolean(button.touched);
+    // Browser GamepadButton objects already carry normalized values.
+    if (button.value === value && button.pressed === pressed && button.touched === touched) return button;
+    return { pressed, touched, value };
   }
 
   function hatSpacing(profile, index) {
     // A calibrated eight-way hat has four equally spaced cardinal values
     // on one axis. Infer this from saved profiles so existing setups work too.
+    let spacings = calibration.get(profile);
+    if (!spacings) { spacings = new Map(); calibration.set(profile, spacings); }
+    if (spacings.has(index)) return spacings.get(index);
     const values = [...new Set(Object.values(profile.axes || {})
       .filter((mapping) => mapping.index === index)
       .map((mapping) => mapping.value))].sort((a, b) => a - b);
-    if (values.length !== 4) return null;
+    if (values.length !== 4) { spacings.set(index, null); return null; }
     const spacing = (values[3] - values[0]) / 3;
     if (spacing < 0.2 || values.some((value, i) =>
-      Math.abs(value - (values[0] + i * spacing)) > 0.04)) return null;
+      Math.abs(value - (values[0] + i * spacing)) > 0.04)) { spacings.set(index, null); return null; }
+    spacings.set(index, spacing);
     return spacing;
   }
 
@@ -151,20 +177,20 @@
       active = (current - mapping.neutral) * Math.sign(delta)
         >= Math.max(0.2, travel * 0.55);
     }
-    return active ? { pressed: true, touched: true, value: 1 } : EMPTY_BUTTON;
+    return active ? PRESSED_BUTTON : EMPTY_BUTTON;
   }
 
   function remapGamepad(gamepad) {
     const profile = getProfile(gamepad?.id);
     if (!profile) return gamepad;
 
-    const originalButtons = Array.from(gamepad.buttons || [], buttonValue);
+    const originalButtons = gamepad.buttons || [];
     const buttons = profile.mode === "custom"
       ? Array.from({ length: Math.max(16, originalButtons.length) }, () => EMPTY_BUTTON)
       : [...originalButtons];
     while (buttons.length < 16) buttons.push(EMPTY_BUTTON);
 
-    for (const [control, target] of Object.entries(BUTTON_TARGETS)) {
+    for (const [control, target] of BUTTON_ENTRIES) {
       const source = profile.buttons[control];
       if (source !== undefined) buttons[target] = buttonValue(originalButtons[source]);
       else if (profile.axes?.[control]) buttons[target] = axisButton(gamepad, profile.axes[control], profile);
@@ -176,9 +202,7 @@
       : Array.from(gamepad.axes || [], (value) => Number(value) || 0);
     while (axes.length < 4) axes.push(0);
     // Replace only explicitly mapped C-directions; preserve other native input.
-    for (const [control, index, sign] of [
-      ["cleft", 2, -1], ["cright", 2, 1], ["cup", 3, -1], ["cdown", 3, 1],
-    ]) {
+    for (const [control, index, sign] of C_DIRECTIONS) {
       if ((profile.buttons[control] !== undefined || profile.axes[control])
         && axes[index] * sign > 0) axes[index] = 0;
     }
@@ -212,8 +236,17 @@
   }
 
   function mappedGamepads() {
-    return rawGamepads().map((gamepad) => gamepad ? remapGamepad(gamepad) : gamepad);
+    try { return Array.from(nativeGetGamepads() || [], (gamepad) => gamepad ? remapGamepad(gamepad) : gamepad); } catch { return []; }
   }
+
+  // Storage events reach other tabs and same-origin frames; local writes
+  // invalidate immediately in writeProfiles. Never touch storage while polling.
+  window.addEventListener("storage", (event) => {
+    if (event.key === STORAGE_KEY || event.key === null) {
+      profilesLoaded = false;
+      resolvedProfiles.clear();
+    }
+  });
 
   const api = Object.freeze({
     clearProfile,

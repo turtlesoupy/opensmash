@@ -88,3 +88,29 @@ Instrumented Chrome runs for homepage, controls preview, and optional intro
 observed no use of shader programs with incomplete compilation and no page
 errors. Point/grab/click pixel captures still matched the corresponding pre-change
 captures exactly. These are correctness checks, not production latency claims.
+
+## Gameplay JavaScript follow-up
+
+- The hardware loop now skips animation and both render passes when the
+  cursor's disappearance has settled and no poof particles remain. It also
+  considers the presence target, so pointer re-entry resumes the animation.
+  Chrome diagnostic: hidden desktop cursor went from 120 render calls per
+  second to zero; moving back into the page restored the hand and rendering.
+- Controller profiles are cached and frozen until a local save or cross-frame
+  storage event invalidates them. Hat calibration is cached per profile/axis.
+  Polling no longer clones every native button, recreates constant mapping
+  tables, or copies the gamepad list twice. Fresh output arrays/proxies remain
+  so callers can retain a poll's mapped values. Regression checks cover 120
+  polls with zero storage reads, storage clear/change, and existing mappings.
+- The companion BattleShip changes replace synchronous roster XHR with fetch
+  plus an Asyncify wait at port_fopen_staged. Demand loads join in-flight
+  prefetch; errors clear pending requests for retries. Existing MEMFS files
+  bypass the asynchronous boundary. This needs matching shell and WASM files.
+  Engine test: a cold fighter request delayed 400 ms completed asynchronously,
+  then a match reached frame 181 without browser errors. A separate test uses
+  the real nested coroutine backend to verify stack preservation, resumed
+  execution, event-loop progress, existing files, and failed requests.
+
+Validation: all 251 web tests and Vite build passed; three engine staging
+JavaScript tests passed; Emscripten nested-fiber test and full engine build
+passed. No claim about overall match FPS has been measured yet.

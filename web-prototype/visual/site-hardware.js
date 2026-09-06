@@ -2436,10 +2436,11 @@ function tick() {
   const mobileGame = gameRunning &&
     document.body.classList.contains('uses-mobile-controls');
   if (mobileGame) return;
-  // Nothing to draw: no custom cursor (touch devices, WebGL lost), the intro
+  // Nothing to draw: no available cursor or its disappearance has settled, the intro
   // rigs hidden, no live poof. Clear the last glove frame once and skip the
   // two-pass full-screen render instead of burning it at 60fps.
-  if (!glove.visible && !CARTRIDGE_INTRO_ENABLED && !puffs.some(puff => puff.mesh.visible)) {
+  const cursorIdle = !glove.visible || (glovePresenceTarget === 0 && glovePresence === 0);
+  if (cursorIdle && !CARTRIDGE_INTRO_ENABLED && !puffs.some(puff => puff.mesh.visible)) {
     if (!idleFrameCleared) {
       renderer.setRenderTarget(null);
       renderer.setClearColor(0x000000, 0);
