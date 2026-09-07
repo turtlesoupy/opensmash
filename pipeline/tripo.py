@@ -29,11 +29,14 @@ if not KEY:
 if not KEY:
     raise RuntimeError("TRIPO_API_KEY is missing; set it in the environment or .env")
 BASE = "https://api.tripo3d.ai/v2/openapi"
+# Tripo rejects urllib's generic client signature at its edge (403 / 1010).
+USER_AGENT = "OpenSmash/1.0 (+https://smash.fun)"
 
 
 def http(url, body=None):
-    req = urllib.request.Request(url, method="POST" if body else "GET")
+    req = urllib.request.Request(url, method="POST" if body is not None else "GET")
     req.add_header("Authorization", f"Bearer {KEY}")
+    req.add_header("User-Agent", USER_AGENT)
     data = None
     if body is not None:
         req.add_header("Content-Type", "application/json")
@@ -65,7 +68,7 @@ def http(url, body=None):
 
 def cmd_upload(a):
     out = subprocess.run(
-        ["curl", "-s", f"{BASE}/upload", "-H", f"Authorization: Bearer {KEY}",
+        ["curl", "-s", "--user-agent", USER_AGENT, f"{BASE}/upload", "-H", f"Authorization: Bearer {KEY}",
          "-F", f"file=@{a.image}"], capture_output=True, text=True)
     print(out.stdout)
 
@@ -106,7 +109,7 @@ def cmd_download(a):
         print(json.dumps({"error": "no model url", "output_keys": list(out.keys()),
                           "status": d.get("status")}))
         sys.exit(1)
-    req = urllib.request.Request(url, headers={"User-Agent": "curl/8.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(req, timeout=600) as r, open(a.out, "wb") as f:
         f.write(r.read())
     print(json.dumps({"saved": a.out, "bytes": os.path.getsize(a.out)}))

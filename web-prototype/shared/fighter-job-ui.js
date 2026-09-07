@@ -1,3 +1,4 @@
+const PROVIDER_ACCESS_ERROR = /HTTP 403.*api\.tripo3d\.ai.*error code:\s*1010/i;
 const COPYRIGHT_ERROR = /\b(copyright(?:ed)?|trademark|intellectual property|ip infringement|protected (?:content|work)|third party content)\b/i;
 const REFERENCE_ERROR = /\b(reference photo|reference image|input image|source image)\b/i;
 const SAFETY_ERROR = /\b(safety|moderation|content (?:filter|policy)|policy violation|responsible ai|recitation|prohibited|unsafe|nsfw|nudity|abusive|blocked|rejected|flagged|disallowed)\b/i;
@@ -13,6 +14,7 @@ function fighterName(job) {
 
 export function formatFighterJobCellError(job) {
   const error = jobError(job);
+  if (PROVIDER_ACCESS_ERROR.test(error)) return "Provider unavailable";
   if (COPYRIGHT_ERROR.test(error)) return "Copyright blocked";
   if (REFERENCE_ERROR.test(error) && SAFETY_ERROR.test(error)) return "Photo rejected";
   if (SAFETY_ERROR.test(error)) return "Safety check failed";
@@ -23,6 +25,9 @@ export function formatFighterJobError(job) {
   const error = jobError(job);
   const name = fighterName(job);
 
+  if (PROVIDER_ACCESS_ERROR.test(error)) {
+    return `We couldn’t generate ${name} because the 3D provider is blocking our connection. Please try again later; you don’t need to change your photo or fighter details.`;
+  }
   if (COPYRIGHT_ERROR.test(error)) {
     return `We couldn’t create ${name} because the image provider flagged the artwork as copyrighted or protected content. Try a different photo or a design you have permission to use.`;
   }
