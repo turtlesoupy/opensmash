@@ -97,3 +97,29 @@ test("selecting a configured opponent deterministically advances through the poo
     TRAILER_OPPONENT_SLUGS.slice(1, 4),
   );
 });
+
+test("custom trailer cast and room order reach the engine URL", () => {
+  const characters = TRAILER_INTRO_SLUGS.map((_, i) => fighter(`custom${i}`, 0));
+  const config = {
+    introFighters: characters.map(({ slug }) => slug),
+    introMeshes: [...TRAILER_INTRO_MESHES],
+    introRoomPicks: ["custom4", "custom2"],
+  };
+  const action = createTrailerIntroAction({ type: "start", trailerIntro: true }, characters, config);
+  const url = new URL(engineUrl(action, { ...DEFAULT_ADVANCED_OPTIONS, bootMode: "full-boot" }), "https://opensmash.test");
+  assert.deepEqual(action.introRoomPicks, config.introRoomPicks);
+  assert.deepEqual(action.introConfig.filter((card) => card.type === "character").map((card) => card.character.slug), config.introFighters);
+  assert.equal(url.searchParams.get("SSB64_OPENING_FIRST_FKIND"), "9");
+  assert.equal(url.searchParams.get("SSB64_OPENING_SECOND_FKIND"), "1");
+  assert.equal(url.searchParams.getAll("intro_character").length, 6);
+});
+
+test("custom trailer rejects invalid casts and unavailable mesh variants", () => {
+  const characters = TRAILER_INTRO_SLUGS.map((slug) => fighter(slug, 0));
+  const config = { introFighters: [...TRAILER_INTRO_SLUGS], introMeshes: [...TRAILER_INTRO_MESHES], introRoomPicks: [...TRAILER_INTRO_ROOM_PICKS] };
+  assert.throws(() => createTrailerIntroAction({}, characters.slice(0, 5), config), /available fighter/);
+  assert.throws(() => createTrailerIntroAction({}, characters, { ...config, introFighters: Array(6).fill(characters[0].slug) }), /different intro fighters/);
+  assert.throws(() => createTrailerIntroAction({}, characters, { ...config, introRoomPicks: [characters[0].slug, characters[0].slug] }), /two different/);
+  characters[1].variants = ["mario"];
+  assert.throws(() => createTrailerIntroAction({}, characters, config), /mesh variant/);
+});

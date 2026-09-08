@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import prebattleSkyUrl from "../visual/assets/game/prebattle-sky.png?url";
 import logoFallbackUrl from "../visual/assets/smash-the-weights-logo.png?url";
-import { matchesCharacterSearch } from "../shared/character-search.js";
+import SearchableFighterSelect from "./SearchableFighterSelect.jsx";
 import {
   availableBodyModels,
   fighterFrame,
@@ -325,96 +325,6 @@ function oppositeCorner(frame, handle) {
   };
 }
 
-function SearchableFighterSelect({ characters, selected, onSelect, openToken = 0 }) {
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const inputRef = useRef(null);
-
-  useEffect(() => {
-    if (openToken) {
-      setQuery("");
-      setOpen(true);
-    }
-  }, [openToken]);
-  const matches = useMemo(
-    () => characters.filter((character) => matchesCharacterSearch(character, query)),
-    [characters, query],
-  );
-
-  useEffect(() => {
-    if (!open) return undefined;
-    const frame = requestAnimationFrame(() => inputRef.current?.focus());
-    return () => cancelAnimationFrame(frame);
-  }, [open]);
-
-  function choose(character) {
-    onSelect(character);
-    setQuery("");
-    setOpen(false);
-  }
-
-  return (
-    <div
-      className="og-field og-fighter-combobox"
-      onBlur={(event) => {
-        if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false);
-      }}
-    >
-      <span>Character</span>
-      <button
-        className="og-combobox-trigger"
-        type="button"
-        aria-expanded={open}
-        aria-haspopup="listbox"
-        onClick={() => {
-          setQuery("");
-          setOpen((current) => !current);
-        }}
-      >
-        {selected ? <img src={selected.portraitMedium || selected.portraitFull} alt="" /> : <i />}
-        <strong>{selected?.name || "Choose a fighter"}</strong>
-        <b aria-hidden="true">⌄</b>
-      </button>
-      {open ? (
-        <div className="og-combobox-popover">
-          <label className="og-combobox-search">
-            <span aria-hidden="true">⌕</span>
-            <input
-              ref={inputRef}
-              type="search"
-              value={query}
-              placeholder={`Search ${characters.length.toLocaleString()} fighters…`}
-              onChange={(event) => setQuery(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Escape") setOpen(false);
-                if (event.key === "Enter" && matches.length === 1) choose(matches[0]);
-              }}
-            />
-          </label>
-          <div className="og-combobox-options" role="listbox" aria-label="Generated characters">
-            {matches.map((character) => (
-              <button
-                className={character.slug === selected?.slug ? "is-selected" : undefined}
-                type="button"
-                role="option"
-                aria-selected={character.slug === selected?.slug}
-                key={character.slug}
-                onClick={() => choose(character)}
-              >
-                <img loading="lazy" src={character.portraitMedium || character.portraitFull} alt="" />
-                <span>
-                  <strong>{character.name}</strong>
-                  <small>{character.short || character.slug}</small>
-                </span>
-              </button>
-            ))}
-            {!matches.length ? <p>No fighters match “{query}”.</p> : null}
-          </div>
-        </div>
-      ) : null}
-    </div>
-  );
-}
 
 export default function OgStudio() {
   const canvasRef = useRef(null);

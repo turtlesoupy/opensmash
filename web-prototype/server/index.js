@@ -42,6 +42,8 @@ const APP_SHELL_PATHS = new Set([
   "/",
   "/create",
   "/create/",
+  "/trailer",
+  "/trailer/",
   "/og-studio",
   "/og-studio/",
   "/index.html",

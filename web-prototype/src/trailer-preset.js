@@ -14,8 +14,20 @@ function characterBySlug(characters, slug) {
   return characters.find((character) => character.slug === slug) || null;
 }
 
-export function createTrailerIntroConfig(characters) {
-  if (TRAILER_INTRO_MESHES.length !== TRAILER_INTRO_SLUGS.length) {
+export function supportsTrailerMesh(character, meshName) {
+  const mesh = CHARACTER_MESHES.find(({ value }) => value === meshName);
+  if (!mesh || !character) return false;
+  const variants = Array.isArray(character.variants)
+    ? character.variants : character.variants ? Object.keys(character.variants) : null;
+  return meshName === "mario" || mesh.fkind === character.fkind || !variants || variants.includes(meshName);
+}
+
+export function createTrailerIntroConfig(characters, config = TRAILER_CONFIG) {
+  const slotCount = FULL_BOOT_INTRO_CARDS.filter((card) => card.mode !== "vanilla").length;
+  if (config.introFighters.length !== slotCount || new Set(config.introFighters).size !== slotCount) {
+    throw new Error(`Choose ${slotCount} different intro fighters.`);
+  }
+  if (config.introMeshes.length !== config.introFighters.length) {
     throw new Error("Trailer config needs one render mesh for every intro fighter.");
   }
   let injectedIndex = 0;
@@ -23,14 +35,20 @@ export function createTrailerIntroConfig(characters) {
     if (card.mode === "vanilla") return { ...card, type: "vanilla" };
 
     const introIndex = injectedIndex++;
-    const slug = TRAILER_INTRO_SLUGS[introIndex];
-    const meshName = TRAILER_INTRO_MESHES[introIndex];
+    const slug = config.introFighters[introIndex];
+    const meshName = config.introMeshes[introIndex];
     const mesh = CHARACTER_MESHES.find((candidate) => candidate.value === meshName);
     if (!mesh || !Number.isInteger(mesh.fkind)) {
       throw new Error(`Trailer render mesh is unavailable: ${meshName}`);
     }
     const character = characterBySlug(characters, slug);
-    if (!character) return { ...card, type: "vanilla" };
+    if (!character) {
+      if (config !== TRAILER_CONFIG) throw new Error(`Choose an available fighter for intro slot ${introIndex + 1}.`);
+      return { ...card, type: "vanilla" };
+    }
+    if (!supportsTrailerMesh(character, meshName)) {
+      throw new Error(`${character.name} does not have a ${mesh.label} mesh variant.`);
+    }
 
     // The capture cast uses OSB6 bundles with every production-ready target.
     // Pinning fkind/base makes the opening-card assignment deterministic.
@@ -42,25 +60,25 @@ export function createTrailerIntroConfig(characters) {
   });
 }
 
-export function createTrailerIntroAction(action, characters) {
-  const introConfig = createTrailerIntroConfig(characters);
+export function createTrailerIntroAction(action, characters, config = TRAILER_CONFIG) {
+  const introConfig = createTrailerIntroConfig(characters, config);
   const availableSlugs = new Set(
     introConfig
       .filter((card) => card.type === "character")
       .map((card) => card.character.slug),
   );
-  const missingSlug = TRAILER_INTRO_ROOM_PICKS.find((slug) => !availableSlugs.has(slug));
+  const missingSlug = config.introRoomPicks.find((slug) => !availableSlugs.has(slug));
   if (missingSlug) {
     throw new Error(`Trailer opening-room fighter is unavailable: ${missingSlug}`);
   }
-  if (TRAILER_INTRO_ROOM_PICKS.length !== 2 || new Set(TRAILER_INTRO_ROOM_PICKS).size !== 2) {
+  if (config.introRoomPicks.length !== 2 || new Set(config.introRoomPicks).size !== 2) {
     throw new Error("Trailer config needs two different opening-room fighters.");
   }
 
   return {
     ...action,
     introConfig,
-    introRoomPicks: [...TRAILER_INTRO_ROOM_PICKS],
+    introRoomPicks: [...config.introRoomPicks],
   };
 }
 

@@ -8,6 +8,7 @@ import FighterCreator from "./FighterCreator.jsx";
 import FighterJobModal from "./FighterJobModal.jsx";
 import ModalPage from "./ModalPage.jsx";
 import RetroHome from "./RetroHome.jsx";
+import TrailerSetup from "./TrailerSetup.jsx";
 import SettingsModal from "./SettingsModal.jsx";
 import { installPerformanceCapture } from "./performance-capture.js";
 import { matchesCharacterSearch } from "../shared/character-search.js";
@@ -333,8 +334,10 @@ function CreateExperienceOverlay({ onAuthenticated, onClose, onCreated, onPlay, 
 export default function App() {
   useEffect(installPerformanceCapture, []);
   const isCreatePage = window.location.pathname.replace(/\/+$/, "") === "/create";
+  const isTrailerPage = window.location.pathname.replace(/\/+$/, "") === "/trailer";
+  const [trailerSetup, setTrailerSetup] = useState(null);
   const [trailerMode] = useState(() => (
-    !isCreatePage && new URLSearchParams(window.location.search).get("trailer") === "1"
+    !isCreatePage && (isTrailerPage || new URLSearchParams(window.location.search).get("trailer") === "1")
   ));
   // `?demo=1`: fixed funny opponents on every pick, T hands off to the trailer.
   const [demoMode] = useState(() => {
@@ -371,7 +374,7 @@ export default function App() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   // CSS-only fullscreen for browsers without an element Fullscreen API (iPhone Safari).
   const [immersive, setImmersive] = useState(false);
-  const [trailerCinematic, setTrailerCinematic] = useState(trailerMode);
+  const [trailerCinematic, setTrailerCinematic] = useState(trailerMode && !isTrailerPage);
   const [trailerEngineReady, setTrailerEngineReady] = useState(false);
   const [trailerEngineStarted, setTrailerEngineStarted] = useState(false);
   const [soundOn, setSoundOn] = useState(() => localStorage.getItem("opensmash-sound") !== "off");
@@ -955,7 +958,7 @@ export default function App() {
 
   function prepareLaunchAction(action, launchOptions = advancedOptions) {
     if (action.trailerIntro) {
-      return createTrailerIntroAction(action, characters);
+      return createTrailerIntroAction(action, characters, trailerSetup || undefined);
     }
     if (trailerMode && action.type === "character") {
       return createTrailerMatchAction(action, characters);
@@ -989,8 +992,9 @@ export default function App() {
   }
 
   useEffect(() => {
-    if (!trailerMode || loadingCharacters || loadingSession || trailerBootStartedRef.current) return;
+    if ((isTrailerPage && !trailerSetup) || !trailerMode || loadingCharacters || loadingSession || trailerBootStartedRef.current) return;
     trailerBootStartedRef.current = true;
+    setTrailerCinematic(true);
     const action = { type: "start", trailerIntro: true, trailerRecording };
     if (authorized) {
       launch(action);
@@ -1012,7 +1016,7 @@ export default function App() {
     }
     requestTrailerLaunch();
     return () => window.clearTimeout(timer);
-  }, [authorized, loadingCharacters, loadingSession, trailerMode, trailerRecording]);
+  }, [authorized, loadingCharacters, loadingSession, trailerMode, trailerRecording, isTrailerPage, trailerSetup]);
 
   function updateAdvancedOptions(nextOptions) {
     const normalized = normalizeAdvancedOptions(nextOptions);
@@ -1179,7 +1183,7 @@ export default function App() {
 
   function launchVisualAction({ type, slug, picks = [] }) {
     const action = type === "trailer-intro"
-      ? { type: "start", trailerIntro: true }
+      ? { type: "start", trailerIntro: true, trailerRecording }
       : type === "character"
       ? {
           type,
@@ -1559,6 +1563,10 @@ export default function App() {
 
     return (
       <>
+        {isTrailerPage && !trailerSetup && (
+          <TrailerSetup characters={characters} loading={loadingCharacters || loadingSession}
+            onBoot={setTrailerSetup} />
+        )}
         <RetroHome
           aboutOpen={aboutOpen}
           advancedActive={hasAdvancedOverrides(advancedOptions)}
