@@ -28,6 +28,9 @@ export const implementationSchema = obj({moves:arr(obj({slot,tracks:arr(trackSch
 export const richImplementationSchema=structuredClone(implementationSchema);
 const richParts=richImplementationSchema.properties.moves.items.properties.parts;
 richParts.maxItems=1024;
+richParts.minItems=0;
+// Explicit body presentation is authoring metadata and is carried to the native loader.
+richImplementationSchema.properties.moves.items.properties.dangerSource={type:'string',enum:['body']};
 richParts.items.properties.from=vec(4096);richParts.items.properties.to=vec(4096);
 richParts.items.properties.size=arr(num(1,500),2,2);
 Object.assign(richParts.items.properties,{anchorFrame:int(-1,149),angle:num(-6.284,6.284),opacity:num(0,255),fade:num(0,150),sizeTo:arr(num(1,500),2,2),opacityTo:num(0,255)});
@@ -102,10 +105,11 @@ export function compileSet({brief,implementation,profile,character,player=0,rich
     if(rich) for(let frame=0;frame<contract.duration;frame++) {
       if(m.parts.filter(p=>frame>=p.start&&frame<p.end).length>224) throw new Error(`${slot}: visible effects budget exceeded`);
     }
-    m.hitboxes.forEach((h,i)=>{if(!m.parts.some(p=>p.hit===i)) throw new Error(`${slot}: missing danger cue ${i}`);});
+    if(!(rich&&m.dangerSource==='body'))m.hitboxes.forEach((h,i)=>{if(!m.parts.some(p=>p.hit===i)) throw new Error(`${slot}: missing danger cue ${i}`);});
     if(m.motion.frame>=contract.duration || m.motion.velocity[0]>60 || m.motion.velocity[1]<-80) throw new Error(`${slot}: invalid launch`);
     if(index%3===1 && (m.motion.frame<0||m.motion.frame>contract.startup||m.motion.velocity[1]<30)) throw new Error(`${slot}: up special requires launch by first hit`);
     return {version:rich?4:3,name:contract.name,fkind:profile.fkind,player,slot:index,duration:contract.duration,blend_in:Math.min(8,contract.startup),
+      ...(rich&&m.dangerSource==='body'?{dangerSource:'body'}:{}),
       tracks,hitboxes:m.hitboxes.map(h=>({...h,joint:0})),parts:m.parts,motion:m.motion};
   });
   const result={format:ABI,character,rigHash:profile.hash,briefHash:hash(brief),sets:[{player,fkind:profile.fkind,moves}]};

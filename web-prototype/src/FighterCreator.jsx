@@ -59,6 +59,7 @@ function useTurnstile(siteKey, onError) {
 export default function FighterCreator({ turnstileSiteKey = "", onCancel, onCreated }) {
   const [name, setName] = useState("");
   const [emblem, setEmblem] = useState("");
+  const [moveDirection, setMoveDirection] = useState("");
   const [photo, setPhoto] = useState(null);
   const [photoPreview, setPhotoPreview] = useState("");
   const [rightsAttested, setRightsAttested] = useState(false);
@@ -87,6 +88,7 @@ export default function FighterCreator({ turnstileSiteKey = "", onCancel, onCrea
       const form = new FormData();
       form.set("name", name.trim());
       form.set("emblem", emblem.trim());
+      form.set("moveDirection", moveDirection.trim());
       form.set("visibility", "private");
       form.set("rightsAttested", String(rightsAttested));
       form.set("photo", photo);
@@ -94,6 +96,7 @@ export default function FighterCreator({ turnstileSiteKey = "", onCancel, onCrea
       const result = await readResult(await fetch("/api/fighters", { method: "POST", body: form }));
       setName("");
       setEmblem("");
+      setMoveDirection("");
       setRightsAttested(false);
       choosePhoto(null);
       createdJob = result.job;
@@ -163,6 +166,18 @@ export default function FighterCreator({ turnstileSiteKey = "", onCancel, onCrea
                 placeholder="e.g. a red accordion"
                 disabled={submitting}
               />
+            </label>
+            <label>
+              <span>Move direction <small>optional</small></span>
+              <input
+                type="text"
+                value={moveDirection}
+                onChange={(event) => setMoveDirection(event.target.value)}
+                maxLength={600}
+                placeholder="e.g. a gardener who fights with vines and a giant watering can"
+                disabled={submitting}
+              />
+              <small>Describe their powers, personality, props, or fighting style to guide the whole special-move set.</small>
             </label>
             <label className="rights-attestation">
               <input

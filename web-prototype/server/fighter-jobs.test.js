@@ -20,10 +20,11 @@ process.env.FIGHTER_WORKER_DISABLED = "1";
 
 const PNG_HEADER = Buffer.from("89504e470d0a1a0a0000000d49484452", "hex");
 
-function uploadRequest({ name = "Test Fighter", turnstileToken = null, headers = {} } = {}) {
+function uploadRequest({ name = "Test Fighter", moveDirection = null, turnstileToken = null, headers = {} } = {}) {
   const boundary = "opensmash-test-boundary";
   const head = [
     `--${boundary}\r\nContent-Disposition: form-data; name="name"\r\n\r\n${name}\r\n`,
+    moveDirection === null ? "" : `--${boundary}\r\nContent-Disposition: form-data; name="moveDirection"\r\n\r\n${moveDirection}\r\n`,
     `--${boundary}\r\nContent-Disposition: form-data; name="rightsAttested"\r\n\r\ntrue\r\n`,
     turnstileToken === null
       ? ""
@@ -42,9 +43,10 @@ async function harness({ storedJobs = [], moderator = async () => ({ status: "ap
   const appRoot = await mkdtemp(path.join(os.tmpdir(), "opensmash-jobs-test-"));
   await mkdir(path.join(appRoot, "data", "fighter-jobs"), { recursive: true });
   const saved = [];
+  const inserted = [];
   const jobDatabase = {
     list: async () => storedJobs,
-    insert: async () => {},
+    insert: async (job) => { inserted.push(job); },
     save: async (job) => { saved.push(job); },
     watch,
   };
@@ -65,7 +67,7 @@ async function harness({ storedJobs = [], moderator = async () => ({ status: "ap
     turnstile,
     ...(reservedSlugs ? { reservedSlugs } : {}),
   });
-  return { jobs, saved, cleanup: () => rm(appRoot, { recursive: true, force: true }) };
+  return { jobs, saved, inserted, cleanup: () => rm(appRoot, { recursive: true, force: true }) };
 }
 
 const minutesAgo = (minutes) => new Date(Date.now() - minutes * 60_000).toISOString();
@@ -457,4 +459,28 @@ test("unfinished fighters cannot change target", async () => {
     await h.jobs.init();
     await assert.rejects(h.jobs.updateSettings(original.id, "owner-1", { retarget: "mario" }), { status: 409 });
   } finally { await h.cleanup(); }
+});
+
+
+test("optional move direction is normalized, screened and retained for owner generation", async () => {
+  let screened;
+  const {jobs,inserted,cleanup}=await harness({moderator:async input=>{screened=input;return {status:"approved"};}});
+  try {
+    const created=await jobs.create(uploadRequest({moveDirection:"  Gardener with   vine whips  "}),{uid:"owner-1"});
+    assert.equal(screened.moveDirection,"Gardener with vine whips");
+    assert.equal(jobs.get(created.id,"owner-1").moveDirection,"Gardener with vine whips");
+    assert.ok(inserted.some(j=>j.moveDirection==="Gardener with vine whips"));
+    assert.equal(jobs.get(created.id,"someone-else"),null);
+    assert.equal(jobs.get(created.id).moveDirection,undefined);
+  } finally {await cleanup();}
+});
+test("move direction is optional and oversized direction is rejected before moderation", async () => {
+  let calls=0;
+  const {jobs,cleanup}=await harness({moderator:async()=>{calls++;return {status:"approved"};}});
+  try {
+    await assert.rejects(jobs.create(uploadRequest({moveDirection:"x".repeat(601)}),{uid:"owner-1"}),/move direction under 600/);
+    assert.equal(calls,0);
+    const created=await jobs.create(uploadRequest(),{uid:"owner-1"});
+    assert.equal(jobs.get(created.id,"owner-1").moveDirection,"");
+  } finally {await cleanup();}
 });

@@ -151,7 +151,7 @@ const specialJobs = createSpecialJobs({
   resolveCharacter:async(id,ownerId)=>{
     const job=fighterJobs.get(id,ownerId);
     if(job?.status!=="complete")return null;
-    return {character:{id,name:job.character.name},target:job.character.base,
+    return {character:{id,name:job.character.name,moveDirection:job.moveDirection||""},target:job.character.base,
       bundle:fighterJobs.artifact(id,ownerId,"bundle"),portrait:fighterJobs.artifact(id,ownerId,"portrait")};
   },
 });

@@ -24,7 +24,7 @@ export function createSubmissionModerator({
   required = process.env.NODE_ENV === "production",
   fetchImpl = fetch,
 } = {}) {
-  return async function moderateSubmission({ name, emblem, photoPath, mimeType }) {
+  return async function moderateSubmission({ name, emblem, moveDirection, photoPath, mimeType }) {
     if (!enabled || !apiKey) {
       if (required && enabled) {
         throw new SubmissionModerationError(
@@ -42,6 +42,7 @@ export function createSubmissionModerator({
         text: [
           `Requested fighter name: ${name}`,
           `Requested emblem direction: ${emblem || "(none)"}`,
+          `Requested move direction: ${moveDirection || "(none)"}`,
         ].join("\n"),
       },
       {

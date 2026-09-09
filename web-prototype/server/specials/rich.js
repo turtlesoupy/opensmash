@@ -14,29 +14,62 @@ const assembly=obj({prop:id,keys:a(obj({frame:i(0,150),at:v(),scale:vec2}),2,8)}
 const trail=obj({prop:id,hit:i(0,7),count:i(3,10),life:i(12,24),spread:n(20,160),drift:a(n(-10,10),2,2)});
 const base=reducedSchema.properties.moves.items.properties;
 export const richSchema=obj({colors:reducedSchema.properties.colors,
- props:a(obj({id,pieces:a(piece,1,14)}),2,8),
+ props:a(obj({id,pieces:a(piece,1,14)}),0,8),
  moves:a(obj({kind:base.kind,tracks:base.tracks,hits:base.hits,
- assemblies:a(assembly,1,4),cueColors:a(i(0,7),2,2),trails:a(trail,1,3),velocity:base.velocity,air:base.air}),3,3)});
+ assemblies:a(assembly,0,4),cueColors:a(i(0,7),2,2),trails:a(trail,0,3),velocity:base.velocity,air:base.air}),3,3)});
 // Named constructions remain replay-only for the historical hand-corrected demo.
 // New authoring uses general geometry and rigid mounts, with no preset lookup.
 piece.properties.mount=a(n(-400,400),0,2);
 const propSchema=richSchema.properties.props.items;
 propSchema.properties.construction={type:'string',enum:['pieces','bellows','music-note','straw']};
+// Omission replays old scores with their historical curved cues.
+richSchema.properties.moves.items.properties.presentation=obj({kind:{type:'string',enum:['body','prop','wave']},prop:{type:'string',maxLength:32}});
+richSchema.properties.authoringVersion={type:'string',enum:['explicit-v2']};
 export const richGenerationSchema=structuredClone(richSchema);
+richGenerationSchema.required.push('authoringVersion');
 delete richGenerationSchema.properties.props.items.properties.construction;
+richGenerationSchema.properties.moves.items.required.push('presentation');
 richGenerationSchema.properties.props.items.properties.pieces.items.required.push('mount');
-export const RICH_IMPLEMENT=`Implement the frozen six special descriptions as three compact designs: neutral/up/down, with intentional air overrides. Author every prop, glyph, palette and pose from the description. There are no named visual presets. Return only the supplied schema.
-COORDINATES: x forward, y up, z depth; fighter height about350 world units. Frames are 60Hz GROUND frames; the compiler remaps to air timing. Supported semantic joints only. Tracks have increasing interior keys in (0,ground duration); compiler adds zero endpoints. Air.tracks replaces named tracks; [] inherits. Air.hitShift shifts collision, not props.
-HITS: delay/length express beat rhythm; onsets must increase. Compiler anchors first beat at startup, clips overlaps at the next onset, fits action to leave12 recovery frames in BOTH contexts, and warps poses/assemblies identically. Prefer separated beats of length4..24. Weight divides the frozen damage. Radius80..250. Native knockback is generated. A grounded sweep can travel from x200 to1000. Up velocity has vertical floor70, launching at startup on ground and immediately in air. Other velocity=[] stays planted; air.velocity=[] inherits. No homing, healing, shields, reflectors or autonomous projectiles.
-GEOMETRY: palette colors and reusable props with rectangular pieces. at=local center, size=HALF extents, color=palette index, angle=radians. repeat/step replicate a detail; repeat1 uses step[0,0,0]. Local depth0..30 orders layers; the compiler adds foreground depth120. Main props <=60 expanded rectangles; trail glyphs <=6. All detail must come from your pieces.
-MATERIAL MOTION: mount=[] means elastic: center and size follow assembly.scale. mount=[x,y] means rigid around that attachment: the mount follows assembly.scale, while the offset from mount and the piece size remain fixed. Repeat copies keep that same mount so rigid decorations retain spacing. Give all pieces of one rigid subassembly the same mount. This supports rigid details attached to deforming material without distorting their shape. Author mount coordinates in the same space as at.
-ASSEMBLIES: 2..8 strictly increasing keys {frame,at,scale:[x,y]}, last<=ground duration. Translation and elastic scale interpolate; there is no automatic performance choreography. Time each change to the intended action beat. First assembly is the signature prop; compiler pads its lifetime to cover startup-8 through lastHitEnd+8 and normalizes its largest dimension to at least400 units. Keep action scale around1. Other assemblies retain authored size. Express setup, action and recovery, not a single flash.
-EFFECTS: each hit receives a layered curved cue aligned with its real collision trajectory/window, using cueColors=[outline,brightCore]. Trails emit an authored glyph along the chosen hit: count3..10, life12..24, spread20..160, drift=[vx,vy]. Engine handles independent birth positions, both axes of source velocity, falling motion, connected rotation and smooth fade. Glyph extent is at least100 units; choose thicker strokes and larger shapes where necessary. Keep particles within the visible region after emission. Every special requires a meaningful authored trail.
-BUDGETS: <=224 simultaneous rectangles and <=1024 segments over a move. Repeated details and trail pieces consume this budget after expansion; use a small number of meaningful assemblies and glyph strokes. Preserve the frozen description's spectacle within these limits. No judges, ratings, revision calls or aesthetic scoring.`;
+export const RICH_IMPLEMENT=`Implement the frozen descriptions as three designs: neutral, up, and down, each with air overrides. Return JSON matching the supplied schema and set authoringVersion to "explicit-v2". Preserve the described action, names, timing, and total damage. The frozen descriptions already interpret any uploader move direction; do not redesign them from the original direction. Use body motion, props, waves, and particles only as the action requires. There are no named visual presets or quotas.
+
+Coordinates and animation
+All positions are relative to the fighter's root: x is forward, y is up, and z is depth. A fighter is approximately 350 world units tall. Joint rotations are local Euler-degree offsets from the resting pose; the engine interpolates them using quaternion slerp. Use only the supplied semantic joints. Write strictly increasing interior keyframes on the ground timeline, measured at 60 frames per second. The compiler adds resting-pose keys at frame zero and the move's end. Air tracks replace the named ground tracks; an empty list inherits all tracks.
+
+Hard limits
+The schema defines numerical and array bounds. Hit lengths are 1–40 frames and radii are 20–250 world units; these are limits, not recommended targets. Hit onsets must increase. Each move supports at most eight hits, and its frozen damage must provide at least one damage point per hit. The final hit must leave at least 12 frames of recovery in both contexts after compilation. A prop may expand to at most 60 rectangles, and a particle glyph to at most six. A move may contain at most 1,024 rendered segments, with no more than 224 rectangles visible simultaneously. Budget these after repetition and particle emission.
+
+Timing transformations performed by the compiler
+Hit delay values are offsets on a shared timeline, not waits after the previous hit. The first hit is anchored at the frozen startup; the compiler subtracts its delay from all hit delays. It ends any overlapping hit at the next onset. If the action cannot fit with 12 recovery frames in both contexts, it compresses the action and remaps body and assembly keys with the same time function. It then maps ground startup and duration to the frozen air startup and duration. Frame rounding can collapse short hits or nearby keys; invalid results are rejected, not regenerated. Prefer timing that already fits, so these transformations are small. Exact compiled timings and adjustments are recorded for review.
+
+Damage and movement
+Positive hit weights divide the frozen total damage, with at least one damage point per hit. Native knockback uses base 32 and growth 85 with your authored angle. Up specials launch at startup on ground and immediately in air; their vertical velocity has a compiler-enforced minimum of 70. For other moves, an empty velocity list means no launch; air inherits ground velocity unless overridden. air.hitShift translates collision and all supporting assemblies together in air; hit-bound props and emitted particles inherit the collision shift. It does not translate the skeletal body, so use air pose overrides to keep body attacks aligned. Air moves end on landing. Homing, healing, shields, reflectors, and autonomous projectiles are unsupported.
+
+Geometry and materials
+Define palette colors and reusable props using rectangular pieces. at is the local center, size contains half-width and half-height, color indexes the palette, and angle is in radians. A stripe's full width is twice size[0]. repeat and step copy a piece; use a zero step for a single copy. Leave actual gaps between details and avoid hiding them behind opaque foreground geometry. The compiler adds 120 depth units to assemblies and hit-bound weapons. Choose local depth offsets deliberately for layering.
+For assembly animation, mount=[] makes a piece elastic: its center and size follow assembly scale. mount=[x,y] attaches a rigid piece at that point: the attachment follows scale, but piece size and offsets from the attachment stay fixed. Use the same mount for pieces whose internal spacing must remain rigid. Repeated copies retain that mount.
+
+Assembly lifetimes and size
+Assemblies are optional. Each has two to eight strictly increasing keys containing frame, at, and scale. They interpolate position and scale and exist only between their first and last keys. The compiler does not extend their lifetimes, enlarge them, or invent choreography. There is no special treatment for the first assembly. Choose dimensions and motion for the frozen action. Assemblies currently fade in across their first segment and out across their last segment; use additional keys when the object needs a sustained visible interval.
+
+How the attack is shown
+Choose presentation={kind,prop} for each move:
+- body with prop="" uses skeletal motion and adds no hit effect. Keep the collision on the visible moving body throughout the hit, in both contexts. The compiler does not attach hitboxes to joints or certify this alignment; humans review it.
+- prop names authored geometry that follows each hit's center for exactly that hit's lifetime. Its local offsets, dimensions, and orientation stay fixed during each hit. Supporting assemblies can show the same weapon during anticipation, gaps, and recovery, but may not overlap its active hit windows; overlapping copies of that prop are rejected. Match positions and scale at handoffs to avoid a pop.
+- wave with prop="" uses the existing curved two-layer cue, with cueColors selecting its outer and inner colors.
+Body and prop attacks do not need waves or particles. Supporting props can accompany any presentation. An empty props list and empty assemblies list support body-only attacks.
+
+Optional particles
+trails=[] emits none. Each trail names an authored glyph and a hit that emits it. The schema bounds count, lifetime, spread, and drift; choose values for the action. The runtime gives particles independent birth positions, inherited source velocity, gravity, connected rotation, and fading, and ends them by the move's duration. Authored glyph size is preserved. Particles must not seek the opponent or imply contact that did not occur.
+
+Readability guidance, not mandatory styling
+Judge scale and contrast at the match camera. Simplify or thicken details that would disappear, and keep the fighter readable. Dark outlines and bright accents are available choices, not required for every object. No minimum decorative prop size, particle size, preferred beat length, or fixed sweep distance is imposed beyond the schema's technical limits.
+
+No model judges, ratings, repair calls, rerolls, or aesthetic revision loop. Human visual review remains separate.`;
 const add=(a,b)=>a.map((x,k)=>x+b[k]);
 const lerp=(a,b,u)=>a.map((x,k)=>x+(b[k]-x)*u);
-export function expandRich({brief,score}) {
+export function expandRich({brief,score,onTransform=()=>{}}) {
  validate(richSchema,score);
+ const explicit=score.authoringVersion==='explicit-v2';
  const props=new Map();
  for(const p of score.props){
   if(props.has(p.id))throw new Error('duplicate prop');
@@ -65,6 +98,11 @@ export function expandRich({brief,score}) {
    if(stop<=start)throw new Error('beat too short for frozen duration');
    return {...h,delay:start-g.startup,length:stop-start};
   });
+  onTransform({kind:m.kind,firstDelayRemoved:first,actionScale:factor,
+   overlapsClipped:raw.flatMap((h,k)=>raw[k+1]&&h.delay+h.length>raw[k+1].delay?[k]:[]),
+   authoredHits:source.hits.map(h=>({delay:h.delay,length:h.length})),
+   groundHits:m.hits.map(h=>({start:g.startup+h.delay,end:g.startup+h.delay+h.length})),
+   groundDuration:g.duration,airDuration:a.duration,groundStartup:g.startup,airStartup:a.startup});
   for(const t of [...m.tracks,...m.air.tracks])for(const k of t.keys)k.frame=warp(k.frame);
   for(const p of m.assemblies)for(const k of p.keys)k.frame=warp(k.frame);
   return m;
@@ -80,7 +118,7 @@ export function expandRich({brief,score}) {
   
   for(const [assemblyIndex,assembly] of m.assemblies.entries()){
    let pieces=prop(assembly.prop);const keys=structuredClone(assembly.keys);
-   if(assemblyIndex===0&&!pieces[0].articulated){
+   if(!explicit&&assemblyIndex===0&&!pieces[0].articulated){
     const bounds=[0,1].map(axis=>{
      const lo=Math.min(...pieces.map(p=>p.at[axis]-p.size[axis]));
      const hi=Math.max(...pieces.map(p=>p.at[axis]+p.size[axis]));return hi-lo;
@@ -89,7 +127,7 @@ export function expandRich({brief,score}) {
     pieces=pieces.map(p=>({...p,at:[p.at[0]*fit,p.at[1]*fit,p.at[2]],mount:p.mount?.map(x=>x*fit),size:p.size.map(x=>x*fit)}));
    }
    if(keys.some((k,j)=>k.frame>ground.duration||j&&k.frame<=keys[j-1].frame))throw new Error('invalid assembly keys');
-   if(assemblyIndex===0){
+   if(!explicit&&assemblyIndex===0){
     const setup=Math.max(0,ground.startup-8);
     if(keys[0].frame>setup)keys.unshift({...keys[0],frame:setup});
     const last=m.hits.at(-1),finish=ground.startup+last.delay-m.hits[0].delay+last.length;
@@ -97,6 +135,9 @@ export function expandRich({brief,score}) {
     while(time(end)<move.hitboxes.at(-1).end+8&&end<ground.duration)end++;
     if(keys.at(-1).frame<end)keys.push({...keys.at(-1),frame:end});
    }
+   if(explicit&&m.presentation?.kind==='prop'&&assembly.prop===m.presentation.prop&&
+      move.hitboxes.some(h=>time(keys[0].frame)<h.end&&time(keys.at(-1).frame)>h.start))
+    throw new Error(`${move.slot}: supporting weapon assembly overlaps active hit`);
    if(pieces[0].articulated) {
     // Extension is synchronized to each emission; rigid cases never squash.
     const authored=structuredClone(keys),sample=f=>{
@@ -117,7 +158,7 @@ export function expandRich({brief,score}) {
      for(const p of pieces){
       const rigid=p.mount?.length===2;
       const xy=s=>rigid?p.at.slice(0,2).map((x,j)=>p.mount[j]*s[j]+x-p.mount[j]):[p.articulated?p.at[0]+p.extension*s[0]:p.at[0]*s[0],p.at[1]*s[1]];
-      const pos=(t,s)=>add(add(t,[...xy(s),p.at[2]]),[0,0,120]);
+      const pos=(t,s)=>add(add(add(t,[...xy(s),p.at[2]]),[0,0,120]),explicit&&context==='air'?m.air.hitShift:[0,0,0]);
       const size=s=>p.size.map((x,j)=>Math.max(1,x*(rigid||j===0&&p.articulated&&!p.stretch?1:s[j])));
       put({hit:-1,start:f,end:stop,from:pos(lerp(a.at,z.at,u),scale),to:pos(lerp(a.at,z.at,w),scaleEnd),size:size(scale),sizeTo:size(scaleEnd),angle:p.angle,color:p.rgb||color(p.color),opacity:k===0?100:225,opacityTo:k===keys.length-2?0:225});
      }
@@ -125,7 +166,14 @@ export function expandRich({brief,score}) {
    }
   }
 
-  for(const [hit,h] of move.hitboxes.entries()){
+  const presentation=m.presentation||{kind:'wave',prop:''};
+  if(presentation.kind==='prop') {
+   if(!presentation.prop)throw new Error('prop presentation requires a prop');
+   const pieces=prop(presentation.prop);
+   for(const [hit,h] of move.hitboxes.entries())for(const p of pieces)put({hit,start:h.start,end:h.end,from:add(p.at,[0,0,120]),to:add(p.at,[0,0,120]),size:p.size,angle:p.angle,color:p.rgb||color(p.color)});
+  } else if(presentation.prop!=='')throw new Error('body/wave presentation must not name a prop');
+  if(presentation.kind==='body')move.dangerSource='body';
+  if(presentation.kind==='wave')for(const [hit,h] of move.hitboxes.entries()){
    const direction=Math.atan2(h.to[1]-h.offset[1],h.to[0]-h.offset[0]);
    for(let k=0;k<17;k++){
     const angle=direction-1.25+k*2.5/16,at=[Math.cos(angle)*h.radius*.93,Math.sin(angle)*h.radius*.93,90];
@@ -137,7 +185,7 @@ export function expandRich({brief,score}) {
    let pieces=prop(trail.prop);if(pieces.length>6)throw new Error('trail prop exceeds six pieces');
    // Readability at the normal match camera: a glyph spans at least 100 world units.
    const extent=Math.max(...[0,1].map(j=>Math.max(...pieces.map(p=>p.at[j]+p.size[j]))-Math.min(...pieces.map(p=>p.at[j]-p.size[j]))));
-   const fit=Math.max(1,100/extent);
+   const fit=explicit?1:Math.max(1,100/extent);
    pieces=pieces.map(p=>({...p,at:p.at.map((x,j)=>j<2?x*fit:x),size:p.size.map(x=>x*fit)}));
    for(let k=0;k<trail.count;k++){
     const birth=h.start+Math.floor((h.end-h.start)*k/trail.count),life=Math.min(trail.life,b.duration-birth),seed=k*2.399963;

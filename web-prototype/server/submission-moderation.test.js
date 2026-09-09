@@ -33,12 +33,14 @@ test("submission moderation sends text and image before approving", async (conte
   const result = await moderator({
     name: "Safe Fighter",
     emblem: "A star",
+    moveDirection: "Fights with vines",
     photoPath,
     mimeType: "image/png",
   });
   assert.equal(result.status, "approved");
   assert.equal(request.model, "omni-moderation-latest");
   assert.match(request.input[0].text, /Safe Fighter/);
+  assert.match(request.input[0].text, /Requested move direction: Fights with vines/);
   assert.match(request.input[1].image_url.url, /^data:image\/png;base64,/);
 });
 

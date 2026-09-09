@@ -215,7 +215,7 @@ async function receiveForm(req, jobRoot) {
       }
 
       parser.on("field", (name, value) => {
-        if (["name", "emblem", "visibility", "rightsAttested", TURNSTILE_FIELD].includes(name)) fields[name] = value;
+        if (["name", "emblem", "moveDirection", "visibility", "rightsAttested", TURNSTILE_FIELD].includes(name)) fields[name] = value;
       });
       parser.on("file", (fieldName, stream, info) => {
         if (fieldName !== "photo" || photo) {
@@ -1028,8 +1028,10 @@ export function createFighterJobs({
       }
       const name = String(fields.name || "").trim().replace(/\s+/g, " ");
       const emblem = String(fields.emblem || "").trim().replace(/\s+/g, " ");
+      const moveDirection = String(fields.moveDirection || "").trim().replace(/\s+/g, " ");
       const { visibility } = submissionSettings(fields);
       if (!name || name.length > 80) throw new HttpError(400, "Enter a fighter name up to 80 characters.");
+      if (moveDirection.length > 600) throw new HttpError(400, "Keep the move direction under 600 characters.");
       if (emblem.length > 200) throw new HttpError(400, "Keep the emblem description under 200 characters.");
       if (!slugFor(name)) throw new HttpError(400, "The fighter name must contain at least one A–Z letter or number.");
       const slug = await allocateSlug(name);
@@ -1039,6 +1041,7 @@ export function createFighterJobs({
         moderation = await submissionModerator({
           name,
           emblem,
+          moveDirection,
           photoPath: photo.path,
           mimeType: photo.mimeType,
         });
@@ -1078,6 +1081,7 @@ export function createFighterJobs({
         slug,
         assetCapability: randomCapability(),
         emblem,
+        moveDirection,
         visibility,
         rightsAttestedAt: now,
         moderation,
@@ -1264,7 +1268,7 @@ export function createFighterJobs({
     },
     get(id, ownerId = null) {
       const job = ownedJob(id, ownerId);
-      return job ? publicJob(job) : null;
+      return job ? { ...publicJob(job), ...(ownerId && job.ownerId === ownerId ? { moveDirection: job.moveDirection || "" } : {}) } : null;
     },
     isAccessible(id, ownerId = null) {
       return isJobAccessible(jobs.get(id), ownerId);

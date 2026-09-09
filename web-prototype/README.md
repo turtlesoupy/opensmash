@@ -118,7 +118,7 @@ cookie cannot tell them apart.
 ## Generate a fighter
 
 Open `/create`, sign in, validate a supported ROM, and submit a name,
-JPEG/PNG/WebP reference photo, optional emblem direction, and public/private
+JPEG/PNG/WebP reference photo, optional emblem direction, optional move direction (powers, props, or fighting style; up to 600 characters), and public/private
 visibility. Public is the default. The uploader must attest that they own or
 have permission to use the character and photo. The server safety-screens the
 text and image with `omni-moderation-latest` before it creates or dispatches a
