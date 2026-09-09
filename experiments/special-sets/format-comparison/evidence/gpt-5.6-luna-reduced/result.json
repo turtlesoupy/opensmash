@@ -1,0 +1,38 @@
+{
+  "model": "gpt-5.6-luna",
+  "format": "reduced",
+  "judges": 0,
+  "attempts": 1,
+  "briefHash": "4904a82726a9aeca54661b60a746480c1d04614556b3062e820a67585ae55429",
+  "status": "compiled",
+  "generationMs": 26692,
+  "provenance": {
+    "model": "gpt-5.6-luna",
+    "responseId": "resp_07381fd1a14b5644016aa1040facbc87d1a762c10aea7d264d",
+    "usage": {
+      "input_tokens": 3305,
+      "input_tokens_details": {
+        "cache_write_tokens": 3302,
+        "cached_tokens": 0
+      },
+      "output_tokens": 2987,
+      "output_tokens_details": {
+        "reasoning_tokens": 648
+      },
+      "total_tokens": 6292
+    }
+  },
+  "serviceTier": "default",
+  "authoringBytes": 6102,
+  "expandedBytes": 12556,
+  "poseKeys": 224,
+  "visualParts": [
+    5,
+    4,
+    4,
+    5,
+    4,
+    4
+  ],
+  "estimatedUsd": 0.0044105
+}

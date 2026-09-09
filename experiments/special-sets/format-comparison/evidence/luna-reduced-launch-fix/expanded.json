@@ -1,0 +1,2866 @@
+{
+  "moves": [
+    {
+      "slot": "neutral-ground",
+      "tracks": [
+        {
+          "joint": "torso",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 12,
+              "degrees": [
+                0,
+                -18,
+                10
+              ]
+            },
+            {
+              "frame": 22,
+              "degrees": [
+                0,
+                12,
+                -8
+              ]
+            },
+            {
+              "frame": 70,
+              "degrees": [
+                0,
+                22,
+                -12
+              ]
+            },
+            {
+              "frame": 112,
+              "degrees": [
+                0,
+                8,
+                -4
+              ]
+            },
+            {
+              "frame": 134,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "rightUpperArm",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 12,
+              "degrees": [
+                0,
+                -35,
+                -28
+              ]
+            },
+            {
+              "frame": 22,
+              "degrees": [
+                0,
+                18,
+                8
+              ]
+            },
+            {
+              "frame": 70,
+              "degrees": [
+                0,
+                52,
+                4
+              ]
+            },
+            {
+              "frame": 112,
+              "degrees": [
+                0,
+                20,
+                -4
+              ]
+            },
+            {
+              "frame": 134,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "rightForearm",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 12,
+              "degrees": [
+                0,
+                -28,
+                -18
+              ]
+            },
+            {
+              "frame": 22,
+              "degrees": [
+                0,
+                12,
+                12
+              ]
+            },
+            {
+              "frame": 70,
+              "degrees": [
+                0,
+                -8,
+                0
+              ]
+            },
+            {
+              "frame": 112,
+              "degrees": [
+                0,
+                -24,
+                -8
+              ]
+            },
+            {
+              "frame": 134,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "rightHand",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 12,
+              "degrees": [
+                0,
+                -10,
+                0
+              ]
+            },
+            {
+              "frame": 22,
+              "degrees": [
+                0,
+                8,
+                0
+              ]
+            },
+            {
+              "frame": 70,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 112,
+              "degrees": [
+                0,
+                -8,
+                0
+              ]
+            },
+            {
+              "frame": 134,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "leftUpperArm",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 12,
+              "degrees": [
+                0,
+                18,
+                24
+              ]
+            },
+            {
+              "frame": 22,
+              "degrees": [
+                0,
+                -8,
+                18
+              ]
+            },
+            {
+              "frame": 70,
+              "degrees": [
+                0,
+                -22,
+                10
+              ]
+            },
+            {
+              "frame": 112,
+              "degrees": [
+                0,
+                -12,
+                6
+              ]
+            },
+            {
+              "frame": 134,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "rightThigh",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 12,
+              "degrees": [
+                0,
+                18,
+                0
+              ]
+            },
+            {
+              "frame": 22,
+              "degrees": [
+                0,
+                -8,
+                0
+              ]
+            },
+            {
+              "frame": 70,
+              "degrees": [
+                0,
+                -4,
+                0
+              ]
+            },
+            {
+              "frame": 112,
+              "degrees": [
+                0,
+                8,
+                0
+              ]
+            },
+            {
+              "frame": 134,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "leftThigh",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 12,
+              "degrees": [
+                0,
+                -12,
+                0
+              ]
+            },
+            {
+              "frame": 22,
+              "degrees": [
+                0,
+                8,
+                0
+              ]
+            },
+            {
+              "frame": 70,
+              "degrees": [
+                0,
+                5,
+                0
+              ]
+            },
+            {
+              "frame": 112,
+              "degrees": [
+                0,
+                -6,
+                0
+              ]
+            },
+            {
+              "frame": 134,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        }
+      ],
+      "hitboxes": [
+        {
+          "start": 12,
+          "end": 16,
+          "damage": 11,
+          "angle": 0,
+          "base": 32,
+          "growth": 85,
+          "radius": 185,
+          "offset": [
+            82,
+            205,
+            0
+          ],
+          "to": [
+            178,
+            205,
+            0
+          ]
+        }
+      ],
+      "parts": [
+        {
+          "hit": 0,
+          "start": 12,
+          "end": 16,
+          "from": [
+            0,
+            0,
+            0
+          ],
+          "to": [
+            0,
+            0,
+            0
+          ],
+          "size": [
+            105,
+            8.515
+          ],
+          "spin": 0,
+          "color": [
+            248,
+            248,
+            240
+          ]
+        },
+        {
+          "hit": 0,
+          "start": 12,
+          "end": 16,
+          "from": [
+            88,
+            0,
+            0
+          ],
+          "to": [
+            88,
+            0,
+            0
+          ],
+          "size": [
+            8,
+            34.5
+          ],
+          "spin": 0,
+          "color": [
+            248,
+            248,
+            240
+          ]
+        },
+        {
+          "hit": 0,
+          "start": 12,
+          "end": 16,
+          "from": [
+            98,
+            0,
+            0
+          ],
+          "to": [
+            98,
+            0,
+            0
+          ],
+          "size": [
+            8,
+            30
+          ],
+          "spin": 0,
+          "color": [
+            248,
+            248,
+            240
+          ]
+        },
+        {
+          "hit": 0,
+          "start": 12,
+          "end": 16,
+          "from": [
+            108,
+            0,
+            0
+          ],
+          "to": [
+            108,
+            0,
+            0
+          ],
+          "size": [
+            8,
+            30
+          ],
+          "spin": 0,
+          "color": [
+            248,
+            248,
+            240
+          ]
+        },
+        {
+          "hit": 0,
+          "start": 12,
+          "end": 16,
+          "from": [
+            118,
+            0,
+            0
+          ],
+          "to": [
+            118,
+            0,
+            0
+          ],
+          "size": [
+            8,
+            30
+          ],
+          "spin": 0,
+          "color": [
+            248,
+            248,
+            240
+          ]
+        }
+      ],
+      "motion": {
+        "frame": -1,
+        "velocity": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "slot": "up-ground",
+      "tracks": [
+        {
+          "joint": "torso",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 9,
+              "degrees": [
+                0,
+                -24,
+                0
+              ]
+            },
+            {
+              "frame": 18,
+              "degrees": [
+                0,
+                8,
+                0
+              ]
+            },
+            {
+              "frame": 30,
+              "degrees": [
+                0,
+                18,
+                0
+              ]
+            },
+            {
+              "frame": 42,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "rightUpperArm",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 9,
+              "degrees": [
+                0,
+                -42,
+                -12
+              ]
+            },
+            {
+              "frame": 18,
+              "degrees": [
+                0,
+                18,
+                0
+              ]
+            },
+            {
+              "frame": 30,
+              "degrees": [
+                0,
+                28,
+                0
+              ]
+            },
+            {
+              "frame": 42,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "leftUpperArm",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 9,
+              "degrees": [
+                0,
+                42,
+                12
+              ]
+            },
+            {
+              "frame": 18,
+              "degrees": [
+                0,
+                -18,
+                0
+              ]
+            },
+            {
+              "frame": 30,
+              "degrees": [
+                0,
+                -28,
+                0
+              ]
+            },
+            {
+              "frame": 42,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "rightForearm",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 9,
+              "degrees": [
+                0,
+                -30,
+                0
+              ]
+            },
+            {
+              "frame": 18,
+              "degrees": [
+                0,
+                12,
+                0
+              ]
+            },
+            {
+              "frame": 30,
+              "degrees": [
+                0,
+                22,
+                0
+              ]
+            },
+            {
+              "frame": 42,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "leftForearm",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 9,
+              "degrees": [
+                0,
+                30,
+                0
+              ]
+            },
+            {
+              "frame": 18,
+              "degrees": [
+                0,
+                -12,
+                0
+              ]
+            },
+            {
+              "frame": 30,
+              "degrees": [
+                0,
+                -22,
+                0
+              ]
+            },
+            {
+              "frame": 42,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "rightThigh",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 9,
+              "degrees": [
+                0,
+                38,
+                0
+              ]
+            },
+            {
+              "frame": 18,
+              "degrees": [
+                0,
+                12,
+                0
+              ]
+            },
+            {
+              "frame": 30,
+              "degrees": [
+                0,
+                -28,
+                0
+              ]
+            },
+            {
+              "frame": 42,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "leftThigh",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 9,
+              "degrees": [
+                0,
+                -38,
+                0
+              ]
+            },
+            {
+              "frame": 18,
+              "degrees": [
+                0,
+                -12,
+                0
+              ]
+            },
+            {
+              "frame": 30,
+              "degrees": [
+                0,
+                28,
+                0
+              ]
+            },
+            {
+              "frame": 42,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        }
+      ],
+      "hitboxes": [
+        {
+          "start": 9,
+          "end": 14,
+          "damage": 9,
+          "angle": 90,
+          "base": 32,
+          "growth": 85,
+          "radius": 22,
+          "offset": [
+            70,
+            235,
+            0
+          ],
+          "to": [
+            82,
+            310,
+            0
+          ]
+        }
+      ],
+      "parts": [
+        {
+          "hit": 0,
+          "start": 9,
+          "end": 14,
+          "from": [
+            0,
+            0,
+            0
+          ],
+          "to": [
+            0,
+            0,
+            0
+          ],
+          "size": [
+            28,
+            58
+          ],
+          "spin": 0,
+          "color": [
+            232,
+            105,
+            91
+          ]
+        },
+        {
+          "hit": 0,
+          "start": 9,
+          "end": 14,
+          "from": [
+            28,
+            0,
+            0
+          ],
+          "to": [
+            28,
+            0,
+            0
+          ],
+          "size": [
+            38,
+            52
+          ],
+          "spin": 0,
+          "color": [
+            45,
+            45,
+            50
+          ]
+        },
+        {
+          "hit": 0,
+          "start": 9,
+          "end": 14,
+          "from": [
+            66,
+            0,
+            0
+          ],
+          "to": [
+            66,
+            0,
+            0
+          ],
+          "size": [
+            28,
+            58
+          ],
+          "spin": 0,
+          "color": [
+            232,
+            105,
+            91
+          ]
+        },
+        {
+          "hit": 0,
+          "start": 9,
+          "end": 14,
+          "from": [
+            37,
+            15,
+            4
+          ],
+          "to": [
+            37,
+            15,
+            4
+          ],
+          "size": [
+            28,
+            8
+          ],
+          "spin": 0,
+          "color": [
+            248,
+            248,
+            240
+          ]
+        }
+      ],
+      "motion": {
+        "frame": 9,
+        "velocity": [
+          35,
+          70
+        ]
+      }
+    },
+    {
+      "slot": "down-ground",
+      "tracks": [
+        {
+          "joint": "torso",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 18,
+              "degrees": [
+                0,
+                24,
+                -8
+              ]
+            },
+            {
+              "frame": 30,
+              "degrees": [
+                0,
+                -24,
+                12
+              ]
+            },
+            {
+              "frame": 38,
+              "degrees": [
+                0,
+                -12,
+                8
+              ]
+            },
+            {
+              "frame": 48,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "rightUpperArm",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 18,
+              "degrees": [
+                0,
+                -48,
+                -28
+              ]
+            },
+            {
+              "frame": 30,
+              "degrees": [
+                0,
+                62,
+                18
+              ]
+            },
+            {
+              "frame": 38,
+              "degrees": [
+                0,
+                42,
+                12
+              ]
+            },
+            {
+              "frame": 48,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "leftUpperArm",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 18,
+              "degrees": [
+                0,
+                -38,
+                26
+              ]
+            },
+            {
+              "frame": 30,
+              "degrees": [
+                0,
+                58,
+                -14
+              ]
+            },
+            {
+              "frame": 38,
+              "degrees": [
+                0,
+                34,
+                -8
+              ]
+            },
+            {
+              "frame": 48,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "rightForearm",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 18,
+              "degrees": [
+                0,
+                -42,
+                -12
+              ]
+            },
+            {
+              "frame": 30,
+              "degrees": [
+                0,
+                72,
+                8
+              ]
+            },
+            {
+              "frame": 38,
+              "degrees": [
+                0,
+                36,
+                6
+              ]
+            },
+            {
+              "frame": 48,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "leftForearm",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 18,
+              "degrees": [
+                0,
+                -34,
+                12
+              ]
+            },
+            {
+              "frame": 30,
+              "degrees": [
+                0,
+                68,
+                -8
+              ]
+            },
+            {
+              "frame": 38,
+              "degrees": [
+                0,
+                30,
+                -5
+              ]
+            },
+            {
+              "frame": 48,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "rightThigh",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 18,
+              "degrees": [
+                0,
+                24,
+                0
+              ]
+            },
+            {
+              "frame": 30,
+              "degrees": [
+                0,
+                -18,
+                0
+              ]
+            },
+            {
+              "frame": 38,
+              "degrees": [
+                0,
+                -8,
+                0
+              ]
+            },
+            {
+              "frame": 48,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "leftThigh",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 18,
+              "degrees": [
+                0,
+                -22,
+                0
+              ]
+            },
+            {
+              "frame": 30,
+              "degrees": [
+                0,
+                18,
+                0
+              ]
+            },
+            {
+              "frame": 38,
+              "degrees": [
+                0,
+                8,
+                0
+              ]
+            },
+            {
+              "frame": 48,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        }
+      ],
+      "hitboxes": [
+        {
+          "start": 18,
+          "end": 22,
+          "damage": 15,
+          "angle": 270,
+          "base": 32,
+          "growth": 85,
+          "radius": 23,
+          "offset": [
+            62,
+            92,
+            0
+          ],
+          "to": [
+            92,
+            42,
+            0
+          ]
+        }
+      ],
+      "parts": [
+        {
+          "hit": 0,
+          "start": 18,
+          "end": 22,
+          "from": [
+            0,
+            0,
+            0
+          ],
+          "to": [
+            0,
+            0,
+            0
+          ],
+          "size": [
+            12,
+            112
+          ],
+          "spin": 0,
+          "color": [
+            45,
+            45,
+            50
+          ]
+        },
+        {
+          "hit": 0,
+          "start": 18,
+          "end": 22,
+          "from": [
+            -18,
+            88,
+            0
+          ],
+          "to": [
+            -18,
+            88,
+            0
+          ],
+          "size": [
+            48,
+            25
+          ],
+          "spin": 0,
+          "color": [
+            240,
+            190,
+            55
+          ]
+        },
+        {
+          "hit": -1,
+          "start": 30,
+          "end": 36,
+          "from": [
+            88,
+            38,
+            0
+          ],
+          "to": [
+            118,
+            44,
+            0
+          ],
+          "size": [
+            6,
+            6
+          ],
+          "spin": -0.06,
+          "color": [
+            52,
+            190,
+            180
+          ]
+        },
+        {
+          "hit": -1,
+          "start": 30,
+          "end": 36,
+          "from": [
+            88,
+            38,
+            0
+          ],
+          "to": [
+            142,
+            44,
+            0
+          ],
+          "size": [
+            6,
+            6
+          ],
+          "spin": 0.06,
+          "color": [
+            52,
+            190,
+            180
+          ]
+        }
+      ],
+      "motion": {
+        "frame": -1,
+        "velocity": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "slot": "neutral-air",
+      "tracks": [
+        {
+          "joint": "torso",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 10,
+              "degrees": [
+                0,
+                -18,
+                10
+              ]
+            },
+            {
+              "frame": 20,
+              "degrees": [
+                0,
+                12,
+                -8
+              ]
+            },
+            {
+              "frame": 68,
+              "degrees": [
+                0,
+                22,
+                -12
+              ]
+            },
+            {
+              "frame": 111,
+              "degrees": [
+                0,
+                8,
+                -4
+              ]
+            },
+            {
+              "frame": 133,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "rightUpperArm",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 8,
+              "degrees": [
+                0,
+                -28,
+                -20
+              ]
+            },
+            {
+              "frame": 20,
+              "degrees": [
+                0,
+                12,
+                8
+              ]
+            },
+            {
+              "frame": 68,
+              "degrees": [
+                0,
+                38,
+                2
+              ]
+            },
+            {
+              "frame": 111,
+              "degrees": [
+                0,
+                16,
+                -2
+              ]
+            },
+            {
+              "frame": 133,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "rightForearm",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 10,
+              "degrees": [
+                0,
+                -28,
+                -18
+              ]
+            },
+            {
+              "frame": 20,
+              "degrees": [
+                0,
+                12,
+                12
+              ]
+            },
+            {
+              "frame": 68,
+              "degrees": [
+                0,
+                -8,
+                0
+              ]
+            },
+            {
+              "frame": 111,
+              "degrees": [
+                0,
+                -24,
+                -8
+              ]
+            },
+            {
+              "frame": 133,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "rightHand",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 10,
+              "degrees": [
+                0,
+                -10,
+                0
+              ]
+            },
+            {
+              "frame": 20,
+              "degrees": [
+                0,
+                8,
+                0
+              ]
+            },
+            {
+              "frame": 68,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 111,
+              "degrees": [
+                0,
+                -8,
+                0
+              ]
+            },
+            {
+              "frame": 133,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "leftUpperArm",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 10,
+              "degrees": [
+                0,
+                18,
+                24
+              ]
+            },
+            {
+              "frame": 20,
+              "degrees": [
+                0,
+                -8,
+                18
+              ]
+            },
+            {
+              "frame": 68,
+              "degrees": [
+                0,
+                -22,
+                10
+              ]
+            },
+            {
+              "frame": 111,
+              "degrees": [
+                0,
+                -12,
+                6
+              ]
+            },
+            {
+              "frame": 133,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "rightThigh",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 8,
+              "degrees": [
+                0,
+                62,
+                0
+              ]
+            },
+            {
+              "frame": 20,
+              "degrees": [
+                0,
+                38,
+                0
+              ]
+            },
+            {
+              "frame": 68,
+              "degrees": [
+                0,
+                18,
+                0
+              ]
+            },
+            {
+              "frame": 111,
+              "degrees": [
+                0,
+                8,
+                0
+              ]
+            },
+            {
+              "frame": 133,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "leftThigh",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 8,
+              "degrees": [
+                0,
+                -58,
+                0
+              ]
+            },
+            {
+              "frame": 20,
+              "degrees": [
+                0,
+                -35,
+                0
+              ]
+            },
+            {
+              "frame": 68,
+              "degrees": [
+                0,
+                -16,
+                0
+              ]
+            },
+            {
+              "frame": 111,
+              "degrees": [
+                0,
+                -7,
+                0
+              ]
+            },
+            {
+              "frame": 133,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        }
+      ],
+      "hitboxes": [
+        {
+          "start": 10,
+          "end": 14,
+          "damage": 9,
+          "angle": 0,
+          "base": 32,
+          "growth": 85,
+          "radius": 185,
+          "offset": [
+            82,
+            223,
+            0
+          ],
+          "to": [
+            178,
+            223,
+            0
+          ]
+        }
+      ],
+      "parts": [
+        {
+          "hit": 0,
+          "start": 10,
+          "end": 14,
+          "from": [
+            0,
+            0,
+            0
+          ],
+          "to": [
+            0,
+            0,
+            0
+          ],
+          "size": [
+            105,
+            8.515
+          ],
+          "spin": 0,
+          "color": [
+            248,
+            248,
+            240
+          ]
+        },
+        {
+          "hit": 0,
+          "start": 10,
+          "end": 14,
+          "from": [
+            88,
+            0,
+            0
+          ],
+          "to": [
+            88,
+            0,
+            0
+          ],
+          "size": [
+            8,
+            34.5
+          ],
+          "spin": 0,
+          "color": [
+            248,
+            248,
+            240
+          ]
+        },
+        {
+          "hit": 0,
+          "start": 10,
+          "end": 14,
+          "from": [
+            98,
+            0,
+            0
+          ],
+          "to": [
+            98,
+            0,
+            0
+          ],
+          "size": [
+            8,
+            30
+          ],
+          "spin": 0,
+          "color": [
+            248,
+            248,
+            240
+          ]
+        },
+        {
+          "hit": 0,
+          "start": 10,
+          "end": 14,
+          "from": [
+            108,
+            0,
+            0
+          ],
+          "to": [
+            108,
+            0,
+            0
+          ],
+          "size": [
+            8,
+            30
+          ],
+          "spin": 0,
+          "color": [
+            248,
+            248,
+            240
+          ]
+        },
+        {
+          "hit": 0,
+          "start": 10,
+          "end": 14,
+          "from": [
+            118,
+            0,
+            0
+          ],
+          "to": [
+            118,
+            0,
+            0
+          ],
+          "size": [
+            8,
+            30
+          ],
+          "spin": 0,
+          "color": [
+            248,
+            248,
+            240
+          ]
+        }
+      ],
+      "motion": {
+        "frame": -1,
+        "velocity": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "slot": "up-air",
+      "tracks": [
+        {
+          "joint": "torso",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 17,
+              "degrees": [
+                0,
+                -12,
+                0
+              ]
+            },
+            {
+              "frame": 24,
+              "degrees": [
+                0,
+                12,
+                0
+              ]
+            },
+            {
+              "frame": 34,
+              "degrees": [
+                0,
+                22,
+                0
+              ]
+            },
+            {
+              "frame": 43,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "rightUpperArm",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 17,
+              "degrees": [
+                0,
+                -42,
+                -12
+              ]
+            },
+            {
+              "frame": 24,
+              "degrees": [
+                0,
+                18,
+                0
+              ]
+            },
+            {
+              "frame": 34,
+              "degrees": [
+                0,
+                28,
+                0
+              ]
+            },
+            {
+              "frame": 43,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "leftUpperArm",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 17,
+              "degrees": [
+                0,
+                42,
+                12
+              ]
+            },
+            {
+              "frame": 24,
+              "degrees": [
+                0,
+                -18,
+                0
+              ]
+            },
+            {
+              "frame": 34,
+              "degrees": [
+                0,
+                -28,
+                0
+              ]
+            },
+            {
+              "frame": 43,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "rightForearm",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 17,
+              "degrees": [
+                0,
+                -30,
+                0
+              ]
+            },
+            {
+              "frame": 24,
+              "degrees": [
+                0,
+                12,
+                0
+              ]
+            },
+            {
+              "frame": 34,
+              "degrees": [
+                0,
+                22,
+                0
+              ]
+            },
+            {
+              "frame": 43,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "leftForearm",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 17,
+              "degrees": [
+                0,
+                30,
+                0
+              ]
+            },
+            {
+              "frame": 24,
+              "degrees": [
+                0,
+                -12,
+                0
+              ]
+            },
+            {
+              "frame": 34,
+              "degrees": [
+                0,
+                -22,
+                0
+              ]
+            },
+            {
+              "frame": 43,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "rightThigh",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 17,
+              "degrees": [
+                0,
+                72,
+                0
+              ]
+            },
+            {
+              "frame": 24,
+              "degrees": [
+                0,
+                44,
+                0
+              ]
+            },
+            {
+              "frame": 34,
+              "degrees": [
+                0,
+                -18,
+                0
+              ]
+            },
+            {
+              "frame": 43,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "leftThigh",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 17,
+              "degrees": [
+                0,
+                -72,
+                0
+              ]
+            },
+            {
+              "frame": 24,
+              "degrees": [
+                0,
+                -44,
+                0
+              ]
+            },
+            {
+              "frame": 34,
+              "degrees": [
+                0,
+                18,
+                0
+              ]
+            },
+            {
+              "frame": 43,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        }
+      ],
+      "hitboxes": [
+        {
+          "start": 17,
+          "end": 21,
+          "damage": 8,
+          "angle": 90,
+          "base": 32,
+          "growth": 85,
+          "radius": 22,
+          "offset": [
+            70,
+            247,
+            0
+          ],
+          "to": [
+            82,
+            322,
+            0
+          ]
+        }
+      ],
+      "parts": [
+        {
+          "hit": 0,
+          "start": 17,
+          "end": 21,
+          "from": [
+            0,
+            0,
+            0
+          ],
+          "to": [
+            0,
+            0,
+            0
+          ],
+          "size": [
+            28,
+            58
+          ],
+          "spin": 0,
+          "color": [
+            232,
+            105,
+            91
+          ]
+        },
+        {
+          "hit": 0,
+          "start": 17,
+          "end": 21,
+          "from": [
+            28,
+            0,
+            0
+          ],
+          "to": [
+            28,
+            0,
+            0
+          ],
+          "size": [
+            38,
+            52
+          ],
+          "spin": 0,
+          "color": [
+            45,
+            45,
+            50
+          ]
+        },
+        {
+          "hit": 0,
+          "start": 17,
+          "end": 21,
+          "from": [
+            66,
+            0,
+            0
+          ],
+          "to": [
+            66,
+            0,
+            0
+          ],
+          "size": [
+            28,
+            58
+          ],
+          "spin": 0,
+          "color": [
+            232,
+            105,
+            91
+          ]
+        },
+        {
+          "hit": 0,
+          "start": 17,
+          "end": 21,
+          "from": [
+            37,
+            15,
+            4
+          ],
+          "to": [
+            37,
+            15,
+            4
+          ],
+          "size": [
+            28,
+            8
+          ],
+          "spin": 0,
+          "color": [
+            248,
+            248,
+            240
+          ]
+        }
+      ],
+      "motion": {
+        "frame": 0,
+        "velocity": [
+          25,
+          82
+        ]
+      }
+    },
+    {
+      "slot": "down-air",
+      "tracks": [
+        {
+          "joint": "torso",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 14,
+              "degrees": [
+                0,
+                18,
+                -8
+              ]
+            },
+            {
+              "frame": 28,
+              "degrees": [
+                0,
+                -30,
+                12
+              ]
+            },
+            {
+              "frame": 40,
+              "degrees": [
+                0,
+                -16,
+                8
+              ]
+            },
+            {
+              "frame": 52,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "rightUpperArm",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 14,
+              "degrees": [
+                0,
+                -38,
+                -24
+              ]
+            },
+            {
+              "frame": 28,
+              "degrees": [
+                0,
+                74,
+                18
+              ]
+            },
+            {
+              "frame": 40,
+              "degrees": [
+                0,
+                46,
+                10
+              ]
+            },
+            {
+              "frame": 52,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "leftUpperArm",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 14,
+              "degrees": [
+                0,
+                -30,
+                22
+              ]
+            },
+            {
+              "frame": 28,
+              "degrees": [
+                0,
+                66,
+                -14
+              ]
+            },
+            {
+              "frame": 40,
+              "degrees": [
+                0,
+                38,
+                -8
+              ]
+            },
+            {
+              "frame": 52,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "rightForearm",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 16,
+              "degrees": [
+                0,
+                -42,
+                -12
+              ]
+            },
+            {
+              "frame": 30,
+              "degrees": [
+                0,
+                72,
+                8
+              ]
+            },
+            {
+              "frame": 40,
+              "degrees": [
+                0,
+                36,
+                6
+              ]
+            },
+            {
+              "frame": 52,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "leftForearm",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 16,
+              "degrees": [
+                0,
+                -34,
+                12
+              ]
+            },
+            {
+              "frame": 30,
+              "degrees": [
+                0,
+                68,
+                -8
+              ]
+            },
+            {
+              "frame": 40,
+              "degrees": [
+                0,
+                30,
+                -5
+              ]
+            },
+            {
+              "frame": 52,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "rightThigh",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 14,
+              "degrees": [
+                0,
+                68,
+                0
+              ]
+            },
+            {
+              "frame": 28,
+              "degrees": [
+                0,
+                34,
+                0
+              ]
+            },
+            {
+              "frame": 40,
+              "degrees": [
+                0,
+                12,
+                0
+              ]
+            },
+            {
+              "frame": 52,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        },
+        {
+          "joint": "leftThigh",
+          "keys": [
+            {
+              "frame": 0,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            },
+            {
+              "frame": 14,
+              "degrees": [
+                0,
+                -68,
+                0
+              ]
+            },
+            {
+              "frame": 28,
+              "degrees": [
+                0,
+                -34,
+                0
+              ]
+            },
+            {
+              "frame": 40,
+              "degrees": [
+                0,
+                -12,
+                0
+              ]
+            },
+            {
+              "frame": 52,
+              "degrees": [
+                0,
+                0,
+                0
+              ]
+            }
+          ]
+        }
+      ],
+      "hitboxes": [
+        {
+          "start": 16,
+          "end": 21,
+          "damage": 13,
+          "angle": 270,
+          "base": 32,
+          "growth": 85,
+          "radius": 23,
+          "offset": [
+            62,
+            74,
+            0
+          ],
+          "to": [
+            92,
+            24,
+            0
+          ]
+        }
+      ],
+      "parts": [
+        {
+          "hit": 0,
+          "start": 16,
+          "end": 21,
+          "from": [
+            0,
+            0,
+            0
+          ],
+          "to": [
+            0,
+            0,
+            0
+          ],
+          "size": [
+            12,
+            112
+          ],
+          "spin": 0,
+          "color": [
+            45,
+            45,
+            50
+          ]
+        },
+        {
+          "hit": 0,
+          "start": 16,
+          "end": 21,
+          "from": [
+            -18,
+            88,
+            0
+          ],
+          "to": [
+            -18,
+            88,
+            0
+          ],
+          "size": [
+            48,
+            25
+          ],
+          "spin": 0,
+          "color": [
+            240,
+            190,
+            55
+          ]
+        },
+        {
+          "hit": -1,
+          "start": 30,
+          "end": 38,
+          "from": [
+            88,
+            38,
+            0
+          ],
+          "to": [
+            118,
+            44,
+            0
+          ],
+          "size": [
+            6,
+            6
+          ],
+          "spin": -0.06,
+          "color": [
+            52,
+            190,
+            180
+          ]
+        },
+        {
+          "hit": -1,
+          "start": 30,
+          "end": 38,
+          "from": [
+            88,
+            38,
+            0
+          ],
+          "to": [
+            142,
+            44,
+            0
+          ],
+          "size": [
+            6,
+            6
+          ],
+          "spin": 0.06,
+          "color": [
+            52,
+            190,
+            180
+          ]
+        }
+      ],
+      "motion": {
+        "frame": 16,
+        "velocity": [
+          0,
+          -55
+        ]
+      }
+    }
+  ]
+}

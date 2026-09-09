@@ -1,0 +1,18 @@
+{
+  "modelCalls": 0,
+  "source": "gpt-5.6-luna-reduced/response.json",
+  "change": {
+    "slot": 4,
+    "field": "motion.frame",
+    "before": 17,
+    "after": 0
+  },
+  "unchangedSlots": [
+    0,
+    1,
+    2,
+    3,
+    5
+  ],
+  "reason": "Air up must launch before landing during its 17-frame windup."
+}

@@ -1,0 +1,313 @@
+{
+  "packageFileHash": "d5e457ac41b5f8429674c3deaeeca3cdc5c7d9d753cf08e7650ab42daf6fef18",
+  "bundleHash": "c425f4d11bddc812e011e906862816ca5b23e8217e535448129463035543415b",
+  "binaryHash": "0dc3d1ee270eac6b428581bb4a5f84032647a25240bed5cb45cc7647a59fb613",
+  "reusedSlots": [
+    0,
+    1,
+    2,
+    3,
+    5
+  ],
+  "reusedPackageFileHash": "876e229cdd6e0163637fcab9b0d8e009065e4e226bc91ac34f8e4ab094c3767b",
+  "status": "ready",
+  "runtimeValidated": true,
+  "judges": 0,
+  "contexts": [
+    {
+      "slot": 0,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "damage": 11,
+          "checks": {
+            "enteredOnce": true,
+            "cleanedOnce": true,
+            "hitboxesCleared": true,
+            "contactDamage": true,
+            "hitReaction": true
+          },
+          "reusedLog": true,
+          "sourcePackageFileHash": "876e229cdd6e0163637fcab9b0d8e009065e4e226bc91ac34f8e4ab094c3767b",
+          "passed": true
+        },
+        {
+          "scenario": "miss",
+          "damage": 0,
+          "checks": {
+            "enteredOnce": true,
+            "cleanedOnce": true,
+            "hitboxesCleared": true,
+            "noOutOfRangeDamage": true
+          },
+          "reusedLog": true,
+          "sourcePackageFileHash": "876e229cdd6e0163637fcab9b0d8e009065e4e226bc91ac34f8e4ab094c3767b",
+          "passed": true
+        },
+        {
+          "scenario": "wavecancel",
+          "damage": 0,
+          "checks": {
+            "enteredOnce": true,
+            "cleanedOnce": true,
+            "hitboxesCleared": true,
+            "windupInterrupted": true
+          },
+          "reusedLog": true,
+          "sourcePackageFileHash": "876e229cdd6e0163637fcab9b0d8e009065e4e226bc91ac34f8e4ab094c3767b",
+          "passed": true
+        }
+      ],
+      "preview": "/private/tmp/special-format-comparison-v1/luna-reduced-launch-fix/validation/slot-0.mp4",
+      "passed": true
+    },
+    {
+      "slot": 1,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "damage": 9,
+          "checks": {
+            "enteredOnce": true,
+            "cleanedOnce": true,
+            "hitboxesCleared": true,
+            "contactDamage": true,
+            "hitReaction": true
+          },
+          "reusedLog": true,
+          "sourcePackageFileHash": "876e229cdd6e0163637fcab9b0d8e009065e4e226bc91ac34f8e4ab094c3767b",
+          "passed": true
+        },
+        {
+          "scenario": "miss",
+          "damage": 0,
+          "checks": {
+            "enteredOnce": true,
+            "cleanedOnce": true,
+            "hitboxesCleared": true,
+            "noOutOfRangeDamage": true,
+            "recoveryRise": true,
+            "exhaustedFall": true
+          },
+          "reusedLog": true,
+          "sourcePackageFileHash": "876e229cdd6e0163637fcab9b0d8e009065e4e226bc91ac34f8e4ab094c3767b",
+          "initialY": 0,
+          "maximumY": 986.0,
+          "rise": 986.0,
+          "requiredRise": 350,
+          "passed": true
+        },
+        {
+          "scenario": "wavecancel",
+          "damage": 0,
+          "checks": {
+            "enteredOnce": true,
+            "cleanedOnce": true,
+            "hitboxesCleared": true,
+            "windupInterrupted": true
+          },
+          "reusedLog": true,
+          "sourcePackageFileHash": "876e229cdd6e0163637fcab9b0d8e009065e4e226bc91ac34f8e4ab094c3767b",
+          "passed": true
+        }
+      ],
+      "preview": "/private/tmp/special-format-comparison-v1/luna-reduced-launch-fix/validation/slot-1.mp4",
+      "passed": true
+    },
+    {
+      "slot": 2,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "damage": 15,
+          "checks": {
+            "enteredOnce": true,
+            "cleanedOnce": true,
+            "hitboxesCleared": true,
+            "contactDamage": true,
+            "hitReaction": true
+          },
+          "reusedLog": true,
+          "sourcePackageFileHash": "876e229cdd6e0163637fcab9b0d8e009065e4e226bc91ac34f8e4ab094c3767b",
+          "passed": true
+        },
+        {
+          "scenario": "miss",
+          "damage": 0,
+          "checks": {
+            "enteredOnce": true,
+            "cleanedOnce": true,
+            "hitboxesCleared": true,
+            "noOutOfRangeDamage": true
+          },
+          "reusedLog": true,
+          "sourcePackageFileHash": "876e229cdd6e0163637fcab9b0d8e009065e4e226bc91ac34f8e4ab094c3767b",
+          "passed": true
+        },
+        {
+          "scenario": "wavecancel",
+          "damage": 0,
+          "checks": {
+            "enteredOnce": true,
+            "cleanedOnce": true,
+            "hitboxesCleared": true,
+            "windupInterrupted": true
+          },
+          "reusedLog": true,
+          "sourcePackageFileHash": "876e229cdd6e0163637fcab9b0d8e009065e4e226bc91ac34f8e4ab094c3767b",
+          "passed": true
+        }
+      ],
+      "preview": "/private/tmp/special-format-comparison-v1/luna-reduced-launch-fix/validation/slot-2.mp4",
+      "passed": true
+    },
+    {
+      "slot": 3,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "damage": 9,
+          "checks": {
+            "enteredOnce": true,
+            "cleanedOnce": true,
+            "hitboxesCleared": true,
+            "contactDamage": true,
+            "hitReaction": true
+          },
+          "reusedLog": true,
+          "sourcePackageFileHash": "876e229cdd6e0163637fcab9b0d8e009065e4e226bc91ac34f8e4ab094c3767b",
+          "passed": true
+        },
+        {
+          "scenario": "miss",
+          "damage": 0,
+          "checks": {
+            "enteredOnce": true,
+            "cleanedOnce": true,
+            "hitboxesCleared": true,
+            "noOutOfRangeDamage": true
+          },
+          "reusedLog": true,
+          "sourcePackageFileHash": "876e229cdd6e0163637fcab9b0d8e009065e4e226bc91ac34f8e4ab094c3767b",
+          "passed": true
+        },
+        {
+          "scenario": "wavecancel",
+          "damage": 0,
+          "checks": {
+            "enteredOnce": true,
+            "cleanedOnce": true,
+            "hitboxesCleared": true,
+            "windupInterrupted": true
+          },
+          "reusedLog": true,
+          "sourcePackageFileHash": "876e229cdd6e0163637fcab9b0d8e009065e4e226bc91ac34f8e4ab094c3767b",
+          "passed": true
+        }
+      ],
+      "preview": "/private/tmp/special-format-comparison-v1/luna-reduced-launch-fix/validation/slot-3.mp4",
+      "passed": true
+    },
+    {
+      "slot": 4,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "damage": 8,
+          "checks": {
+            "enteredOnce": true,
+            "cleanedOnce": true,
+            "hitboxesCleared": true,
+            "contactDamage": true,
+            "hitReaction": true
+          },
+          "reusedLog": false,
+          "sourcePackageFileHash": "d5e457ac41b5f8429674c3deaeeca3cdc5c7d9d753cf08e7650ab42daf6fef18",
+          "passed": true
+        },
+        {
+          "scenario": "miss",
+          "damage": 0,
+          "checks": {
+            "enteredOnce": true,
+            "cleanedOnce": true,
+            "hitboxesCleared": true,
+            "noOutOfRangeDamage": true,
+            "recoveryRise": true,
+            "exhaustedFall": true
+          },
+          "reusedLog": false,
+          "sourcePackageFileHash": "d5e457ac41b5f8429674c3deaeeca3cdc5c7d9d753cf08e7650ab42daf6fef18",
+          "initialY": 1100,
+          "maximumY": 2457.599,
+          "rise": 1357.5990000000002,
+          "requiredRise": 350,
+          "passed": true
+        },
+        {
+          "scenario": "wavecancel",
+          "damage": 0,
+          "checks": {
+            "enteredOnce": true,
+            "cleanedOnce": true,
+            "hitboxesCleared": true,
+            "windupInterrupted": true
+          },
+          "reusedLog": false,
+          "sourcePackageFileHash": "d5e457ac41b5f8429674c3deaeeca3cdc5c7d9d753cf08e7650ab42daf6fef18",
+          "passed": true
+        }
+      ],
+      "preview": "/private/tmp/special-format-comparison-v1/luna-reduced-launch-fix/validation/slot-4.mp4",
+      "passed": true
+    },
+    {
+      "slot": 5,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "damage": 13,
+          "checks": {
+            "enteredOnce": true,
+            "cleanedOnce": true,
+            "hitboxesCleared": true,
+            "contactDamage": true,
+            "hitReaction": true
+          },
+          "reusedLog": true,
+          "sourcePackageFileHash": "876e229cdd6e0163637fcab9b0d8e009065e4e226bc91ac34f8e4ab094c3767b",
+          "passed": true
+        },
+        {
+          "scenario": "miss",
+          "damage": 0,
+          "checks": {
+            "enteredOnce": true,
+            "cleanedOnce": true,
+            "hitboxesCleared": true,
+            "noOutOfRangeDamage": true
+          },
+          "reusedLog": true,
+          "sourcePackageFileHash": "876e229cdd6e0163637fcab9b0d8e009065e4e226bc91ac34f8e4ab094c3767b",
+          "passed": true
+        },
+        {
+          "scenario": "wavecancel",
+          "damage": 0,
+          "checks": {
+            "enteredOnce": true,
+            "cleanedOnce": true,
+            "hitboxesCleared": true,
+            "windupInterrupted": true
+          },
+          "reusedLog": true,
+          "sourcePackageFileHash": "876e229cdd6e0163637fcab9b0d8e009065e4e226bc91ac34f8e4ab094c3767b",
+          "passed": true
+        }
+      ],
+      "preview": "/private/tmp/special-format-comparison-v1/luna-reduced-launch-fix/validation/slot-5.mp4",
+      "passed": true
+    }
+  ],
+  "method": "Completed all scenarios after fail-fast report; reused existing finished logs. No attack repairs or regeneration."
+}

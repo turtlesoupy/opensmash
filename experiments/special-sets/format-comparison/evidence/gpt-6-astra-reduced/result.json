@@ -1,0 +1,29 @@
+{
+  "model": "gpt-6-astra",
+  "format": "reduced",
+  "judges": 0,
+  "attempts": 1,
+  "briefHash": "4904a82726a9aeca54661b60a746480c1d04614556b3062e820a67585ae55429",
+  "status": "failed",
+  "generationMs": 144255,
+  "provenance": {
+    "model": "gpt-6-astra",
+    "responseId": "resp_02f722b50d34e486016aa103640c7887d19b68df00c252a1cc",
+    "usage": {
+      "input_tokens": 3305,
+      "input_tokens_details": {
+        "cache_write_tokens": 3302,
+        "cached_tokens": 0
+      },
+      "output_tokens": 8458,
+      "output_tokens_details": {
+        "reasoning_tokens": 1552
+      },
+      "total_tokens": 11763
+    }
+  },
+  "serviceTier": "default",
+  "authoringBytes": 12744,
+  "error": "unknown color",
+  "estimatedUsd": 0.464205
+}

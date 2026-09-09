@@ -1,0 +1,29 @@
+{
+  "model": "gpt-6-astra",
+  "format": "full",
+  "judges": 0,
+  "attempts": 1,
+  "briefHash": "4904a82726a9aeca54661b60a746480c1d04614556b3062e820a67585ae55429",
+  "status": "failed",
+  "generationMs": 156032,
+  "provenance": {
+    "model": "gpt-6-astra",
+    "responseId": "resp_072d3b4d16c7f717016aa102c8192887d1b6f30f7292674be9",
+    "usage": {
+      "input_tokens": 2963,
+      "input_tokens_details": {
+        "cache_write_tokens": 2960,
+        "cached_tokens": 0
+      },
+      "output_tokens": 10775,
+      "output_tokens_details": {
+        "reasoning_tokens": 1033
+      },
+      "total_tokens": 13738
+    }
+  },
+  "serviceTier": "default",
+  "authoringBytes": 23131,
+  "error": "neutral-ground: missing danger cue 0",
+  "estimatedUsd": 0.57578
+}

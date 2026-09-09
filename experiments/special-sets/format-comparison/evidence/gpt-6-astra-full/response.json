@@ -1,0 +1,5315 @@
+{
+  "value": {
+    "moves": [
+      {
+        "slot": "neutral-ground",
+        "tracks": [
+          {
+            "joint": "torso",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 8,
+                "degrees": [
+                  0,
+                  -28,
+                  8
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  -35,
+                  10
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  24,
+                  -16
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  0,
+                  10,
+                  -5
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 134,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "head",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  22,
+                  -5
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  -12,
+                  5
+                ]
+              },
+              {
+                "frame": 24,
+                "degrees": [
+                  0,
+                  8,
+                  -4
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 134,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightUpperArm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  -12,
+                  -28,
+                  32
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  12,
+                  -78
+                ]
+              },
+              {
+                "frame": 19,
+                "degrees": [
+                  0,
+                  8,
+                  -65
+                ]
+              },
+              {
+                "frame": 28,
+                "degrees": [
+                  0,
+                  -12,
+                  15
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 134,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightForearm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  0,
+                  -105
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  0,
+                  -12
+                ]
+              },
+              {
+                "frame": 20,
+                "degrees": [
+                  0,
+                  0,
+                  -48
+                ]
+              },
+              {
+                "frame": 28,
+                "degrees": [
+                  0,
+                  0,
+                  -92
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 134,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftUpperArm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 8,
+                "degrees": [
+                  -25,
+                  15,
+                  -48
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  -30,
+                  20,
+                  -55
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  -15,
+                  -30,
+                  28
+                ]
+              },
+              {
+                "frame": 24,
+                "degrees": [
+                  -10,
+                  -10,
+                  15
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 134,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftForearm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  35,
+                  -55
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  -15,
+                  -32
+                ]
+              },
+              {
+                "frame": 24,
+                "degrees": [
+                  0,
+                  0,
+                  -25
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 134,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightThigh",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  -8,
+                  18
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  5,
+                  -28
+                ]
+              },
+              {
+                "frame": 22,
+                "degrees": [
+                  0,
+                  0,
+                  -15
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 134,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftThigh",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  8,
+                  -22
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  -5,
+                  22
+                ]
+              },
+              {
+                "frame": 25,
+                "degrees": [
+                  0,
+                  0,
+                  -12
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 134,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          }
+        ],
+        "hitboxes": [
+          {
+            "start": 12,
+            "end": 16,
+            "damage": 11,
+            "angle": 35,
+            "base": 35,
+            "growth": 95,
+            "radius": 25,
+            "offset": [
+              220,
+              165,
+              0
+            ],
+            "to": [
+              300,
+              165,
+              0
+            ]
+          }
+        ],
+        "parts": [
+          {
+            "hit": -1,
+            "start": 0,
+            "end": 12,
+            "from": [
+              110,
+              175,
+              0
+            ],
+            "to": [
+              55,
+              165,
+              0
+            ],
+            "size": [
+              60,
+              5
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              245,
+              240
+            ]
+          }
+        ],
+        "motion": {
+          "frame": -1,
+          "velocity": [
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "slot": "up-ground",
+        "tracks": [
+          {
+            "joint": "torso",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 8,
+                "degrees": [
+                  0,
+                  0,
+                  20
+                ]
+              },
+              {
+                "frame": 9,
+                "degrees": [
+                  0,
+                  0,
+                  12
+                ]
+              },
+              {
+                "frame": 16,
+                "degrees": [
+                  0,
+                  0,
+                  -15
+                ]
+              },
+              {
+                "frame": 23,
+                "degrees": [
+                  0,
+                  0,
+                  -8
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  14
+                ]
+              },
+              {
+                "frame": 42,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "head",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 8,
+                "degrees": [
+                  0,
+                  0,
+                  -12
+                ]
+              },
+              {
+                "frame": 16,
+                "degrees": [
+                  0,
+                  0,
+                  -8
+                ]
+              },
+              {
+                "frame": 23,
+                "degrees": [
+                  0,
+                  0,
+                  4
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  13
+                ]
+              },
+              {
+                "frame": 42,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightUpperArm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 8,
+                "degrees": [
+                  -15,
+                  25,
+                  -40
+                ]
+              },
+              {
+                "frame": 16,
+                "degrees": [
+                  -20,
+                  -20,
+                  -75
+                ]
+              },
+              {
+                "frame": 23,
+                "degrees": [
+                  -15,
+                  -15,
+                  -68
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  -8,
+                  12,
+                  -28
+                ]
+              },
+              {
+                "frame": 42,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightForearm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 8,
+                "degrees": [
+                  0,
+                  15,
+                  -105
+                ]
+              },
+              {
+                "frame": 16,
+                "degrees": [
+                  0,
+                  -10,
+                  -62
+                ]
+              },
+              {
+                "frame": 23,
+                "degrees": [
+                  0,
+                  0,
+                  -70
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  -95
+                ]
+              },
+              {
+                "frame": 42,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftUpperArm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 8,
+                "degrees": [
+                  15,
+                  -25,
+                  -40
+                ]
+              },
+              {
+                "frame": 16,
+                "degrees": [
+                  20,
+                  25,
+                  -72
+                ]
+              },
+              {
+                "frame": 23,
+                "degrees": [
+                  15,
+                  20,
+                  -65
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  8,
+                  -12,
+                  -28
+                ]
+              },
+              {
+                "frame": 42,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftForearm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 8,
+                "degrees": [
+                  0,
+                  -15,
+                  -105
+                ]
+              },
+              {
+                "frame": 16,
+                "degrees": [
+                  0,
+                  10,
+                  -62
+                ]
+              },
+              {
+                "frame": 23,
+                "degrees": [
+                  0,
+                  0,
+                  -70
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  -95
+                ]
+              },
+              {
+                "frame": 42,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightThigh",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 8,
+                "degrees": [
+                  0,
+                  -12,
+                  -62
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  0,
+                  15
+                ]
+              },
+              {
+                "frame": 23,
+                "degrees": [
+                  0,
+                  0,
+                  -24
+                ]
+              },
+              {
+                "frame": 31,
+                "degrees": [
+                  0,
+                  0,
+                  -48
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  0,
+                  0,
+                  10
+                ]
+              },
+              {
+                "frame": 42,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftThigh",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 8,
+                "degrees": [
+                  0,
+                  12,
+                  -62
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  0,
+                  12
+                ]
+              },
+              {
+                "frame": 23,
+                "degrees": [
+                  0,
+                  0,
+                  -30
+                ]
+              },
+              {
+                "frame": 31,
+                "degrees": [
+                  0,
+                  0,
+                  -52
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  0,
+                  0,
+                  8
+                ]
+              },
+              {
+                "frame": 42,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightShin",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 8,
+                "degrees": [
+                  0,
+                  0,
+                  95
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  0,
+                  8
+                ]
+              },
+              {
+                "frame": 23,
+                "degrees": [
+                  0,
+                  0,
+                  38
+                ]
+              },
+              {
+                "frame": 31,
+                "degrees": [
+                  0,
+                  0,
+                  75
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  0,
+                  0,
+                  20
+                ]
+              },
+              {
+                "frame": 42,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftShin",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 8,
+                "degrees": [
+                  0,
+                  0,
+                  95
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  0,
+                  8
+                ]
+              },
+              {
+                "frame": 23,
+                "degrees": [
+                  0,
+                  0,
+                  45
+                ]
+              },
+              {
+                "frame": 31,
+                "degrees": [
+                  0,
+                  0,
+                  80
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  0,
+                  0,
+                  25
+                ]
+              },
+              {
+                "frame": 42,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          }
+        ],
+        "hitboxes": [
+          {
+            "start": 9,
+            "end": 23,
+            "damage": 9,
+            "angle": 82,
+            "base": 45,
+            "growth": 85,
+            "radius": 191,
+            "offset": [
+              116,
+              230,
+              0
+            ],
+            "to": [
+              151,
+              246,
+              0
+            ]
+          }
+        ],
+        "parts": [
+          {
+            "hit": -1,
+            "start": 0,
+            "end": 9,
+            "from": [
+              45,
+              200,
+              0
+            ],
+            "to": [
+              60,
+              196,
+              0
+            ],
+            "size": [
+              15,
+              30
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              112,
+              105
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 0,
+            "end": 9,
+            "from": [
+              116,
+              200,
+              0
+            ],
+            "to": [
+              101,
+              196,
+              0
+            ],
+            "size": [
+              15,
+              30
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              112,
+              105
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 0,
+            "end": 9,
+            "from": [
+              80,
+              200,
+              0
+            ],
+            "to": [
+              80,
+              196,
+              0
+            ],
+            "size": [
+              12,
+              26
+            ],
+            "spin": 0,
+            "color": [
+              35,
+              35,
+              42
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 0,
+            "end": 9,
+            "from": [
+              122,
+              200,
+              4
+            ],
+            "to": [
+              107,
+              196,
+              4
+            ],
+            "size": [
+              5,
+              24
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              245,
+              240
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 9,
+            "end": 23,
+            "from": [
+              60,
+              196,
+              0
+            ],
+            "to": [
+              35,
+              212,
+              0
+            ],
+            "size": [
+              15,
+              30
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              112,
+              105
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 9,
+            "end": 23,
+            "from": [
+              101,
+              196,
+              0
+            ],
+            "to": [
+              136,
+              212,
+              0
+            ],
+            "size": [
+              15,
+              30
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              112,
+              105
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 9,
+            "end": 23,
+            "from": [
+              80,
+              196,
+              0
+            ],
+            "to": [
+              85,
+              212,
+              0
+            ],
+            "size": [
+              35,
+              26
+            ],
+            "spin": 0,
+            "color": [
+              35,
+              35,
+              42
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 9,
+            "end": 23,
+            "from": [
+              107,
+              196,
+              4
+            ],
+            "to": [
+              142,
+              212,
+              4
+            ],
+            "size": [
+              5,
+              24
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              245,
+              240
+            ]
+          },
+          {
+            "hit": 0,
+            "start": 9,
+            "end": 23,
+            "from": [
+              -8,
+              -2,
+              2
+            ],
+            "to": [
+              -8,
+              -2,
+              2
+            ],
+            "size": [
+              12,
+              3
+            ],
+            "spin": 0,
+            "color": [
+              255,
+              205,
+              60
+            ]
+          },
+          {
+            "hit": 0,
+            "start": 9,
+            "end": 23,
+            "from": [
+              1,
+              -11,
+              2
+            ],
+            "to": [
+              1,
+              -11,
+              2
+            ],
+            "size": [
+              3,
+              12
+            ],
+            "spin": 0,
+            "color": [
+              255,
+              205,
+              60
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 23,
+            "end": 38,
+            "from": [
+              35,
+              212,
+              0
+            ],
+            "to": [
+              60,
+              172,
+              0
+            ],
+            "size": [
+              15,
+              30
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              112,
+              105
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 23,
+            "end": 38,
+            "from": [
+              136,
+              212,
+              0
+            ],
+            "to": [
+              101,
+              172,
+              0
+            ],
+            "size": [
+              15,
+              30
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              112,
+              105
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 23,
+            "end": 38,
+            "from": [
+              85,
+              212,
+              0
+            ],
+            "to": [
+              80,
+              172,
+              0
+            ],
+            "size": [
+              12,
+              26
+            ],
+            "spin": 0,
+            "color": [
+              35,
+              35,
+              42
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 23,
+            "end": 38,
+            "from": [
+              142,
+              212,
+              4
+            ],
+            "to": [
+              107,
+              172,
+              4
+            ],
+            "size": [
+              5,
+              24
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              245,
+              240
+            ]
+          }
+        ],
+        "motion": {
+          "frame": 9,
+          "velocity": [
+            6.5,
+            70
+          ]
+        }
+      },
+      {
+        "slot": "down-ground",
+        "tracks": [
+          {
+            "joint": "torso",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  -20,
+                  -20
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  0,
+                  -12,
+                  -12
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  0,
+                  12,
+                  48
+                ]
+              },
+              {
+                "frame": 30,
+                "degrees": [
+                  0,
+                  8,
+                  40
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  0,
+                  0,
+                  12
+                ]
+              },
+              {
+                "frame": 48,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "head",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  15,
+                  10
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  0,
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": 30,
+                "degrees": [
+                  0,
+                  0,
+                  -12
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  0,
+                  0,
+                  6
+                ]
+              },
+              {
+                "frame": 48,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightUpperArm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  -25,
+                  -25,
+                  -150
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  -15,
+                  -10,
+                  -125
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  0,
+                  10,
+                  -38
+                ]
+              },
+              {
+                "frame": 30,
+                "degrees": [
+                  0,
+                  5,
+                  -30
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  0,
+                  0,
+                  10
+                ]
+              },
+              {
+                "frame": 48,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightForearm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  15,
+                  -85
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  0,
+                  5,
+                  -55
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  0,
+                  0,
+                  -10
+                ]
+              },
+              {
+                "frame": 30,
+                "degrees": [
+                  0,
+                  0,
+                  -15
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  0,
+                  0,
+                  -65
+                ]
+              },
+              {
+                "frame": 48,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftUpperArm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  25,
+                  20,
+                  -140
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  15,
+                  12,
+                  -115
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  8,
+                  -10,
+                  -42
+                ]
+              },
+              {
+                "frame": 30,
+                "degrees": [
+                  5,
+                  -5,
+                  -35
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  0,
+                  0,
+                  -10
+                ]
+              },
+              {
+                "frame": 48,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftForearm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  -15,
+                  -95
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  0,
+                  -5,
+                  -65
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  0,
+                  0,
+                  -18
+                ]
+              },
+              {
+                "frame": 30,
+                "degrees": [
+                  0,
+                  0,
+                  -22
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  0,
+                  0,
+                  -55
+                ]
+              },
+              {
+                "frame": 48,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightThigh",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  -12,
+                  -15,
+                  -20
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  -12,
+                  -10,
+                  -48
+                ]
+              },
+              {
+                "frame": 30,
+                "degrees": [
+                  -10,
+                  -8,
+                  -42
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  -5,
+                  0,
+                  -15
+                ]
+              },
+              {
+                "frame": 48,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftThigh",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  12,
+                  15,
+                  -15
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  12,
+                  10,
+                  -42
+                ]
+              },
+              {
+                "frame": 30,
+                "degrees": [
+                  10,
+                  8,
+                  -38
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  5,
+                  0,
+                  -12
+                ]
+              },
+              {
+                "frame": 48,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightShin",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  0,
+                  30
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  0,
+                  0,
+                  72
+                ]
+              },
+              {
+                "frame": 30,
+                "degrees": [
+                  0,
+                  0,
+                  65
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  0,
+                  0,
+                  25
+                ]
+              },
+              {
+                "frame": 48,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftShin",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  0,
+                  25
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  0,
+                  0,
+                  65
+                ]
+              },
+              {
+                "frame": 30,
+                "degrees": [
+                  0,
+                  0,
+                  60
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  0,
+                  0,
+                  20
+                ]
+              },
+              {
+                "frame": 48,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          }
+        ],
+        "hitboxes": [
+          {
+            "start": 18,
+            "end": 22,
+            "damage": 15,
+            "angle": 60,
+            "base": 45,
+            "growth": 100,
+            "radius": 32,
+            "offset": [
+              135,
+              100,
+              0
+            ],
+            "to": [
+              165,
+              35,
+              0
+            ]
+          }
+        ],
+        "parts": [
+          {
+            "hit": -1,
+            "start": 0,
+            "end": 14,
+            "from": [
+              -35,
+              150,
+              -45
+            ],
+            "to": [
+              -55,
+              295,
+              -45
+            ],
+            "size": [
+              8,
+              48
+            ],
+            "spin": -0.025,
+            "color": [
+              35,
+              35,
+              42
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 0,
+            "end": 14,
+            "from": [
+              -35,
+              198,
+              -45
+            ],
+            "to": [
+              -75,
+              343,
+              -45
+            ],
+            "size": [
+              36,
+              23
+            ],
+            "spin": -0.025,
+            "color": [
+              255,
+              205,
+              60
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 14,
+            "end": 18,
+            "from": [
+              -55,
+              295,
+              -45
+            ],
+            "to": [
+              112,
+              148,
+              0
+            ],
+            "size": [
+              8,
+              48
+            ],
+            "spin": 0.22,
+            "color": [
+              35,
+              35,
+              42
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 14,
+            "end": 18,
+            "from": [
+              -75,
+              343,
+              -45
+            ],
+            "to": [
+              135,
+              100,
+              0
+            ],
+            "size": [
+              36,
+              23
+            ],
+            "spin": 0.22,
+            "color": [
+              255,
+              205,
+              60
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 18,
+            "end": 22,
+            "from": [
+              112,
+              148,
+              0
+            ],
+            "to": [
+              145,
+              83,
+              0
+            ],
+            "size": [
+              8,
+              48
+            ],
+            "spin": 0.025,
+            "color": [
+              35,
+              35,
+              42
+            ]
+          },
+          {
+            "hit": 0,
+            "start": 18,
+            "end": 22,
+            "from": [
+              0,
+              0,
+              0
+            ],
+            "to": [
+              0,
+              0,
+              0
+            ],
+            "size": [
+              36,
+              23
+            ],
+            "spin": 0,
+            "color": [
+              255,
+              205,
+              60
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 22,
+            "end": 30,
+            "from": [
+              145,
+              83,
+              0
+            ],
+            "to": [
+              143,
+              87,
+              0
+            ],
+            "size": [
+              8,
+              48
+            ],
+            "spin": 0,
+            "color": [
+              35,
+              35,
+              42
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 22,
+            "end": 30,
+            "from": [
+              165,
+              35,
+              0
+            ],
+            "to": [
+              163,
+              39,
+              0
+            ],
+            "size": [
+              36,
+              23
+            ],
+            "spin": 0,
+            "color": [
+              255,
+              205,
+              60
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 30,
+            "end": 44,
+            "from": [
+              143,
+              87,
+              0
+            ],
+            "to": [
+              35,
+              125,
+              -30
+            ],
+            "size": [
+              8,
+              48
+            ],
+            "spin": -0.025,
+            "color": [
+              35,
+              35,
+              42
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 30,
+            "end": 44,
+            "from": [
+              163,
+              39,
+              0
+            ],
+            "to": [
+              35,
+              77,
+              -30
+            ],
+            "size": [
+              36,
+              23
+            ],
+            "spin": -0.025,
+            "color": [
+              255,
+              205,
+              60
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 22,
+            "end": 27,
+            "from": [
+              150,
+              15,
+              -8
+            ],
+            "to": [
+              113,
+              39,
+              -30
+            ],
+            "size": [
+              7,
+              4
+            ],
+            "spin": -0.3,
+            "color": [
+              55,
+              205,
+              195
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 22,
+            "end": 27,
+            "from": [
+              180,
+              15,
+              8
+            ],
+            "to": [
+              220,
+              33,
+              32
+            ],
+            "size": [
+              6,
+              4
+            ],
+            "spin": 0.35,
+            "color": [
+              55,
+              205,
+              195
+            ]
+          }
+        ],
+        "motion": {
+          "frame": -1,
+          "velocity": [
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "slot": "neutral-air",
+        "tracks": [
+          {
+            "joint": "torso",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 9,
+                "degrees": [
+                  0,
+                  -32,
+                  8
+                ]
+              },
+              {
+                "frame": 13,
+                "degrees": [
+                  0,
+                  20,
+                  -8
+                ]
+              },
+              {
+                "frame": 18,
+                "degrees": [
+                  0,
+                  12,
+                  4
+                ]
+              },
+              {
+                "frame": 26,
+                "degrees": [
+                  0,
+                  -8,
+                  8
+                ]
+              },
+              {
+                "frame": 33,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 133,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "head",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 9,
+                "degrees": [
+                  0,
+                  22,
+                  -5
+                ]
+              },
+              {
+                "frame": 13,
+                "degrees": [
+                  0,
+                  -12,
+                  4
+                ]
+              },
+              {
+                "frame": 23,
+                "degrees": [
+                  0,
+                  5,
+                  5
+                ]
+              },
+              {
+                "frame": 33,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 133,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightUpperArm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 9,
+                "degrees": [
+                  -10,
+                  -25,
+                  -18
+                ]
+              },
+              {
+                "frame": 13,
+                "degrees": [
+                  0,
+                  15,
+                  -76
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  0,
+                  10,
+                  -62
+                ]
+              },
+              {
+                "frame": 26,
+                "degrees": [
+                  -8,
+                  -20,
+                  -20
+                ]
+              },
+              {
+                "frame": 33,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 133,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightForearm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 9,
+                "degrees": [
+                  0,
+                  0,
+                  -110
+                ]
+              },
+              {
+                "frame": 13,
+                "degrees": [
+                  0,
+                  0,
+                  -28
+                ]
+              },
+              {
+                "frame": 18,
+                "degrees": [
+                  0,
+                  0,
+                  -55
+                ]
+              },
+              {
+                "frame": 26,
+                "degrees": [
+                  0,
+                  10,
+                  -105
+                ]
+              },
+              {
+                "frame": 33,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 133,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftUpperArm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 9,
+                "degrees": [
+                  -35,
+                  -25,
+                  42
+                ]
+              },
+              {
+                "frame": 13,
+                "degrees": [
+                  -40,
+                  -35,
+                  60
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  -25,
+                  -15,
+                  35
+                ]
+              },
+              {
+                "frame": 33,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 133,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftForearm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 9,
+                "degrees": [
+                  0,
+                  -20,
+                  -25
+                ]
+              },
+              {
+                "frame": 13,
+                "degrees": [
+                  0,
+                  -25,
+                  -15
+                ]
+              },
+              {
+                "frame": 23,
+                "degrees": [
+                  0,
+                  0,
+                  -30
+                ]
+              },
+              {
+                "frame": 33,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 133,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightThigh",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 9,
+                "degrees": [
+                  0,
+                  -10,
+                  -60
+                ]
+              },
+              {
+                "frame": 13,
+                "degrees": [
+                  0,
+                  -5,
+                  -52
+                ]
+              },
+              {
+                "frame": 23,
+                "degrees": [
+                  0,
+                  0,
+                  -30
+                ]
+              },
+              {
+                "frame": 33,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 133,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftThigh",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 9,
+                "degrees": [
+                  0,
+                  10,
+                  -48
+                ]
+              },
+              {
+                "frame": 13,
+                "degrees": [
+                  0,
+                  5,
+                  -42
+                ]
+              },
+              {
+                "frame": 23,
+                "degrees": [
+                  0,
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": 33,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 133,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightShin",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 9,
+                "degrees": [
+                  0,
+                  0,
+                  100
+                ]
+              },
+              {
+                "frame": 13,
+                "degrees": [
+                  0,
+                  0,
+                  90
+                ]
+              },
+              {
+                "frame": 23,
+                "degrees": [
+                  0,
+                  0,
+                  50
+                ]
+              },
+              {
+                "frame": 33,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 133,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftShin",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 9,
+                "degrees": [
+                  0,
+                  0,
+                  90
+                ]
+              },
+              {
+                "frame": 13,
+                "degrees": [
+                  0,
+                  0,
+                  80
+                ]
+              },
+              {
+                "frame": 23,
+                "degrees": [
+                  0,
+                  0,
+                  40
+                ]
+              },
+              {
+                "frame": 33,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 133,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          }
+        ],
+        "hitboxes": [
+          {
+            "start": 10,
+            "end": 14,
+            "damage": 9,
+            "angle": 30,
+            "base": 30,
+            "growth": 90,
+            "radius": 23,
+            "offset": [
+              180,
+              190,
+              0
+            ],
+            "to": [
+              225,
+              190,
+              0
+            ]
+          }
+        ],
+        "parts": [
+          {
+            "hit": -1,
+            "start": 0,
+            "end": 10,
+            "from": [
+              100,
+              190,
+              0
+            ],
+            "to": [
+              55,
+              190,
+              0
+            ],
+            "size": [
+              45,
+              5
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              245,
+              240
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 0,
+            "end": 10,
+            "from": [
+              145,
+              190,
+              0
+            ],
+            "to": [
+              100,
+              190,
+              0
+            ],
+            "size": [
+              5,
+              20
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              245,
+              240
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 0,
+            "end": 10,
+            "from": [
+              160,
+              174,
+              0
+            ],
+            "to": [
+              115,
+              174,
+              0
+            ],
+            "size": [
+              15,
+              4
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              245,
+              240
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 0,
+            "end": 10,
+            "from": [
+              160,
+              190,
+              0
+            ],
+            "to": [
+              115,
+              190,
+              0
+            ],
+            "size": [
+              15,
+              4
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              245,
+              240
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 0,
+            "end": 10,
+            "from": [
+              160,
+              206,
+              0
+            ],
+            "to": [
+              115,
+              206,
+              0
+            ],
+            "size": [
+              15,
+              4
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              245,
+              240
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 10,
+            "end": 14,
+            "from": [
+              120,
+              190,
+              0
+            ],
+            "to": [
+              165,
+              190,
+              0
+            ],
+            "size": [
+              45,
+              5
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              245,
+              240
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 10,
+            "end": 14,
+            "from": [
+              165,
+              190,
+              0
+            ],
+            "to": [
+              210,
+              190,
+              0
+            ],
+            "size": [
+              5,
+              20
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              245,
+              240
+            ]
+          },
+          {
+            "hit": 0,
+            "start": 10,
+            "end": 14,
+            "from": [
+              0,
+              -16,
+              0
+            ],
+            "to": [
+              0,
+              -16,
+              0
+            ],
+            "size": [
+              15,
+              4
+            ],
+            "spin": 0,
+            "color": [
+              255,
+              255,
+              255
+            ]
+          },
+          {
+            "hit": 0,
+            "start": 10,
+            "end": 14,
+            "from": [
+              0,
+              0,
+              0
+            ],
+            "to": [
+              0,
+              0,
+              0
+            ],
+            "size": [
+              15,
+              4
+            ],
+            "spin": 0,
+            "color": [
+              255,
+              255,
+              255
+            ]
+          },
+          {
+            "hit": 0,
+            "start": 10,
+            "end": 14,
+            "from": [
+              0,
+              16,
+              0
+            ],
+            "to": [
+              0,
+              16,
+              0
+            ],
+            "size": [
+              15,
+              4
+            ],
+            "spin": 0,
+            "color": [
+              255,
+              255,
+              255
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 14,
+            "end": 30,
+            "from": [
+              165,
+              190,
+              0
+            ],
+            "to": [
+              40,
+              165,
+              -20
+            ],
+            "size": [
+              45,
+              5
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              245,
+              240
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 14,
+            "end": 30,
+            "from": [
+              210,
+              190,
+              0
+            ],
+            "to": [
+              85,
+              165,
+              -20
+            ],
+            "size": [
+              5,
+              20
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              245,
+              240
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 14,
+            "end": 30,
+            "from": [
+              225,
+              174,
+              0
+            ],
+            "to": [
+              100,
+              149,
+              -20
+            ],
+            "size": [
+              15,
+              4
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              245,
+              240
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 14,
+            "end": 30,
+            "from": [
+              225,
+              190,
+              0
+            ],
+            "to": [
+              100,
+              165,
+              -20
+            ],
+            "size": [
+              15,
+              4
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              245,
+              240
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 14,
+            "end": 30,
+            "from": [
+              225,
+              206,
+              0
+            ],
+            "to": [
+              100,
+              181,
+              -20
+            ],
+            "size": [
+              15,
+              4
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              245,
+              240
+            ]
+          }
+        ],
+        "motion": {
+          "frame": -1,
+          "velocity": [
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "slot": "up-air",
+        "tracks": [
+          {
+            "joint": "torso",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 6,
+                "degrees": [
+                  0,
+                  0,
+                  18
+                ]
+              },
+              {
+                "frame": 10,
+                "degrees": [
+                  0,
+                  0,
+                  -10
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  0,
+                  0,
+                  -18
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  0,
+                  0,
+                  -12
+                ]
+              },
+              {
+                "frame": 33,
+                "degrees": [
+                  0,
+                  0,
+                  15
+                ]
+              },
+              {
+                "frame": 43,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "head",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 6,
+                "degrees": [
+                  0,
+                  0,
+                  -10
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  0,
+                  0,
+                  -8
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  0,
+                  0,
+                  3
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  15
+                ]
+              },
+              {
+                "frame": 43,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightUpperArm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 6,
+                "degrees": [
+                  -12,
+                  25,
+                  -32
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  -20,
+                  -10,
+                  -64
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  -20,
+                  -25,
+                  -80
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  -15,
+                  -20,
+                  -72
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  -8,
+                  10,
+                  -25
+                ]
+              },
+              {
+                "frame": 43,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightForearm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 6,
+                "degrees": [
+                  0,
+                  15,
+                  -115
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  0,
+                  -80
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  0,
+                  -10,
+                  -58
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  0,
+                  0,
+                  -65
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  -100
+                ]
+              },
+              {
+                "frame": 43,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftUpperArm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 6,
+                "degrees": [
+                  12,
+                  -25,
+                  -32
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  20,
+                  10,
+                  -64
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  20,
+                  25,
+                  -78
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  15,
+                  20,
+                  -70
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  8,
+                  -10,
+                  -25
+                ]
+              },
+              {
+                "frame": 43,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftForearm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 6,
+                "degrees": [
+                  0,
+                  -15,
+                  -115
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  0,
+                  -80
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  0,
+                  10,
+                  -58
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  0,
+                  0,
+                  -65
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  -100
+                ]
+              },
+              {
+                "frame": 43,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightThigh",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 6,
+                "degrees": [
+                  0,
+                  -8,
+                  -78
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  0,
+                  -15
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  0,
+                  0,
+                  20
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  0,
+                  0,
+                  14
+                ]
+              },
+              {
+                "frame": 33,
+                "degrees": [
+                  0,
+                  0,
+                  -25
+                ]
+              },
+              {
+                "frame": 39,
+                "degrees": [
+                  0,
+                  0,
+                  8
+                ]
+              },
+              {
+                "frame": 43,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftThigh",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 6,
+                "degrees": [
+                  0,
+                  8,
+                  -70
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  0,
+                  -10
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  0,
+                  0,
+                  16
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  0,
+                  0,
+                  10
+                ]
+              },
+              {
+                "frame": 33,
+                "degrees": [
+                  0,
+                  0,
+                  -30
+                ]
+              },
+              {
+                "frame": 39,
+                "degrees": [
+                  0,
+                  0,
+                  6
+                ]
+              },
+              {
+                "frame": 43,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightShin",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 6,
+                "degrees": [
+                  0,
+                  0,
+                  115
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  0,
+                  45
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  0,
+                  0,
+                  10
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  0,
+                  0,
+                  15
+                ]
+              },
+              {
+                "frame": 33,
+                "degrees": [
+                  0,
+                  0,
+                  60
+                ]
+              },
+              {
+                "frame": 39,
+                "degrees": [
+                  0,
+                  0,
+                  20
+                ]
+              },
+              {
+                "frame": 43,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftShin",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 6,
+                "degrees": [
+                  0,
+                  0,
+                  105
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  0,
+                  40
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  0,
+                  0,
+                  8
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  0,
+                  0,
+                  12
+                ]
+              },
+              {
+                "frame": 33,
+                "degrees": [
+                  0,
+                  0,
+                  65
+                ]
+              },
+              {
+                "frame": 39,
+                "degrees": [
+                  0,
+                  0,
+                  25
+                ]
+              },
+              {
+                "frame": 43,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          }
+        ],
+        "hitboxes": [
+          {
+            "start": 17,
+            "end": 21,
+            "damage": 8,
+            "angle": 85,
+            "base": 42,
+            "growth": 85,
+            "radius": 191,
+            "offset": [
+              135,
+              240,
+              0
+            ],
+            "to": [
+              145,
+              248,
+              0
+            ]
+          }
+        ],
+        "parts": [
+          {
+            "hit": -1,
+            "start": 0,
+            "end": 17,
+            "from": [
+              60,
+              192,
+              0
+            ],
+            "to": [
+              40,
+              206,
+              0
+            ],
+            "size": [
+              15,
+              30
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              112,
+              105
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 0,
+            "end": 17,
+            "from": [
+              95,
+              192,
+              0
+            ],
+            "to": [
+              120,
+              206,
+              0
+            ],
+            "size": [
+              15,
+              30
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              112,
+              105
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 0,
+            "end": 17,
+            "from": [
+              78,
+              192,
+              0
+            ],
+            "to": [
+              80,
+              206,
+              0
+            ],
+            "size": [
+              25,
+              26
+            ],
+            "spin": 0,
+            "color": [
+              35,
+              35,
+              42
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 0,
+            "end": 17,
+            "from": [
+              101,
+              192,
+              4
+            ],
+            "to": [
+              126,
+              206,
+              4
+            ],
+            "size": [
+              5,
+              24
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              245,
+              240
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 17,
+            "end": 21,
+            "from": [
+              40,
+              206,
+              0
+            ],
+            "to": [
+              30,
+              214,
+              0
+            ],
+            "size": [
+              15,
+              30
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              112,
+              105
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 17,
+            "end": 21,
+            "from": [
+              120,
+              206,
+              0
+            ],
+            "to": [
+              130,
+              214,
+              0
+            ],
+            "size": [
+              15,
+              30
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              112,
+              105
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 17,
+            "end": 21,
+            "from": [
+              80,
+              206,
+              0
+            ],
+            "to": [
+              80,
+              214,
+              0
+            ],
+            "size": [
+              35,
+              26
+            ],
+            "spin": 0,
+            "color": [
+              35,
+              35,
+              42
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 17,
+            "end": 21,
+            "from": [
+              126,
+              206,
+              4
+            ],
+            "to": [
+              136,
+              214,
+              4
+            ],
+            "size": [
+              5,
+              24
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              245,
+              240
+            ]
+          },
+          {
+            "hit": 0,
+            "start": 17,
+            "end": 21,
+            "from": [
+              -8,
+              -2,
+              2
+            ],
+            "to": [
+              -8,
+              -2,
+              2
+            ],
+            "size": [
+              12,
+              3
+            ],
+            "spin": 0,
+            "color": [
+              255,
+              205,
+              60
+            ]
+          },
+          {
+            "hit": 0,
+            "start": 17,
+            "end": 21,
+            "from": [
+              1,
+              -11,
+              2
+            ],
+            "to": [
+              1,
+              -11,
+              2
+            ],
+            "size": [
+              3,
+              12
+            ],
+            "spin": 0,
+            "color": [
+              255,
+              205,
+              60
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 21,
+            "end": 39,
+            "from": [
+              30,
+              214,
+              0
+            ],
+            "to": [
+              58,
+              170,
+              0
+            ],
+            "size": [
+              15,
+              30
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              112,
+              105
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 21,
+            "end": 39,
+            "from": [
+              130,
+              214,
+              0
+            ],
+            "to": [
+              99,
+              170,
+              0
+            ],
+            "size": [
+              15,
+              30
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              112,
+              105
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 21,
+            "end": 39,
+            "from": [
+              80,
+              214,
+              0
+            ],
+            "to": [
+              78,
+              170,
+              0
+            ],
+            "size": [
+              12,
+              26
+            ],
+            "spin": 0,
+            "color": [
+              35,
+              35,
+              42
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 21,
+            "end": 39,
+            "from": [
+              136,
+              214,
+              4
+            ],
+            "to": [
+              105,
+              170,
+              4
+            ],
+            "size": [
+              5,
+              24
+            ],
+            "spin": 0,
+            "color": [
+              245,
+              245,
+              240
+            ]
+          }
+        ],
+        "motion": {
+          "frame": 7,
+          "velocity": [
+            3.5,
+            74
+          ]
+        }
+      },
+      {
+        "slot": "down-air",
+        "tracks": [
+          {
+            "joint": "torso",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 10,
+                "degrees": [
+                  0,
+                  -15,
+                  14
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  -8,
+                  28
+                ]
+              },
+              {
+                "frame": 20,
+                "degrees": [
+                  0,
+                  5,
+                  40
+                ]
+              },
+              {
+                "frame": 28,
+                "degrees": [
+                  0,
+                  5,
+                  44
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  0,
+                  0,
+                  22
+                ]
+              },
+              {
+                "frame": 46,
+                "degrees": [
+                  0,
+                  0,
+                  8
+                ]
+              },
+              {
+                "frame": 52,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "head",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 10,
+                "degrees": [
+                  0,
+                  12,
+                  -8
+                ]
+              },
+              {
+                "frame": 20,
+                "degrees": [
+                  0,
+                  0,
+                  -18
+                ]
+              },
+              {
+                "frame": 28,
+                "degrees": [
+                  0,
+                  0,
+                  -15
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  0,
+                  0,
+                  8
+                ]
+              },
+              {
+                "frame": 52,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightUpperArm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 10,
+                "degrees": [
+                  -25,
+                  -20,
+                  -140
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  -12,
+                  -10,
+                  -85
+                ]
+              },
+              {
+                "frame": 20,
+                "degrees": [
+                  0,
+                  8,
+                  -18
+                ]
+              },
+              {
+                "frame": 28,
+                "degrees": [
+                  0,
+                  8,
+                  -12
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  0,
+                  0,
+                  -35
+                ]
+              },
+              {
+                "frame": 46,
+                "degrees": [
+                  0,
+                  0,
+                  12
+                ]
+              },
+              {
+                "frame": 52,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightForearm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 10,
+                "degrees": [
+                  0,
+                  12,
+                  -100
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  5,
+                  -55
+                ]
+              },
+              {
+                "frame": 20,
+                "degrees": [
+                  0,
+                  0,
+                  -8
+                ]
+              },
+              {
+                "frame": 28,
+                "degrees": [
+                  0,
+                  0,
+                  -5
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  0,
+                  0,
+                  -75
+                ]
+              },
+              {
+                "frame": 46,
+                "degrees": [
+                  0,
+                  0,
+                  -35
+                ]
+              },
+              {
+                "frame": 52,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftUpperArm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 10,
+                "degrees": [
+                  25,
+                  20,
+                  -130
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  12,
+                  10,
+                  -80
+                ]
+              },
+              {
+                "frame": 20,
+                "degrees": [
+                  5,
+                  -8,
+                  -22
+                ]
+              },
+              {
+                "frame": 28,
+                "degrees": [
+                  5,
+                  -8,
+                  -16
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  0,
+                  0,
+                  -30
+                ]
+              },
+              {
+                "frame": 46,
+                "degrees": [
+                  0,
+                  0,
+                  -15
+                ]
+              },
+              {
+                "frame": 52,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftForearm",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 10,
+                "degrees": [
+                  0,
+                  -12,
+                  -110
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  -5,
+                  -65
+                ]
+              },
+              {
+                "frame": 20,
+                "degrees": [
+                  0,
+                  0,
+                  -15
+                ]
+              },
+              {
+                "frame": 28,
+                "degrees": [
+                  0,
+                  0,
+                  -12
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  0,
+                  0,
+                  -80
+                ]
+              },
+              {
+                "frame": 46,
+                "degrees": [
+                  0,
+                  0,
+                  -25
+                ]
+              },
+              {
+                "frame": 52,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightThigh",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 10,
+                "degrees": [
+                  0,
+                  -10,
+                  -75
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  -8,
+                  -60
+                ]
+              },
+              {
+                "frame": 20,
+                "degrees": [
+                  0,
+                  -5,
+                  -20
+                ]
+              },
+              {
+                "frame": 28,
+                "degrees": [
+                  0,
+                  -5,
+                  -15
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  0,
+                  0,
+                  -38
+                ]
+              },
+              {
+                "frame": 46,
+                "degrees": [
+                  0,
+                  0,
+                  12
+                ]
+              },
+              {
+                "frame": 52,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftThigh",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 10,
+                "degrees": [
+                  0,
+                  10,
+                  -65
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  8,
+                  -55
+                ]
+              },
+              {
+                "frame": 20,
+                "degrees": [
+                  0,
+                  5,
+                  -12
+                ]
+              },
+              {
+                "frame": 28,
+                "degrees": [
+                  0,
+                  5,
+                  -8
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  0,
+                  0,
+                  -30
+                ]
+              },
+              {
+                "frame": 46,
+                "degrees": [
+                  0,
+                  0,
+                  8
+                ]
+              },
+              {
+                "frame": 52,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightShin",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 10,
+                "degrees": [
+                  0,
+                  0,
+                  115
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  0,
+                  95
+                ]
+              },
+              {
+                "frame": 20,
+                "degrees": [
+                  0,
+                  0,
+                  35
+                ]
+              },
+              {
+                "frame": 28,
+                "degrees": [
+                  0,
+                  0,
+                  25
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  0,
+                  0,
+                  55
+                ]
+              },
+              {
+                "frame": 46,
+                "degrees": [
+                  0,
+                  0,
+                  15
+                ]
+              },
+              {
+                "frame": 52,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftShin",
+            "keys": [
+              {
+                "frame": 0,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 10,
+                "degrees": [
+                  0,
+                  0,
+                  105
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  0,
+                  85
+                ]
+              },
+              {
+                "frame": 20,
+                "degrees": [
+                  0,
+                  0,
+                  25
+                ]
+              },
+              {
+                "frame": 28,
+                "degrees": [
+                  0,
+                  0,
+                  20
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  0,
+                  0,
+                  45
+                ]
+              },
+              {
+                "frame": 46,
+                "degrees": [
+                  0,
+                  0,
+                  10
+                ]
+              },
+              {
+                "frame": 52,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          }
+        ],
+        "hitboxes": [
+          {
+            "start": 16,
+            "end": 28,
+            "damage": 13,
+            "angle": 270,
+            "base": 35,
+            "growth": 95,
+            "radius": 31,
+            "offset": [
+              85,
+              25,
+              0
+            ],
+            "to": [
+              105,
+              -55,
+              0
+            ]
+          }
+        ],
+        "parts": [
+          {
+            "hit": -1,
+            "start": 0,
+            "end": 10,
+            "from": [
+              -30,
+              170,
+              -45
+            ],
+            "to": [
+              -55,
+              277,
+              -45
+            ],
+            "size": [
+              8,
+              50
+            ],
+            "spin": -0.035,
+            "color": [
+              35,
+              35,
+              42
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 0,
+            "end": 10,
+            "from": [
+              -30,
+              220,
+              -45
+            ],
+            "to": [
+              -65,
+              327,
+              -45
+            ],
+            "size": [
+              34,
+              22
+            ],
+            "spin": -0.035,
+            "color": [
+              255,
+              205,
+              60
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 10,
+            "end": 16,
+            "from": [
+              -55,
+              277,
+              -45
+            ],
+            "to": [
+              75,
+              75,
+              0
+            ],
+            "size": [
+              8,
+              50
+            ],
+            "spin": 0.18,
+            "color": [
+              35,
+              35,
+              42
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 10,
+            "end": 16,
+            "from": [
+              -65,
+              327,
+              -45
+            ],
+            "to": [
+              85,
+              25,
+              0
+            ],
+            "size": [
+              34,
+              22
+            ],
+            "spin": 0.18,
+            "color": [
+              255,
+              205,
+              60
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 16,
+            "end": 28,
+            "from": [
+              75,
+              75,
+              0
+            ],
+            "to": [
+              95,
+              -5,
+              0
+            ],
+            "size": [
+              8,
+              50
+            ],
+            "spin": 0,
+            "color": [
+              35,
+              35,
+              42
+            ]
+          },
+          {
+            "hit": 0,
+            "start": 16,
+            "end": 28,
+            "from": [
+              0,
+              0,
+              0
+            ],
+            "to": [
+              0,
+              0,
+              0
+            ],
+            "size": [
+              34,
+              22
+            ],
+            "spin": 0,
+            "color": [
+              232,
+              179,
+              45
+            ]
+          },
+          {
+            "hit": 0,
+            "start": 16,
+            "end": 28,
+            "from": [
+              0,
+              -22,
+              2
+            ],
+            "to": [
+              0,
+              -22,
+              2
+            ],
+            "size": [
+              34,
+              3
+            ],
+            "spin": 0,
+            "color": [
+              255,
+              220,
+              80
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 28,
+            "end": 46,
+            "from": [
+              95,
+              -5,
+              0
+            ],
+            "to": [
+              30,
+              140,
+              -30
+            ],
+            "size": [
+              8,
+              50
+            ],
+            "spin": -0.02,
+            "color": [
+              35,
+              35,
+              42
+            ]
+          },
+          {
+            "hit": -1,
+            "start": 28,
+            "end": 46,
+            "from": [
+              105,
+              -55,
+              0
+            ],
+            "to": [
+              30,
+              90,
+              -30
+            ],
+            "size": [
+              34,
+              22
+            ],
+            "spin": -0.02,
+            "color": [
+              255,
+              205,
+              60
+            ]
+          }
+        ],
+        "motion": {
+          "frame": 16,
+          "velocity": [
+            3,
+            -48
+          ]
+        }
+      }
+    ]
+  },
+  "provenance": {
+    "model": "gpt-6-astra",
+    "responseId": "resp_072d3b4d16c7f717016aa102c8192887d1b6f30f7292674be9",
+    "usage": {
+      "input_tokens": 2963,
+      "input_tokens_details": {
+        "cache_write_tokens": 2960,
+        "cached_tokens": 0
+      },
+      "output_tokens": 10775,
+      "output_tokens_details": {
+        "reasoning_tokens": 1033
+      },
+      "total_tokens": 13738
+    }
+  }
+}

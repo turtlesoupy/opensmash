@@ -1,0 +1,580 @@
+{
+  "model": "gpt-6-astra",
+  "format": "reduced",
+  "input": {
+    "character": {
+      "id": "prototype-weird-al",
+      "name": "Weird Al Yankovic",
+      "description": "Curly-haired musical parodist in a Hawaiian shirt, known for accordion polkas, Eat It and Amish Paradise. Cheerful theatrical energy.",
+      "bundleHash": "c425f4d11bddc812e011e906862816ca5b23e8217e535448129463035543415b"
+    },
+    "profile": {
+      "target": "mario",
+      "fkind": 0,
+      "joints": {
+        "torso": 6,
+        "head": 12,
+        "rightUpperArm": 8,
+        "rightForearm": 9,
+        "rightHand": 10,
+        "leftUpperArm": 14,
+        "leftForearm": 15,
+        "leftHand": 16,
+        "rightThigh": 19,
+        "rightShin": 20,
+        "leftThigh": 24,
+        "leftShin": 25
+      },
+      "hash": "c8a76e7fad0da98a862540bb360f6e27d77a75bd2a72f7fdb49c8651006848b1",
+      "units": "engine-world-units",
+      "forward": "x",
+      "up": "y",
+      "depth": "z"
+    },
+    "brief": {
+      "identity": "Weird Al Yankovic fights with theatrical prop comedy: “Eat It” supplies a fork thrust, “Polka Power!” supplies an accordion-powered rise, and “Amish Paradise” supplies a barn-building mallet slam. Preserve his curly-haired silhouette and Hawaiian shirt; props appear only for their move and never obscure his face. All attacks use body pose tracks, timed native hitboxes, root launch where specified, and small bounded rectangular prop assemblies. Forward is +x; up is +y. Palette entries are packed RGB integers: charcoal, white, coral, turquoise, and golden yellow. Startup and duration are measured in frames; duration includes anticipation, action, and recovery. Damage is per successful use, with at most one hit per opponent. Only the named active prop portion is dangerous, precisely duringIts",
+      "palette": [
+        223,
+        167,
+        167
+      ],
+      "moves": [
+        {
+          "slot": "neutral-ground",
+          "name": "Eat It — Dinner Jab",
+          "signature": "Reference: “Eat It.” Al presents an oversized dinner fork, then delivers one emphatic forward thrust: a grounded midrange poke rather than a projectile.",
+          "anticipation": "Frames 1–12: plant the rear foot, turn the torso, and draw the fork beside the rear hip. The free hand theatrically invites the opponent closer. The fork consists of one shaft, one crosspiece, and three short rectangular tines.",
+          "action": "Frames 13–16: straighten the front arm and lunge from the hips without launching the root. The white fork tip reaches roughly one torso length beyond his hand. A single native hitbox follows the tine cluster through the thrust; neither the shaft nor his inviting hand deals damage.",
+          "recovery": "Frames 17–34: bend the elbow, pull the now-inactive fork back, and rock onto the rear heel. The fork disappears only after being tucked beside the hip. No lingering attack trail remains.",
+          "groundAirDifference": "The grounded version uses planted feet for longer reach and a stronger-looking full-body extension. Its aerial counterpart keeps the same forward direction but shortens the extension and folds the legs.",
+          "counterplay": "The hip-level windup announces the horizontal lane. Jump above it, approach from behind, or punish the long pullback after a miss. It does not cover overhead.",
+          "damage": 11,
+          "startup": 12,
+          "duration": 134
+        },
+        {
+          "slot": "up-ground",
+          "name": "Polka Power! — Bellows Lift",
+          "signature": "Reference: “Polka Power!” Al squeezes an accordion against his chest, then springs upward as its bellows open. This is a rising recovery with a narrow attacking front edge.",
+          "anticipation": "Frames 1–9: squat deeply with elbows tucked and the accordion compressed below the chin. Build it from two coral end blocks, a charcoal bellows block, and one white keyboard strip; keep the head unobstructed.",
+          "action": "Frames 10–23: launch the root upward, traveling approximately 1.8 standing body heights with a small forward component of 0.35 body heights. Extend the knees and lift the accordion to upper-chest height. One hitbox follows its upper-front corner during this initial ascent. A thin golden rim marks that exact corner only while active.",
+          "recovery": "Frames 24–42: remove the hitbox and golden rim together. Tuck the knees, fold the bellows, and lower the elbows while the rising motion gives way to descent. No second launch or additional damaging pulse occurs.",
+          "groundAirDifference": "The ground version begins with a visible squat and leg-driven takeoff. The aerial version starts from tucked legs, opens faster, and provides a slightly taller but less forward launch.",
+          "counterplay": "Attack during the squat, approach from behind, or intercept after the golden rim disappears. The narrow front-corner hitbox does not surround Al or protect his descent.",
+          "damage": 9,
+          "startup": 9,
+          "duration": 42
+        },
+        {
+          "slot": "down-ground",
+          "name": "Amish Paradise — Barn-Raising Slam",
+          "signature": "Reference: the barn-raising imagery in “Amish Paradise.” Al swings a block-headed carpenter’s mallet into the floor directly ahead, creating a close-range commitment tool without a shockwave.",
+          "anticipation": "Frames 1–18: spread the feet, lean back, and raise a two-part mallet diagonally above the rear shoulder. Its charcoal handle and golden rectangular head stay clear of his face.",
+          "action": "Frames 19–22: bend the knees and drive both arms down. One native hitbox follows the mallet head through the final low-forward portion of its arc, ending immediately in front of his toes. It does not become a floor-wide hitbox. Two small turquoise impact chips move outward away from the contact point and fade; they never deal damage.",
+          "recovery": "Frames 23–48: remain hunched over the inactive mallet, then visibly pull it free and return upright. The chips vanish by frame 27, and the mallet disappears after being lowered beside the leg.",
+          "groundAirDifference": "The ground version stays rooted and threatens only the nearby floor in front. The aerial version points the same mallet downward and adds a committed descending root launch rather than producing a remote ground impact.",
+          "counterplay": "The high mallet pose gives ample warning. Retreat beyond its short reach, move behind Al, or punish his hunched recovery. There is no overhead hit during the windup and no lingering floor hazard.",
+          "damage": 15,
+          "startup": 18,
+          "duration": 48
+        },
+        {
+          "slot": "neutral-air",
+          "name": "Eat It — Airborne Dinner Jab",
+          "signature": "Reference: “Eat It.” The same oversized dinner fork becomes a compact forward air poke, retaining the dinner-gag identity without becoming a thrown utensil.",
+          "anticipation": "Frames 1–10: tuck both knees and twist the shoulders away from the facing direction. Hold the fork beside the ribs and spread the free hand backward for balance.",
+          "action": "Frames 11–14: untwist the torso and snap the fork horizontally forward. A single hitbox follows the tine cluster, with approximately three-quarters of the grounded extension. The fork remains attached to the hand; the move adds no root launch or hover.",
+          "recovery": "Frames 15–33: retract the inactive fork across the torso, loosen the tucked legs, and settle back into the falling pose. No damaging or decorative trail continues beyond the jab.",
+          "groundAirDifference": "Compared with the grounded jab, this version starts sooner and reaches less far. Folded legs and a counterbalancing free arm make it intentionally airborne; it does not reproduce the planted lunge.",
+          "counterplay": "Pass above or below its thin horizontal lane, approach from the rear, or punish the retraction. Existing aerial movement continues, so the jab cannot stall a fall.",
+          "damage": 9,
+          "startup": 10,
+          "duration": 133
+        },
+        {
+          "slot": "up-air",
+          "name": "Polka Power! — Airborne Bellows Lift",
+          "signature": "Reference: “Polka Power!” An urgent accordion squeeze becomes a clean upward recovery burst, with the instrument visibly leading the attack.",
+          "anticipation": "Frames 1–7: pull the knees toward the torso and sharply compress the accordion at the chest. Point both elbows downward to establish the upcoming upward action without stopping the current fall.",
+          "action": "Frames 8–21: launch the root upward for approximately two standing body heights and 0.2 body heights forward. Open the bellows, extend the torso, and let the legs trail underneath. One hitbox follows the accordion’s upper-front corner; its golden rim exists only for these active frames.",
+          "recovery": "Frames 22–43: switch off the hitbox and rim, close the instrument, and draw the elbows inward. The legs swing beneath the torso as Al transitions toward falling. The move supplies one launch, not sustained flight.",
+          "groundAirDifference": "This version replaces the ground squat with a tucked midair squeeze, starts two frames sooner, and prioritizes vertical distance over forward travel. Both versions have the same exposed rear and inactive descent.",
+          "counterplay": "Predict the nearly vertical route and intercept from the side or rear. Wait out the initial active ascent to challenge the unprotected recovery; no detached notes or secondary attacks cover him.",
+          "damage": 8,
+          "startup": 17,
+          "duration": 43
+        },
+        {
+          "slot": "down-air",
+          "name": "Amish Paradise — Descending Barn Slam",
+          "signature": "Reference: the barn-raising imagery in “Amish Paradise.” Al commits his whole body behind the carpenter’s mallet for a short downward attack, not a falling projectile.",
+          "anticipation": "Frames 1–16: draw the knees upward, raise the mallet beside the shoulder, and tip the torso forward. Existing falling motion continues; the preparation grants no hover.",
+          "action": "Frames 17–28: apply one downward root launch and extend both arms so the mallet head leads below and slightly ahead of his feet. One native hitbox tracks only that head during the timed descent. A thin golden edge brightens on the active lower face. Landing creates no additional hitbox, shockwave, or renewed active window.",
+          "recovery": "Frames 29–52: extinguish the active edge and remove the hitbox together. Pull the mallet toward the hip and unfold the legs. If grounded, finish in a deep-kneed brace; if still airborne, recover into a stretched falling pose. The mallet remains visibly inert until it is tucked away.",
+          "groundAirDifference": "The ground version swings into a short forward floor pocket while staying rooted. This version uses a downward launch and a head-leading pose, threatening directly below without extending the hit to distant terrain.",
+          "counterplay": "Move sideways out of the narrow descending lane, then punish the committed fall or braced recovery. It offers no bounce, upward rescue, or protection above Al, making an offstage miss especially costly.",
+          "damage": 13,
+          "startup": 16,
+          "duration": 52
+        }
+      ]
+    },
+    "briefHash": "4904a82726a9aeca54661b60a746480c1d04614556b3062e820a67585ae55429"
+  },
+  "instructions": "Implement the frozen description in this reduced authoring format, with explicit custom joint keyframes. Produce three moves (neutral/up/down); the compiler expands ground and air. Do not read or imitate another implementation.\nCoordinates: x forward, y up, z depth; fighter height ~350. Pose degrees are local deltas, quaternion-interpolated. Write only interior keys: frame 0 and duration zero-pose endpoints are inserted. All authored frames use the ground description timeline. Air timing automatically remaps ground startup to air startup and ground duration to air duration, piecewise linearly. Air.tracks replaces only listed joint tracks, in that same ground time domain; empty inherits. Use these overrides for deliberate tucked-leg/air poses.\nHits start at ground startup+delay; first delay=0. Nonoverlapping windows, ending >=8 frames before BOTH descriptions' duration after remapping. Damage is divided by positive integer weight with a minimum of 1 per hit; compiler preserves each description's total. Native knockback defaults base32/growth85. Hit from/to are root-relative. air.hitShift offsets both endpoints (use [0,0,0] if unchanged).\nDefine reusable colors and rectangular prop pieces once. Each visual instances a prop: hit>=0 inherits exact hit timing and trajectory; window=[]; from/to are offsets from that trajectory. Decorative hit=-1 uses window=[start,end] and root-relative from/to. Each piece adds its at offset. All visuals have spin0. Props may be instanced for windup, impact and recovery. Every hit needs a bound visible prop.\nEmitters are decorative fans: count copies spread symmetrically on x, moving from origin toward origin+travel+[fanOffset,abs(fanOffset)/2,0], alternating small spins, fading out. Their window is [start,end]. Use for musical/paper/dust fragments, never target-seeking. Total expanded prop pieces plus emitter count MUST be <=16 per context. Prefer a few meaningful pieces, not many rectangles.\nvelocity=[] means native default: up=[0,70] at startup; other specials no launch. [forward,up] overrides at startup; air.velocity=[] inherits. Up velocity y>=30. No code, judges, scores, homing, projectiles, healing, or aesthetic revision loop. Preserve identity, timing, damage and all six descriptions. Each move must visibly anticipate, act and recover. Ground and air share design, not necessarily stance.",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "colors": {
+        "type": "array",
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 255
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "minItems": 1,
+        "maxItems": 8
+      },
+      "props": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 32
+            },
+            "pieces": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "at": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": -1600,
+                      "maximum": 1600
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                  },
+                  "size": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": 1,
+                      "maximum": 250
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                  },
+                  "color": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 7
+                  }
+                },
+                "required": [
+                  "at",
+                  "size",
+                  "color"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 12
+            }
+          },
+          "required": [
+            "id",
+            "pieces"
+          ],
+          "additionalProperties": false
+        },
+        "minItems": 1,
+        "maxItems": 8
+      },
+      "moves": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "type": "string",
+              "enum": [
+                "neutral",
+                "up",
+                "down"
+              ]
+            },
+            "tracks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "joint": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 32
+                  },
+                  "keys": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "frame": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 149
+                        },
+                        "degrees": {
+                          "type": "array",
+                          "items": {
+                            "type": "number",
+                            "minimum": -150,
+                            "maximum": 150
+                          },
+                          "minItems": 3,
+                          "maxItems": 3
+                        }
+                      },
+                      "required": [
+                        "frame",
+                        "degrees"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "minItems": 1,
+                    "maxItems": 14
+                  }
+                },
+                "required": [
+                  "joint",
+                  "keys"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 2,
+              "maxItems": 12
+            },
+            "hits": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "delay": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "length": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 40
+                  },
+                  "weight": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 32
+                  },
+                  "angle": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 361
+                  },
+                  "radius": {
+                    "type": "number",
+                    "minimum": 20,
+                    "maximum": 250
+                  },
+                  "from": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": -1600,
+                      "maximum": 1600
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                  },
+                  "to": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": -1600,
+                      "maximum": 1600
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                  }
+                },
+                "required": [
+                  "delay",
+                  "length",
+                  "weight",
+                  "angle",
+                  "radius",
+                  "from",
+                  "to"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 8
+            },
+            "visuals": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "prop": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 32
+                  },
+                  "hit": {
+                    "type": "integer",
+                    "minimum": -1,
+                    "maximum": 7
+                  },
+                  "window": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 150
+                    },
+                    "minItems": 0,
+                    "maxItems": 2
+                  },
+                  "from": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": -1600,
+                      "maximum": 1600
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                  },
+                  "to": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": -1600,
+                      "maximum": 1600
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                  }
+                },
+                "required": [
+                  "prop",
+                  "hit",
+                  "window",
+                  "from",
+                  "to"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 16
+            },
+            "emitters": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "color": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 7
+                  },
+                  "count": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 8
+                  },
+                  "window": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 150
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                  },
+                  "origin": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": -1600,
+                      "maximum": 1600
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                  },
+                  "spread": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 200
+                  },
+                  "travel": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": -1600,
+                      "maximum": 1600
+                    },
+                    "minItems": 3,
+                    "maxItems": 3
+                  },
+                  "size": {
+                    "type": "array",
+                    "items": {
+                      "type": "number",
+                      "minimum": 1,
+                      "maximum": 250
+                    },
+                    "minItems": 2,
+                    "maxItems": 2
+                  }
+                },
+                "required": [
+                  "color",
+                  "count",
+                  "window",
+                  "origin",
+                  "spread",
+                  "travel",
+                  "size"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 0,
+              "maxItems": 4
+            },
+            "velocity": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "minimum": -60,
+                "maximum": 100
+              },
+              "minItems": 0,
+              "maxItems": 2
+            },
+            "air": {
+              "type": "object",
+              "properties": {
+                "tracks": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "joint": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 32
+                      },
+                      "keys": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "frame": {
+                              "type": "integer",
+                              "minimum": 1,
+                              "maximum": 149
+                            },
+                            "degrees": {
+                              "type": "array",
+                              "items": {
+                                "type": "number",
+                                "minimum": -150,
+                                "maximum": 150
+                              },
+                              "minItems": 3,
+                              "maxItems": 3
+                            }
+                          },
+                          "required": [
+                            "frame",
+                            "degrees"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "minItems": 1,
+                        "maxItems": 14
+                      }
+                    },
+                    "required": [
+                      "joint",
+                      "keys"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "minItems": 0,
+                  "maxItems": 12
+                },
+                "hitShift": {
+                  "type": "array",
+                  "items": {
+                    "type": "number",
+                    "minimum": -1600,
+                    "maximum": 1600
+                  },
+                  "minItems": 3,
+                  "maxItems": 3
+                },
+                "velocity": {
+                  "type": "array",
+                  "items": {
+                    "type": "number",
+                    "minimum": -60,
+                    "maximum": 100
+                  },
+                  "minItems": 0,
+                  "maxItems": 2
+                }
+              },
+              "required": [
+                "tracks",
+                "hitShift",
+                "velocity"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "kind",
+            "tracks",
+            "hits",
+            "visuals",
+            "emitters",
+            "velocity",
+            "air"
+          ],
+          "additionalProperties": false
+        },
+        "minItems": 3,
+        "maxItems": 3
+      }
+    },
+    "required": [
+      "colors",
+      "props",
+      "moves"
+    ],
+    "additionalProperties": false
+  },
+  "service_tier": "default"
+}

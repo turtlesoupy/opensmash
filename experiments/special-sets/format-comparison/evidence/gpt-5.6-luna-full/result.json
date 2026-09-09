@@ -1,0 +1,29 @@
+{
+  "model": "gpt-5.6-luna",
+  "format": "full",
+  "judges": 0,
+  "attempts": 1,
+  "briefHash": "4904a82726a9aeca54661b60a746480c1d04614556b3062e820a67585ae55429",
+  "status": "failed",
+  "generationMs": 27316,
+  "provenance": {
+    "model": "gpt-5.6-luna",
+    "responseId": "resp_0fc16fb8a20d1bd8016aa103f447e087d1926d9f1e4ab4e843",
+    "usage": {
+      "input_tokens": 2963,
+      "input_tokens_details": {
+        "cache_write_tokens": 2960,
+        "cached_tokens": 0
+      },
+      "output_tokens": 4470,
+      "output_tokens_details": {
+        "reasoning_tokens": 284
+      },
+      "total_tokens": 7433
+    }
+  },
+  "serviceTier": "default",
+  "authoringBytes": 10361,
+  "error": "up-ground: up special requires launch by first hit",
+  "estimatedUsd": 0.0061046
+}

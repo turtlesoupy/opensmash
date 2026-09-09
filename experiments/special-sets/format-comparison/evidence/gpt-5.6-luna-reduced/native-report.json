@@ -1,0 +1,109 @@
+{
+  "status": "failed",
+  "judges": 0,
+  "visualQuality": "not-assessed",
+  "packageFileHash": "876e229cdd6e0163637fcab9b0d8e009065e4e226bc91ac34f8e4ab094c3767b",
+  "bundleHash": "c425f4d11bddc812e011e906862816ca5b23e8217e535448129463035543415b",
+  "binaryHash": "0dc3d1ee270eac6b428581bb4a5f84032647a25240bed5cb45cc7647a59fb613",
+  "contexts": [
+    {
+      "slot": 0,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 11
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/private/tmp/special-format-comparison-v1/gpt-5.6-luna-reduced/validation/slot-0.mp4",
+      "passed": true
+    },
+    {
+      "slot": 1,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 9
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/private/tmp/special-format-comparison-v1/gpt-5.6-luna-reduced/validation/slot-1.mp4",
+      "passed": true
+    },
+    {
+      "slot": 2,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 15
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/private/tmp/special-format-comparison-v1/gpt-5.6-luna-reduced/validation/slot-2.mp4",
+      "passed": true
+    },
+    {
+      "slot": 3,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 9
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/private/tmp/special-format-comparison-v1/gpt-5.6-luna-reduced/validation/slot-3.mp4",
+      "passed": true
+    },
+    {
+      "slot": 4,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 8
+        }
+      ]
+    }
+  ],
+  "error": "4: insufficient recovery rise"
+}

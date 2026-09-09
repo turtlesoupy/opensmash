@@ -1,0 +1,2937 @@
+{
+  "value": {
+    "colors": [
+      [
+        236,
+        236,
+        236
+      ]
+    ],
+    "props": [
+      {
+        "id": "dinnerFork",
+        "pieces": [
+          {
+            "at": [
+              -85,
+              0,
+              0
+            ],
+            "size": [
+              130,
+              9
+            ],
+            "color": 1
+          }
+        ]
+      }
+    ],
+    "moves": [
+      {
+        "kind": "neutral",
+        "tracks": [
+          {
+            "joint": "torso",
+            "keys": [
+              {
+                "frame": 6,
+                "degrees": [
+                  0,
+                  -18,
+                  10
+                ]
+              },
+              {
+                "frame": 11,
+                "degrees": [
+                  0,
+                  -28,
+                  14
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  12,
+                  -18
+                ]
+              },
+              {
+                "frame": 23,
+                "degrees": [
+                  0,
+                  -8,
+                  8
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "head",
+            "keys": [
+              {
+                "frame": 11,
+                "degrees": [
+                  0,
+                  18,
+                  -8
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  -8,
+                  10
+                ]
+              },
+              {
+                "frame": 25,
+                "degrees": [
+                  0,
+                  5,
+                  -4
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightUpperArm",
+            "keys": [
+              {
+                "frame": 6,
+                "degrees": [
+                  0,
+                  -12,
+                  35
+                ]
+              },
+              {
+                "frame": 11,
+                "degrees": [
+                  0,
+                  -20,
+                  18
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  0,
+                  100
+                ]
+              },
+              {
+                "frame": 22,
+                "degrees": [
+                  0,
+                  -8,
+                  50
+                ]
+              },
+              {
+                "frame": 32,
+                "degrees": [
+                  0,
+                  0,
+                  10
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightForearm",
+            "keys": [
+              {
+                "frame": 6,
+                "degrees": [
+                  0,
+                  0,
+                  65
+                ]
+              },
+              {
+                "frame": 11,
+                "degrees": [
+                  0,
+                  0,
+                  82
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  0,
+                  5
+                ]
+              },
+              {
+                "frame": 22,
+                "degrees": [
+                  0,
+                  0,
+                  85
+                ]
+              },
+              {
+                "frame": 32,
+                "degrees": [
+                  0,
+                  0,
+                  25
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightHand",
+            "keys": [
+              {
+                "frame": 11,
+                "degrees": [
+                  0,
+                  0,
+                  -12
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  0,
+                  -5
+                ]
+              },
+              {
+                "frame": 25,
+                "degrees": [
+                  0,
+                  0,
+                  10
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftUpperArm",
+            "keys": [
+              {
+                "frame": 6,
+                "degrees": [
+                  -15,
+                  0,
+                  60
+                ]
+              },
+              {
+                "frame": 11,
+                "degrees": [
+                  -20,
+                  0,
+                  75
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  -25,
+                  0,
+                  -25
+                ]
+              },
+              {
+                "frame": 25,
+                "degrees": [
+                  -10,
+                  0,
+                  25
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftForearm",
+            "keys": [
+              {
+                "frame": 6,
+                "degrees": [
+                  0,
+                  25,
+                  45
+                ]
+              },
+              {
+                "frame": 11,
+                "degrees": [
+                  0,
+                  40,
+                  60
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  10,
+                  25
+                ]
+              },
+              {
+                "frame": 25,
+                "degrees": [
+                  0,
+                  0,
+                  35
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightThigh",
+            "keys": [
+              {
+                "frame": 11,
+                "degrees": [
+                  0,
+                  0,
+                  22
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  0,
+                  38
+                ]
+              },
+              {
+                "frame": 24,
+                "degrees": [
+                  0,
+                  0,
+                  12
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightShin",
+            "keys": [
+              {
+                "frame": 11,
+                "degrees": [
+                  0,
+                  0,
+                  -28
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  0,
+                  -36
+                ]
+              },
+              {
+                "frame": 24,
+                "degrees": [
+                  0,
+                  0,
+                  -15
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftThigh",
+            "keys": [
+              {
+                "frame": 11,
+                "degrees": [
+                  0,
+                  0,
+                  -22
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  0,
+                  -32
+                ]
+              },
+              {
+                "frame": 24,
+                "degrees": [
+                  0,
+                  0,
+                  -10
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftShin",
+            "keys": [
+              {
+                "frame": 11,
+                "degrees": [
+                  0,
+                  0,
+                  -15
+                ]
+              },
+              {
+                "frame": 15,
+                "degrees": [
+                  0,
+                  0,
+                  -8
+                ]
+              },
+              {
+                "frame": 24,
+                "degrees": [
+                  0,
+                  0,
+                  -24
+                ]
+              },
+              {
+                "frame": 34,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          }
+        ],
+        "hits": [
+          {
+            "delay": 0,
+            "length": 4,
+            "weight": 1,
+            "angle": 361,
+            "radius": 27,
+            "from": [
+              125,
+              175,
+              0
+            ],
+            "to": [
+              330,
+              175,
+              0
+            ]
+          }
+        ],
+        "visuals": [
+          {
+            "prop": "dinnerFork",
+            "hit": -1,
+            "window": [
+              1,
+              12
+            ],
+            "from": [
+              190,
+              185,
+              0
+            ],
+            "to": [
+              125,
+              175,
+              0
+            ]
+          },
+          {
+            "prop": "dinnerFork",
+            "hit": 0,
+            "window": [],
+            "from": [
+              0,
+              0,
+              0
+            ],
+            "to": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "prop": "dinnerFork",
+            "hit": -1,
+            "window": [
+              16,
+              34
+            ],
+            "from": [
+              330,
+              175,
+              0
+            ],
+            "to": [
+              125,
+              145,
+              0
+            ]
+          }
+        ],
+        "emitters": [],
+        "velocity": [],
+        "air": {
+          "tracks": [
+            {
+              "joint": "torso",
+              "keys": [
+                {
+                  "frame": 6,
+                  "degrees": [
+                    0,
+                    -22,
+                    5
+                  ]
+                },
+                {
+                  "frame": 11,
+                  "degrees": [
+                    0,
+                    -32,
+                    8
+                  ]
+                },
+                {
+                  "frame": 15,
+                  "degrees": [
+                    0,
+                    8,
+                    -8
+                  ]
+                },
+                {
+                  "frame": 23,
+                  "degrees": [
+                    0,
+                    -10,
+                    4
+                  ]
+                },
+                {
+                  "frame": 34,
+                  "degrees": [
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "joint": "rightUpperArm",
+              "keys": [
+                {
+                  "frame": 6,
+                  "degrees": [
+                    0,
+                    -15,
+                    45
+                  ]
+                },
+                {
+                  "frame": 11,
+                  "degrees": [
+                    0,
+                    -20,
+                    35
+                  ]
+                },
+                {
+                  "frame": 15,
+                  "degrees": [
+                    0,
+                    0,
+                    80
+                  ]
+                },
+                {
+                  "frame": 23,
+                  "degrees": [
+                    0,
+                    -8,
+                    48
+                  ]
+                },
+                {
+                  "frame": 34,
+                  "degrees": [
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "joint": "rightForearm",
+              "keys": [
+                {
+                  "frame": 6,
+                  "degrees": [
+                    0,
+                    0,
+                    85
+                  ]
+                },
+                {
+                  "frame": 11,
+                  "degrees": [
+                    0,
+                    0,
+                    95
+                  ]
+                },
+                {
+                  "frame": 15,
+                  "degrees": [
+                    0,
+                    0,
+                    28
+                  ]
+                },
+                {
+                  "frame": 23,
+                  "degrees": [
+                    0,
+                    0,
+                    95
+                  ]
+                },
+                {
+                  "frame": 34,
+                  "degrees": [
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "joint": "leftUpperArm",
+              "keys": [
+                {
+                  "frame": 6,
+                  "degrees": [
+                    -30,
+                    0,
+                    -35
+                  ]
+                },
+                {
+                  "frame": 11,
+                  "degrees": [
+                    -40,
+                    0,
+                    -50
+                  ]
+                },
+                {
+                  "frame": 15,
+                  "degrees": [
+                    -35,
+                    0,
+                    -40
+                  ]
+                },
+                {
+                  "frame": 25,
+                  "degrees": [
+                    -20,
+                    0,
+                    -15
+                  ]
+                },
+                {
+                  "frame": 34,
+                  "degrees": [
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "joint": "leftForearm",
+              "keys": [
+                {
+                  "frame": 6,
+                  "degrees": [
+                    0,
+                    0,
+                    20
+                  ]
+                },
+                {
+                  "frame": 11,
+                  "degrees": [
+                    0,
+                    15,
+                    25
+                  ]
+                },
+                {
+                  "frame": 15,
+                  "degrees": [
+                    0,
+                    0,
+                    15
+                  ]
+                },
+                {
+                  "frame": 25,
+                  "degrees": [
+                    0,
+                    0,
+                    20
+                  ]
+                },
+                {
+                  "frame": 34,
+                  "degrees": [
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "joint": "rightThigh",
+              "keys": [
+                {
+                  "frame": 6,
+                  "degrees": [
+                    0,
+                    0,
+                    60
+                  ]
+                },
+                {
+                  "frame": 11,
+                  "degrees": [
+                    0,
+                    0,
+                    75
+                  ]
+                },
+                {
+                  "frame": 15,
+                  "degrees": [
+                    0,
+                    0,
+                    65
+                  ]
+                },
+                {
+                  "frame": 25,
+                  "degrees": [
+                    0,
+                    0,
+                    35
+                  ]
+                },
+                {
+                  "frame": 34,
+                  "degrees": [
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "joint": "rightShin",
+              "keys": [
+                {
+                  "frame": 6,
+                  "degrees": [
+                    0,
+                    0,
+                    -90
+                  ]
+                },
+                {
+                  "frame": 11,
+                  "degrees": [
+                    0,
+                    0,
+                    -110
+                  ]
+                },
+                {
+                  "frame": 15,
+                  "degrees": [
+                    0,
+                    0,
+                    -100
+                  ]
+                },
+                {
+                  "frame": 25,
+                  "degrees": [
+                    0,
+                    0,
+                    -55
+                  ]
+                },
+                {
+                  "frame": 34,
+                  "degrees": [
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "joint": "leftThigh",
+              "keys": [
+                {
+                  "frame": 6,
+                  "degrees": [
+                    0,
+                    0,
+                    45
+                  ]
+                },
+                {
+                  "frame": 11,
+                  "degrees": [
+                    0,
+                    0,
+                    60
+                  ]
+                },
+                {
+                  "frame": 15,
+                  "degrees": [
+                    0,
+                    0,
+                    48
+                  ]
+                },
+                {
+                  "frame": 25,
+                  "degrees": [
+                    0,
+                    0,
+                    20
+                  ]
+                },
+                {
+                  "frame": 34,
+                  "degrees": [
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "joint": "leftShin",
+              "keys": [
+                {
+                  "frame": 6,
+                  "degrees": [
+                    0,
+                    0,
+                    -85
+                  ]
+                },
+                {
+                  "frame": 11,
+                  "degrees": [
+                    0,
+                    0,
+                    -105
+                  ]
+                },
+                {
+                  "frame": 15,
+                  "degrees": [
+                    0,
+                    0,
+                    -90
+                  ]
+                },
+                {
+                  "frame": 25,
+                  "degrees": [
+                    0,
+                    0,
+                    -40
+                  ]
+                },
+                {
+                  "frame": 34,
+                  "degrees": [
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "hitShift": [
+            -65,
+            0,
+            0
+          ],
+          "velocity": []
+        }
+      },
+      {
+        "kind": "up",
+        "tracks": [
+          {
+            "joint": "torso",
+            "keys": [
+              {
+                "frame": 4,
+                "degrees": [
+                  0,
+                  0,
+                  -12
+                ]
+              },
+              {
+                "frame": 8,
+                "degrees": [
+                  0,
+                  0,
+                  -25
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  0,
+                  8
+                ]
+              },
+              {
+                "frame": 22,
+                "degrees": [
+                  0,
+                  0,
+                  5
+                ]
+              },
+              {
+                "frame": 30,
+                "degrees": [
+                  0,
+                  0,
+                  -12
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  0,
+                  0,
+                  -3
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "head",
+            "keys": [
+              {
+                "frame": 8,
+                "degrees": [
+                  0,
+                  0,
+                  16
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  0,
+                  -10
+                ]
+              },
+              {
+                "frame": 22,
+                "degrees": [
+                  0,
+                  0,
+                  -6
+                ]
+              },
+              {
+                "frame": 30,
+                "degrees": [
+                  0,
+                  0,
+                  8
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightUpperArm",
+            "keys": [
+              {
+                "frame": 4,
+                "degrees": [
+                  12,
+                  -10,
+                  48
+                ]
+              },
+              {
+                "frame": 8,
+                "degrees": [
+                  8,
+                  -15,
+                  42
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  20,
+                  0,
+                  78
+                ]
+              },
+              {
+                "frame": 22,
+                "degrees": [
+                  28,
+                  0,
+                  88
+                ]
+              },
+              {
+                "frame": 30,
+                "degrees": [
+                  10,
+                  -10,
+                  55
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  0,
+                  0,
+                  12
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightForearm",
+            "keys": [
+              {
+                "frame": 4,
+                "degrees": [
+                  0,
+                  0,
+                  95
+                ]
+              },
+              {
+                "frame": 8,
+                "degrees": [
+                  0,
+                  0,
+                  112
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  0,
+                  60
+                ]
+              },
+              {
+                "frame": 22,
+                "degrees": [
+                  0,
+                  0,
+                  45
+                ]
+              },
+              {
+                "frame": 30,
+                "degrees": [
+                  0,
+                  0,
+                  95
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  0,
+                  0,
+                  20
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftUpperArm",
+            "keys": [
+              {
+                "frame": 4,
+                "degrees": [
+                  -12,
+                  10,
+                  48
+                ]
+              },
+              {
+                "frame": 8,
+                "degrees": [
+                  -8,
+                  15,
+                  42
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  -20,
+                  0,
+                  78
+                ]
+              },
+              {
+                "frame": 22,
+                "degrees": [
+                  -28,
+                  0,
+                  88
+                ]
+              },
+              {
+                "frame": 30,
+                "degrees": [
+                  -10,
+                  10,
+                  55
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  0,
+                  0,
+                  12
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftForearm",
+            "keys": [
+              {
+                "frame": 4,
+                "degrees": [
+                  0,
+                  0,
+                  95
+                ]
+              },
+              {
+                "frame": 8,
+                "degrees": [
+                  0,
+                  0,
+                  112
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  0,
+                  60
+                ]
+              },
+              {
+                "frame": 22,
+                "degrees": [
+                  0,
+                  0,
+                  45
+                ]
+              },
+              {
+                "frame": 30,
+                "degrees": [
+                  0,
+                  0,
+                  95
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  0,
+                  0,
+                  20
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightThigh",
+            "keys": [
+              {
+                "frame": 4,
+                "degrees": [
+                  8,
+                  0,
+                  38
+                ]
+              },
+              {
+                "frame": 8,
+                "degrees": [
+                  12,
+                  0,
+                  75
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  0,
+                  -12
+                ]
+              },
+              {
+                "frame": 22,
+                "degrees": [
+                  0,
+                  0,
+                  -18
+                ]
+              },
+              {
+                "frame": 30,
+                "degrees": [
+                  0,
+                  0,
+                  55
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  0,
+                  0,
+                  15
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightShin",
+            "keys": [
+              {
+                "frame": 4,
+                "degrees": [
+                  0,
+                  0,
+                  -58
+                ]
+              },
+              {
+                "frame": 8,
+                "degrees": [
+                  0,
+                  0,
+                  -110
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  0,
+                  -8
+                ]
+              },
+              {
+                "frame": 22,
+                "degrees": [
+                  0,
+                  0,
+                  -15
+                ]
+              },
+              {
+                "frame": 30,
+                "degrees": [
+                  0,
+                  0,
+                  -95
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  0,
+                  0,
+                  -25
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftThigh",
+            "keys": [
+              {
+                "frame": 4,
+                "degrees": [
+                  -8,
+                  0,
+                  38
+                ]
+              },
+              {
+                "frame": 8,
+                "degrees": [
+                  -12,
+                  0,
+                  75
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  0,
+                  -8
+                ]
+              },
+              {
+                "frame": 22,
+                "degrees": [
+                  0,
+                  0,
+                  -12
+                ]
+              },
+              {
+                "frame": 30,
+                "degrees": [
+                  0,
+                  0,
+                  45
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  0,
+                  0,
+                  10
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftShin",
+            "keys": [
+              {
+                "frame": 4,
+                "degrees": [
+                  0,
+                  0,
+                  -58
+                ]
+              },
+              {
+                "frame": 8,
+                "degrees": [
+                  0,
+                  0,
+                  -110
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  0,
+                  0,
+                  -5
+                ]
+              },
+              {
+                "frame": 22,
+                "degrees": [
+                  0,
+                  0,
+                  -10
+                ]
+              },
+              {
+                "frame": 30,
+                "degrees": [
+                  0,
+                  0,
+                  -85
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  0,
+                  0,
+                  -20
+                ]
+              }
+            ]
+          }
+        ],
+        "hits": [
+          {
+            "delay": 0,
+            "length": 14,
+            "weight": 1,
+            "angle": 82,
+            "radius": 25,
+            "from": [
+              110,
+              235,
+              0
+            ],
+            "to": [
+              155,
+              270,
+              0
+            ]
+          }
+        ],
+        "visuals": [
+          {
+            "prop": "accordionClosed",
+            "hit": -1,
+            "window": [
+              1,
+              9
+            ],
+            "from": [
+              115,
+              245,
+              0
+            ],
+            "to": [
+              110,
+              235,
+              0
+            ]
+          },
+          {
+            "prop": "accordionOpen",
+            "hit": 0,
+            "window": [],
+            "from": [
+              0,
+              0,
+              0
+            ],
+            "to": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "prop": "accordionRim",
+            "hit": 0,
+            "window": [],
+            "from": [
+              0,
+              0,
+              0
+            ],
+            "to": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "prop": "accordionClosed",
+            "hit": -1,
+            "window": [
+              23,
+              40
+            ],
+            "from": [
+              155,
+              270,
+              0
+            ],
+            "to": [
+              100,
+              205,
+              0
+            ]
+          }
+        ],
+        "emitters": [],
+        "velocity": [
+          13,
+          70
+        ],
+        "air": {
+          "tracks": [
+            {
+              "joint": "torso",
+              "keys": [
+                {
+                  "frame": 4,
+                  "degrees": [
+                    0,
+                    0,
+                    -8
+                  ]
+                },
+                {
+                  "frame": 8,
+                  "degrees": [
+                    0,
+                    0,
+                    -15
+                  ]
+                },
+                {
+                  "frame": 12,
+                  "degrees": [
+                    0,
+                    0,
+                    10
+                  ]
+                },
+                {
+                  "frame": 22,
+                  "degrees": [
+                    0,
+                    0,
+                    6
+                  ]
+                },
+                {
+                  "frame": 30,
+                  "degrees": [
+                    0,
+                    0,
+                    -6
+                  ]
+                },
+                {
+                  "frame": 40,
+                  "degrees": [
+                    0,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            },
+            {
+              "joint": "rightThigh",
+              "keys": [
+                {
+                  "frame": 4,
+                  "degrees": [
+                    0,
+                    0,
+                    65
+                  ]
+                },
+                {
+                  "frame": 8,
+                  "degrees": [
+                    0,
+                    0,
+                    90
+                  ]
+                },
+                {
+                  "frame": 12,
+                  "degrees": [
+                    0,
+                    0,
+                    15
+                  ]
+                },
+                {
+                  "frame": 22,
+                  "degrees": [
+                    0,
+                    0,
+                    -22
+                  ]
+                },
+                {
+                  "frame": 30,
+                  "degrees": [
+                    0,
+                    0,
+                    35
+                  ]
+                },
+                {
+                  "frame": 40,
+                  "degrees": [
+                    0,
+                    0,
+                    8
+                  ]
+                }
+              ]
+            },
+            {
+              "joint": "rightShin",
+              "keys": [
+                {
+                  "frame": 4,
+                  "degrees": [
+                    0,
+                    0,
+                    -105
+                  ]
+                },
+                {
+                  "frame": 8,
+                  "degrees": [
+                    0,
+                    0,
+                    -125
+                  ]
+                },
+                {
+                  "frame": 12,
+                  "degrees": [
+                    0,
+                    0,
+                    -35
+                  ]
+                },
+                {
+                  "frame": 22,
+                  "degrees": [
+                    0,
+                    0,
+                    -12
+                  ]
+                },
+                {
+                  "frame": 30,
+                  "degrees": [
+                    0,
+                    0,
+                    -65
+                  ]
+                },
+                {
+                  "frame": 40,
+                  "degrees": [
+                    0,
+                    0,
+                    -15
+                  ]
+                }
+              ]
+            },
+            {
+              "joint": "leftThigh",
+              "keys": [
+                {
+                  "frame": 4,
+                  "degrees": [
+                    0,
+                    0,
+                    55
+                  ]
+                },
+                {
+                  "frame": 8,
+                  "degrees": [
+                    0,
+                    0,
+                    80
+                  ]
+                },
+                {
+                  "frame": 12,
+                  "degrees": [
+                    0,
+                    0,
+                    8
+                  ]
+                },
+                {
+                  "frame": 22,
+                  "degrees": [
+                    0,
+                    0,
+                    -15
+                  ]
+                },
+                {
+                  "frame": 30,
+                  "degrees": [
+                    0,
+                    0,
+                    25
+                  ]
+                },
+                {
+                  "frame": 40,
+                  "degrees": [
+                    0,
+                    0,
+                    5
+                  ]
+                }
+              ]
+            },
+            {
+              "joint": "leftShin",
+              "keys": [
+                {
+                  "frame": 4,
+                  "degrees": [
+                    0,
+                    0,
+                    -95
+                  ]
+                },
+                {
+                  "frame": 8,
+                  "degrees": [
+                    0,
+                    0,
+                    -115
+                  ]
+                },
+                {
+                  "frame": 12,
+                  "degrees": [
+                    0,
+                    0,
+                    -25
+                  ]
+                },
+                {
+                  "frame": 22,
+                  "degrees": [
+                    0,
+                    0,
+                    -8
+                  ]
+                },
+                {
+                  "frame": 30,
+                  "degrees": [
+                    0,
+                    0,
+                    -50
+                  ]
+                },
+                {
+                  "frame": 40,
+                  "degrees": [
+                    0,
+                    0,
+                    -10
+                  ]
+                }
+              ]
+            }
+          ],
+          "hitShift": [
+            0,
+            0,
+            0
+          ],
+          "velocity": [
+            7,
+            76
+          ]
+        }
+      },
+      {
+        "kind": "down",
+        "tracks": [
+          {
+            "joint": "torso",
+            "keys": [
+              {
+                "frame": 7,
+                "degrees": [
+                  0,
+                  -12,
+                  10
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  0,
+                  -25,
+                  24
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  0,
+                  8,
+                  -48
+                ]
+              },
+              {
+                "frame": 29,
+                "degrees": [
+                  0,
+                  5,
+                  -42
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  0,
+                  -5,
+                  -18
+                ]
+              },
+              {
+                "frame": 46,
+                "degrees": [
+                  0,
+                  0,
+                  -3
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "head",
+            "keys": [
+              {
+                "frame": 7,
+                "degrees": [
+                  0,
+                  8,
+                  -6
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  0,
+                  18,
+                  -15
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  0,
+                  -5,
+                  18
+                ]
+              },
+              {
+                "frame": 29,
+                "degrees": [
+                  0,
+                  0,
+                  12
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  0,
+                  0,
+                  8
+                ]
+              },
+              {
+                "frame": 46,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightUpperArm",
+            "keys": [
+              {
+                "frame": 7,
+                "degrees": [
+                  20,
+                  -20,
+                  100
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  25,
+                  -30,
+                  150
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  5,
+                  0,
+                  48
+                ]
+              },
+              {
+                "frame": 29,
+                "degrees": [
+                  5,
+                  0,
+                  42
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  10,
+                  -10,
+                  60
+                ]
+              },
+              {
+                "frame": 46,
+                "degrees": [
+                  0,
+                  0,
+                  8
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightForearm",
+            "keys": [
+              {
+                "frame": 7,
+                "degrees": [
+                  0,
+                  0,
+                  65
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  0,
+                  0,
+                  95
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  0,
+                  0,
+                  8
+                ]
+              },
+              {
+                "frame": 29,
+                "degrees": [
+                  0,
+                  0,
+                  12
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  0,
+                  0,
+                  75
+                ]
+              },
+              {
+                "frame": 46,
+                "degrees": [
+                  0,
+                  0,
+                  15
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftUpperArm",
+            "keys": [
+              {
+                "frame": 7,
+                "degrees": [
+                  -20,
+                  -15,
+                  95
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  -25,
+                  -25,
+                  140
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  -5,
+                  0,
+                  45
+                ]
+              },
+              {
+                "frame": 29,
+                "degrees": [
+                  -5,
+                  0,
+                  40
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  -10,
+                  -5,
+                  50
+                ]
+              },
+              {
+                "frame": 46,
+                "degrees": [
+                  0,
+                  0,
+                  5
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftForearm",
+            "keys": [
+              {
+                "frame": 7,
+                "degrees": [
+                  0,
+                  0,
+                  80
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  0,
+                  0,
+                  105
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  0,
+                  0,
+                  15
+                ]
+              },
+              {
+                "frame": 29,
+                "degrees": [
+                  0,
+                  0,
+                  20
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  0,
+                  0,
+                  85
+                ]
+              },
+              {
+                "frame": 46,
+                "degrees": [
+                  0,
+                  0,
+                  10
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightThigh",
+            "keys": [
+              {
+                "frame": 7,
+                "degrees": [
+                  15,
+                  0,
+                  25
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  20,
+                  0,
+                  32
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  18,
+                  0,
+                  65
+                ]
+              },
+              {
+                "frame": 29,
+                "degrees": [
+                  18,
+                  0,
+                  60
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  10,
+                  0,
+                  35
+                ]
+              },
+              {
+                "frame": 46,
+                "degrees": [
+                  0,
+                  0,
+                  8
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightShin",
+            "keys": [
+              {
+                "frame": 7,
+                "degrees": [
+                  0,
+                  0,
+                  -30
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  0,
+                  0,
+                  -42
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  0,
+                  0,
+                  -95
+                ]
+              },
+              {
+                "frame": 29,
+                "degrees": [
+                  0,
+                  0,
+                  -85
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  0,
+                  0,
+                  -50
+                ]
+              },
+              {
+                "frame": 46,
+                "degrees": [
+                  0,
+                  0,
+                  -12
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftThigh",
+            "keys": [
+              {
+                "frame": 7,
+                "degrees": [
+                  -15,
+                  0,
+                  -15
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  -20,
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  -18,
+                  0,
+                  40
+                ]
+              },
+              {
+                "frame": 29,
+                "degrees": [
+                  -18,
+                  0,
+                  35
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  -10,
+                  0,
+                  20
+                ]
+              },
+              {
+                "frame": 46,
+                "degrees": [
+                  0,
+                  0,
+                  5
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftShin",
+            "keys": [
+              {
+                "frame": 7,
+                "degrees": [
+                  0,
+                  0,
+                  -25
+                ]
+              },
+              {
+                "frame": 17,
+                "degrees": [
+                  0,
+                  0,
+                  -35
+                ]
+              },
+              {
+                "frame": 21,
+                "degrees": [
+                  0,
+                  0,
+                  -75
+                ]
+              },
+              {
+                "frame": 29,
+                "degrees": [
+                  0,
+                  0,
+                  -70
+                ]
+              },
+              {
+                "frame": 38,
+                "degrees": [
+                  0,
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": 46,
+                "degrees": [
+                  0,
+                  0,
+                  -8
+                ]
+              }
+            ]
+          }
+        ],
+        "hits": [
+          {
+            "delay": 0,
+            "length": 4,
+            "weight": 1,
+            "angle": 270,
+            "radius": 34,
+            "from": [
+              160,
+              120,
+              0
+            ],
+            "to": [
+              125,
+              30,
+              0
+            ]
+          }
+        ],
+        "visuals": [
+          {
+            "prop": "malletRaised",
+            "hit": -1,
+            "window": [
+              1,
+              18
+            ],
+            "from": [
+              60,
+              240,
+              -65
+            ],
+            "to": [
+              -45,
+              345,
+              -65
+            ]
+          },
+          {
+            "prop": "malletLowered",
+            "hit": 0,
+            "window": [],
+            "from": [
+              0,
+              0,
+              0
+            ],
+            "to": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "prop": "malletEdge",
+            "hit": 0,
+            "window": [],
+            "from": [
+              0,
+              0,
+              0
+            ],
+            "to": [
+              0,
+              0,
+              0
+            ]
+          },
+          {
+            "prop": "malletLowered",
+            "hit": -1,
+            "window": [
+              22,
+              46
+            ],
+            "from": [
+              125,
+              30,
+              0
+            ],
+            "to": [
+              50,
+              55,
+              -45
+            ]
+          }
+        ],
+        "emitters": [
+          {
+            "color": 3,
+            "count": 2,
+            "window": [
+              22,
+              27
+            ],
+            "origin": [
+              125,
+              20,
+              0
+            ],
+            "spread": 55,
+            "travel": [
+              0,
+              12,
+              0
+            ],
+            "size": [
+              10,
+              7
+            ]
+          }
+        ],
+        "velocity": [
+          0,
+          0
+        ],
+        "air": {
+          "tracks": [
+            {
+              "joint": "torso",
+              "keys": [
+                {
+                  "frame": 7,
+                  "degrees": [
+                    0,
+                    -12,
+                    -10
+                  ]
+                },
+                {
+                  "frame": 17,
+                  "degrees": [
+                    0,
+                    -18,
+                    -25
+                  ]
+                },
+                {
+                  "frame": 21,
+                  "degrees": [
+                    0,
+                    5,
+                    -35
+                  ]
+                },
+                {
+                  "frame": 29,
+                  "degrees": [
+                    0,
+                    0,
+                    -25
+                  ]
+                },
+                {
+                  "frame": 38,
+                  "degrees": [
+                    0,
+                    0,
+                    -10
+                  ]
+                },
+                {
+                  "frame": 46,
+                  "degrees": [
+                    0,
+                    0,
+                    3
+                  ]
+                }
+              ]
+            },
+            {
+              "joint": "rightUpperArm",
+              "keys": [
+                {
+                  "frame": 7,
+                  "degrees": [
+                    20,
+                    -20,
+                    105
+                  ]
+                },
+                {
+                  "frame": 17,
+                  "degrees": [
+                    25,
+                    -25,
+                    140
+                  ]
+                },
+                {
+                  "frame": 21,
+                  "degrees": [
+                    5,
+                    0,
+                    20
+                  ]
+                },
+                {
+                  "frame": 29,
+                  "degrees": [
+                    5,
+                    0,
+                    28
+                  ]
+                },
+                {
+                  "frame": 38,
+                  "degrees": [
+                    10,
+                    -10,
+                    42
+                  ]
+                },
+                {
+                  "frame": 46,
+                  "degrees": [
+                    0,
+                    0,
+                    5
+                  ]
+                }
+              ]
+            },
+            {
+              "joint": "leftUpperArm",
+              "keys": [
+                {
+                  "frame": 7,
+                  "degrees": [
+                    -20,
+                    -15,
+                    100
+                  ]
+                },
+                {
+                  "frame": 17,
+                  "degrees": [
+                    -25,
+                    -20,
+                    130
+                  ]
+                },
+                {
+                  "frame": 21,
+                  "degrees": [
+                    -5,
+                    0,
+                    18
+                  ]
+                },
+                {
+                  "frame": 29,
+                  "degrees": [
+                    -5,
+                    0,
+                    25
+                  ]
+                },
+                {
+                  "frame": 38,
+                  "degrees": [
+                    -10,
+                    -5,
+                    35
+                  ]
+                },
+                {
+                  "frame": 46,
+                  "degrees": [
+                    0,
+                    0,
+                    3
+                  ]
+                }
+              ]
+            },
+            {
+              "joint": "rightThigh",
+              "keys": [
+                {
+                  "frame": 7,
+                  "degrees": [
+                    8,
+                    0,
+                    65
+                  ]
+                },
+                {
+                  "frame": 17,
+                  "degrees": [
+                    10,
+                    0,
+                    85
+                  ]
+                },
+                {
+                  "frame": 21,
+                  "degrees": [
+                    5,
+                    0,
+                    12
+                  ]
+                },
+                {
+                  "frame": 29,
+                  "degrees": [
+                    5,
+                    0,
+                    20
+                  ]
+                },
+                {
+                  "frame": 38,
+                  "degrees": [
+                    0,
+                    0,
+                    10
+                  ]
+                },
+                {
+                  "frame": 46,
+                  "degrees": [
+                    0,
+                    0,
+                    -8
+                  ]
+                }
+              ]
+            },
+            {
+              "joint": "rightShin",
+              "keys": [
+                {
+                  "frame": 7,
+                  "degrees": [
+                    0,
+                    0,
+                    -95
+                  ]
+                },
+                {
+                  "frame": 17,
+                  "degrees": [
+                    0,
+                    0,
+                    -120
+                  ]
+                },
+                {
+                  "frame": 21,
+                  "degrees": [
+                    0,
+                    0,
+                    -25
+                  ]
+                },
+                {
+                  "frame": 29,
+                  "degrees": [
+                    0,
+                    0,
+                    -35
+                  ]
+                },
+                {
+                  "frame": 38,
+                  "degrees": [
+                    0,
+                    0,
+                    -20
+                  ]
+                },
+                {
+                  "frame": 46,
+                  "degrees": [
+                    0,
+                    0,
+                    -5
+                  ]
+                }
+              ]
+            },
+            {
+              "joint": "leftThigh",
+              "keys": [
+                {
+                  "frame": 7,
+                  "degrees": [
+                    -8,
+                    0,
+                    55
+                  ]
+                },
+                {
+                  "frame": 17,
+                  "degrees": [
+                    -10,
+                    0,
+                    75
+                  ]
+                },
+                {
+                  "frame": 21,
+                  "degrees": [
+                    -5,
+                    0,
+                    5
+                  ]
+                },
+                {
+                  "frame": 29,
+                  "degrees": [
+                    -5,
+                    0,
+                    15
+                  ]
+                },
+                {
+                  "frame": 38,
+                  "degrees": [
+                    0,
+                    0,
+                    5
+                  ]
+                },
+                {
+                  "frame": 46,
+                  "degrees": [
+                    0,
+                    0,
+                    -12
+                  ]
+                }
+              ]
+            },
+            {
+              "joint": "leftShin",
+              "keys": [
+                {
+                  "frame": 7,
+                  "degrees": [
+                    0,
+                    0,
+                    -85
+                  ]
+                },
+                {
+                  "frame": 17,
+                  "degrees": [
+                    0,
+                    0,
+                    -110
+                  ]
+                },
+                {
+                  "frame": 21,
+                  "degrees": [
+                    0,
+                    0,
+                    -15
+                  ]
+                },
+                {
+                  "frame": 29,
+                  "degrees": [
+                    0,
+                    0,
+                    -25
+                  ]
+                },
+                {
+                  "frame": 38,
+                  "degrees": [
+                    0,
+                    0,
+                    -15
+                  ]
+                },
+                {
+                  "frame": 46,
+                  "degrees": [
+                    0,
+                    0,
+                    -3
+                  ]
+                }
+              ]
+            }
+          ],
+          "hitShift": [
+            -30,
+            -65,
+            0
+          ],
+          "velocity": [
+            0,
+            -8
+          ]
+        }
+      }
+    ]
+  },
+  "provenance": {
+    "model": "gpt-6-astra",
+    "responseId": "resp_02f722b50d34e486016aa103640c7887d19b68df00c252a1cc",
+    "usage": {
+      "input_tokens": 3305,
+      "input_tokens_details": {
+        "cache_write_tokens": 3302,
+        "cached_tokens": 0
+      },
+      "output_tokens": 8458,
+      "output_tokens_details": {
+        "reasoning_tokens": 1552
+      },
+      "total_tokens": 11763
+    }
+  }
+}

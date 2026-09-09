@@ -1,0 +1,50 @@
+[
+  {
+    "slot": 0,
+    "src": "/clips/format-comparison/neutral-ground-close.mp4",
+    "width": 1280,
+    "height": 768,
+    "duration": "3.000000",
+    "nb_frames": "180"
+  },
+  {
+    "slot": 1,
+    "src": "/clips/format-comparison/up-ground-close.mp4",
+    "width": 1280,
+    "height": 768,
+    "duration": "3.000000",
+    "nb_frames": "180"
+  },
+  {
+    "slot": 2,
+    "src": "/clips/format-comparison/down-ground-close.mp4",
+    "width": 1280,
+    "height": 768,
+    "duration": "3.000000",
+    "nb_frames": "180"
+  },
+  {
+    "slot": 3,
+    "src": "/clips/format-comparison/neutral-air-close.mp4",
+    "width": 1280,
+    "height": 768,
+    "duration": "3.000000",
+    "nb_frames": "180"
+  },
+  {
+    "slot": 4,
+    "src": "/clips/format-comparison/up-air-fixed-close.mp4",
+    "width": 1280,
+    "height": 768,
+    "duration": "3.000000",
+    "nb_frames": "180"
+  },
+  {
+    "slot": 5,
+    "src": "/clips/format-comparison/down-air-close.mp4",
+    "width": 1280,
+    "height": 768,
+    "duration": "3.000000",
+    "nb_frames": "180"
+  }
+]

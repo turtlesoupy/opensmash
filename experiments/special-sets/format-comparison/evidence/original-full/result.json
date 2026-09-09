@@ -1,0 +1,28 @@
+{
+  "id": "original-full",
+  "model": "gpt-6-astra",
+  "format": "full",
+  "judges": 0,
+  "attempts": 1,
+  "status": "compiled",
+  "historical": true,
+  "generationMs": null,
+  "provenance": {
+    "model": "gpt-6-astra",
+    "responseId": "resp_02d0d28598a929bf016aa0f882ffbc87d19cdb9c68134ad53e",
+    "usage": {
+      "input_tokens": 2929,
+      "input_tokens_details": {
+        "cache_write_tokens": 2926,
+        "cached_tokens": 0
+      },
+      "output_tokens": 11424,
+      "output_tokens_details": {
+        "reasoning_tokens": 911
+      },
+      "total_tokens": 14353
+    }
+  },
+  "authoringBytes": 25179,
+  "estimatedUsd": 0.607805
+}
