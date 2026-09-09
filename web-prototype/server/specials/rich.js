@@ -1,5 +1,6 @@
 // Compact authoring, deterministic geometry. No character-specific runtime branches.
 import {reducedSchema,expandReduced} from './reduced.js';
+import {constructProp} from './visual-library.js';
 import {validate,compileSet} from './contract.js';
 const obj=properties=>({type:'object',properties,required:Object.keys(properties),additionalProperties:false});
 const n=(minimum,maximum)=>({type:'number',minimum,maximum});
@@ -16,10 +17,15 @@ export const richSchema=obj({colors:reducedSchema.properties.colors,
  props:a(obj({id,pieces:a(piece,1,14)}),2,8),
  moves:a(obj({kind:base.kind,tracks:base.tracks,hits:base.hits,
  assemblies:a(assembly,1,4),cueColors:a(i(0,7),2,2),trails:a(trail,1,3),velocity:base.velocity,air:base.air}),3,3)});
+// Legacy scores omit construction; new model calls select an explicit reusable primitive.
+const propSchema=richSchema.properties.props.items;
+propSchema.properties.construction={type:'string',enum:['pieces','bellows','music-note','straw']};
+export const richGenerationSchema=structuredClone(richSchema);
+richGenerationSchema.properties.props.items.required.push('construction');
 export const RICH_IMPLEMENT=`Implement all six frozen special descriptions using this compact visual score. Return three designs neutral/up/down; ground/air share authored geometry and timing with deliberate air pose overrides. No character-specific code.
 Coordinates x forward, y up, z depth. Fighter height about 350. All frames use the GROUND timeline. Air startup and remaining duration are remapped automatically. Tracks: supported semantic joints only; interior frames strictly increasing in (0,duration); compiler adds zero endpoints. Animate torso, both arms and legs where supported: anticipate, strike, follow through, recover. Air.tracks replaces listed tracks; [] inherits. Air.hitShift offsets collision, not decorative prop placement.
 Hits: delay and length express the relative action rhythm in ground frames. First delay preferably 0, subsequent onsets increasing. Compiler anchors the first beat at startup, clips a beat at the next onset, and fits the action to leave 12 recovery frames in BOTH contexts. It warps body and prop keys along with the action. Prefer length4..24 and naturally separated beats. You do not need to duplicate collision/cue timing arithmetic. Weight divides frozen damage deterministically. Radius 80..250 for readable strong attacks. Native knockback is generated. Use 2-3 rhythmic hits for a buildup/finale if described; final hit can sweep from near x200 to x1000. Never target-seeking. Up recovery has a compiler-enforced vertical speed floor of 70; launch at startup on ground, immediately in air; other moves [] remain planted. Air.velocity=[] inherits.
-Define reusable detailed props and small particle glyphs in colors/props once. Each prop piece is a rectangle: at local center, size HALF extents, color palette index, angle radians. repeat and step cheaply make rows of keys, folds, buttons, trim or spokes. repeat=1,step=[0,0,0] for single pieces. Use 5-10 layered pieces (including repeated details) for the main prop; 2-4 pieces for a distinctive small trail glyph. E.g. bellows with repeated folds + side cases + ivory keys, or a recognizable object with borders/interior detail. No single-block substitutes. Local z 0..30 controls layering; compiler places props in front of fighter at z120 automatically. Palette needs dark outline, main color and bright accents.
+Define reusable detailed props and small particle glyphs in colors/props once. construction selects a tested primitive: bellows (articulated accordion: rigid red cases, pleated body, ivory keys/buttons), music-note (bright connected note), straw (golden split stalks), or pieces (your arbitrary geometry). Prefer a matching primitive instead of approximating it with rectangles. For primitives include one placeholder piece. Named primitives use tested colors and geometry; pieces construction uses your supplied palette and rectangles. Bellows scale.x controls extension ONLY: cases and keyboard remain rigid; scale.y controls height. Other pieces are ignored for a named primitive. Each prop piece is a rectangle: at local center, size HALF extents, color palette index, angle radians. repeat and step cheaply make rows of keys, folds, buttons, trim or spokes. repeat=1,step=[0,0,0] for single pieces. Use 5-10 layered pieces (including repeated details) for the main prop; 2-4 pieces for a distinctive small trail glyph. E.g. bellows with repeated folds + side cases + ivory keys, or a recognizable object with borders/interior detail. No single-block substitutes. Local z 0..30 controls layering; compiler places props in front of fighter at z120 automatically. Palette needs dark outline, main color and bright accents.
 Assemblies instance props with 2-8 keys {frame,at,scale:[x,y]}. Keys are strictly increasing, last<=duration. Prop translates and its piece centers/size stretch between keys; use this for squeezes, windup, sweep, follow-through. The first assembly is the signature prop. Its lifetime is padded by the compiler to cover startup-8 through lastHitEnd+8; author its performance keys within that window. The signature assembly is normalized to at least 400 units along its largest dimension before your animation scale, so internal details remain readable. Keep its action scale about1; small secondary glyphs are not normalized. Model writes choreography; repeated geometry is compiled. Keyframe every squeeze; don't flash a prop for a few frames. At least one setup assembly must span anticipation/action/recovery.
 Each hit automatically gets a layered curved danger cue along its actual collision radius/trajectory, exactly during its collision window; cueColors=[darkOutline,brightCore] palette indices. Do NOT spend tokens on individual wave segments. Trails instance a small prop glyph: hit index emits evenly spaced births along that actual trajectory, count3..10, life12..24, spread20..160; drift=[vx,vy] adds units/frame. Compiler adds source velocity, falling acceleration, rotation and opacity fade; particles never seek a target. Every special needs a meaningful trail. Keep each trail prop <=6 expanded pieces; main assembly <=60 pieces. Budget <=224 simultaneous rectangles, <=1024 over move. Preserve the written spectacle, not just damage. No judges, repair loops or aesthetic scoring.`;
 const add=(a,b)=>a.map((x,k)=>x+b[k]);
@@ -29,7 +35,7 @@ export function expandRich({brief,score}) {
  const props=new Map();
  for(const p of score.props){
   if(props.has(p.id))throw new Error('duplicate prop');
-  const pieces=p.pieces.flatMap(p=>Array.from({length:p.repeat},(_,k)=>({...p,at:add(p.at,p.step.map(x=>x*k))})));
+  const pieces=constructProp(p);
   if(pieces.length>60)throw new Error('prop exceeds 60 pieces');
   props.set(p.id,pieces);
  }
@@ -68,7 +74,7 @@ export function expandRich({brief,score}) {
   
   for(const [assemblyIndex,assembly] of m.assemblies.entries()){
    let pieces=prop(assembly.prop);const keys=structuredClone(assembly.keys);
-   if(assemblyIndex===0){
+   if(assemblyIndex===0&&!pieces[0].articulated){
     const bounds=[0,1].map(axis=>{
      const lo=Math.min(...pieces.map(p=>p.at[axis]-p.size[axis]));
      const hi=Math.max(...pieces.map(p=>p.at[axis]+p.size[axis]));return hi-lo;
@@ -85,6 +91,16 @@ export function expandRich({brief,score}) {
     while(time(end)<move.hitboxes.at(-1).end+8&&end<ground.duration)end++;
     if(keys.at(-1).frame<end)keys.push({...keys.at(-1),frame:end});
    }
+   if(pieces[0].articulated) {
+    // Extension is synchronized to each emission; rigid cases never squash.
+    const authored=structuredClone(keys),sample=f=>{
+     const j=Math.max(0,authored.findIndex(k=>k.frame>=f)-1),a=authored[j],z=authored[Math.min(j+1,authored.length-1)];
+     return lerp(a.at,z.at,Math.max(0,Math.min(1,(f-a.frame)/Math.max(1,z.frame-a.frame))));
+    };
+    const beats=new Map([[keys[0].frame,.36],[keys.at(-1).frame,.28]]);
+    m.hits.forEach((h,j)=>{const onset=ground.startup+h.delay;beats.set(Math.max(keys[0].frame,onset-6),j===m.hits.length-1?1.4:1.08);beats.set(onset,.36);});
+    keys.splice(0,keys.length,...[...beats].sort((a,b)=>a[0]-b[0]).map(([frame,x])=>({frame,at:sample(frame),scale:[x,1]})));
+   }
    for(let k=0;k<keys.length-1;k++){
     const a=keys[k],z=keys[k+1],start=time(a.frame),end=time(z.frame);
     if(end<=start)throw new Error('collapsed assembly keys');
@@ -93,8 +109,9 @@ export function expandRich({brief,score}) {
      const stop=end,u=(f-start)/(end-start),w=(stop-start)/(end-start);
      const scale=lerp(a.scale,z.scale,u),scaleEnd=lerp(a.scale,z.scale,w);
      for(const p of pieces){
-      const pos=(t,s)=>add(add(t,[p.at[0]*s[0],p.at[1]*s[1],p.at[2]]),[0,0,120]);
-      put({hit:-1,start:f,end:stop,from:pos(lerp(a.at,z.at,u),scale),to:pos(lerp(a.at,z.at,w),scaleEnd),size:p.size.map((x,j)=>Math.max(1,x*scale[j])),sizeTo:p.size.map((x,j)=>Math.max(1,x*scaleEnd[j])),angle:p.angle,color:color(p.color),opacity:k===0?100:225,opacityTo:k===keys.length-2?0:225});
+      const pos=(t,s)=>add(add(t,[p.articulated?p.at[0]+p.extension*s[0]:p.at[0]*s[0],p.at[1]*s[1],p.at[2]]),[0,0,120]);
+      const size=s=>p.size.map((x,j)=>Math.max(1,x*(j===0&&p.articulated&&!p.stretch?1:s[j])));
+      put({hit:-1,start:f,end:stop,from:pos(lerp(a.at,z.at,u),scale),to:pos(lerp(a.at,z.at,w),scaleEnd),size:size(scale),sizeTo:size(scaleEnd),angle:p.angle,color:p.rgb||color(p.color),opacity:k===0?100:225,opacityTo:k===keys.length-2?0:225});
      }
     }
    }
@@ -104,20 +121,28 @@ export function expandRich({brief,score}) {
    const direction=Math.atan2(h.to[1]-h.offset[1],h.to[0]-h.offset[0]);
    for(let k=0;k<17;k++){
     const angle=direction-1.25+k*2.5/16,at=[Math.cos(angle)*h.radius*.93,Math.sin(angle)*h.radius*.93,90];
-    for(let layer=0;layer<2;layer++)put({hit,start:h.start,end:h.end,from:add(at,[0,0,layer*2]),to:add(at,[0,0,layer*2]),size:[h.radius*.09,layer?5:10],angle:angle+Math.PI/2,color:color(m.cueColors[layer])});
+    for(let layer=0;layer<2;layer++)put({hit,start:h.start,end:h.end,from:add(at,[0,0,layer*2]),to:add(at,[0,0,layer*2]),size:[h.radius*.09,(layer?5:10)+(layer?3:5)*(1-(angle-direction)**2/2)],angle:angle+Math.PI/2,color:color(m.cueColors[layer]),opacity:(layer?230:210)*(1-(angle-direction)**2/2)});
    }
   }
   for(const trail of m.trails){
    const h=move.hitboxes[trail.hit];if(!h)throw new Error('unknown trail hit');
-   const pieces=prop(trail.prop);if(pieces.length>6)throw new Error('trail prop exceeds six pieces');
+   let pieces=prop(trail.prop);if(pieces.length>6)throw new Error('trail prop exceeds six pieces');
+   // Readability at the normal match camera: a glyph spans at least 100 world units.
+   const extent=Math.max(...[0,1].map(j=>Math.max(...pieces.map(p=>p.at[j]+p.size[j]))-Math.min(...pieces.map(p=>p.at[j]-p.size[j]))));
+   const fit=Math.max(1,100/extent);
+   pieces=pieces.map(p=>({...p,at:p.at.map((x,j)=>j<2?x*fit:x),size:p.size.map(x=>x*fit)}));
    for(let k=0;k<trail.count;k++){
     const birth=h.start+Math.floor((h.end-h.start)*k/trail.count),life=Math.min(trail.life,b.duration-birth),seed=k*2.399963;
     const origin=lerp(h.offset,h.to,(birth-h.start)/Math.max(1,h.end-h.start-1));
     const vx=(h.to[0]-h.offset[0])/Math.max(1,h.end-h.start-1)*.55+trail.drift[0];
+    const vy=(h.to[1]-h.offset[1])/Math.max(1,h.end-h.start-1)*.55+trail.drift[1];
     for(let age=0;age<life;age+=4){
      const stop=Math.min(age+4,life);
-     const at=t=>add(origin,[vx*t,Math.sin(seed)*trail.spread+trail.drift[1]*t-.65*t*t,100]);
-     for(const p of pieces)put({hit:-1,start:birth+age,end:birth+stop,from:add(at(age),p.at),to:add(at(stop),p.at),size:p.size,angle:p.angle+age*.05,spin:.05,opacity:205*(1-age/life),color:color(p.color)});
+     const at=t=>add(origin,[vx*t,Math.sin(seed)*trail.spread+vy*t-.65*t*t,100]);
+     // Rotate the whole connected glyph, and use endpoint ages matching native half-open interpolation.
+     const rotate=(v,t)=>[v[0]*Math.cos(t*.05)-v[1]*Math.sin(t*.05),v[0]*Math.sin(t*.05)+v[1]*Math.cos(t*.05),v[2]];
+     const alpha=t=>240*Math.min(1,(life-t)/Math.min(8,life));
+     for(const p of pieces)put({hit:-1,anchorFrame:birth,start:birth+age,end:birth+stop,from:add(at(age),rotate(p.at,age)),to:add(at(stop-1),rotate(p.at,stop-1)),size:p.size,angle:p.angle+age*.05,spin:.05,opacity:alpha(age),opacityTo:alpha(stop-1),color:p.rgb||color(p.color)});
     }
    }
   }

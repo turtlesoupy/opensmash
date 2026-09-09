@@ -1,0 +1,29 @@
+{
+  "nodeTests": {
+    "passed": 301,
+    "failed": 0
+  },
+  "nativeSanitizers": [
+    "address",
+    "undefined"
+  ],
+  "nativeLoader": "Four-player binding, complete-set atomic rejection and birth-anchor bounds passed for both final packets",
+  "browserBinding": "Passed for final Weird Al packet",
+  "nativeBuild": "passed",
+  "wasmBuild": "passed",
+  "nativeBinarySha256": "cc884e4f640c3bea01000b248c7a5dad893b0c1ac6cbdaf6ea9c9f7dff962724",
+  "wasmSha256": "10332bfd05be6d098385eb132c903906d1a7e19ec2033b972624281ca3d60c9b",
+  "longHistory": {
+    "duration": 250,
+    "exitFrame": 250,
+    "cleanShutdown": true,
+    "events": [
+      "CUSTOM_MOVE loaded complete registry",
+      "CUSTOM_MOVE begin player=0 name=Polka Pressure",
+      "CUSTOM_MOVE active player=0 frame=24 damage=5 phase=0",
+      "CUSTOM_MOVE active player=0 frame=45 damage=5 phase=1",
+      "CUSTOM_MOVE active player=0 frame=63 damage=4 phase=2",
+      "CUSTOM_MOVE end player=0 frame=250"
+    ]
+  }
+}

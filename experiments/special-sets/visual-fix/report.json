@@ -1,0 +1,142 @@
+{
+  "date": "2026-09-09",
+  "modelCallsThisCorrection": 0,
+  "judges": 0,
+  "freshModelGeneration": false,
+  "visualScoreEdited": true,
+  "visualRevision": "Explicit selection of reusable bellows, music-note and straw constructions for Weird Al; Lincoln score unchanged. Shared compiler and runtime corrections apply to both.",
+  "passed": 54,
+  "total": 54,
+  "characters": [
+    {
+      "id": "weird-al",
+      "name": "Weird Al",
+      "descriptionUnchanged": true,
+      "gameplayAndBodyTracksUnchanged": true,
+      "packageSha256": "01a48635af8d78d6d50d63864bc545c2576f6a9b2da0dade401027b6e1259803",
+      "binarySha256": "cc884e4f640c3bea01000b248c7a5dad893b0c1ac6cbdaf6ea9c9f7dff962724",
+      "moves": [
+        {
+          "slot": 0,
+          "name": "Polka Pressure",
+          "context": "neutral ground",
+          "damage": 14,
+          "peakQuads": 113,
+          "videoSha256": "99d6f0b061f33dca478de9bc42ce370580ecaead0b64cf147cc8396140aed470"
+        },
+        {
+          "slot": 1,
+          "name": "Amish Paradise Hoe Lift",
+          "context": "up ground",
+          "damage": 11,
+          "peakQuads": 98,
+          "videoSha256": "224ec7a38523b3bcdbc45a8de016f08b3241673eb69a9591a10476920f31967f"
+        },
+        {
+          "slot": 2,
+          "name": "Eat It Dinner Bell",
+          "context": "down ground",
+          "damage": 15,
+          "peakQuads": 72,
+          "videoSha256": "6cbbc6ae3364612d9b848919815fd9d89c1047f701ad92a5f09058c8f4825dec"
+        },
+        {
+          "slot": 3,
+          "name": "Polka Pressure",
+          "context": "neutral air",
+          "damage": 12,
+          "peakQuads": 128,
+          "videoSha256": "b2960763f72d394474f9c918d064941b5f540888d9553cf02285d43fe6a68b87"
+        },
+        {
+          "slot": 4,
+          "name": "Amish Paradise Hoe Lift",
+          "context": "up air",
+          "damage": 10,
+          "peakQuads": 98,
+          "videoSha256": "a8a8096e6d1864c6da877f9b97907658e6ee9c778cd55cb8fc5210c99b05f734"
+        },
+        {
+          "slot": 5,
+          "name": "Eat It Dinner Bell",
+          "context": "down air",
+          "damage": 13,
+          "peakQuads": 87,
+          "videoSha256": "8a51fe94a03cf7ae7c6ca5b2c89e7462b8bd1f1da9b9cb6d2c6cd8970bf5c6e2"
+        }
+      ]
+    },
+    {
+      "id": "lincoln",
+      "name": "Abraham Lincoln",
+      "descriptionUnchanged": true,
+      "gameplayAndBodyTracksUnchanged": true,
+      "packageSha256": "5e789dc73c2d2a860f333a9e5c448e454fcb56f0e693bcaf08fb8b2e8331e426",
+      "binarySha256": "cc884e4f640c3bea01000b248c7a5dad893b0c1ac6cbdaf6ea9c9f7dff962724",
+      "moves": [
+        {
+          "slot": 0,
+          "name": "Gettysburg Address",
+          "context": "neutral ground",
+          "damage": 10,
+          "peakQuads": 104,
+          "videoSha256": "05c12bf0fae5de0a0315cabb7302a681496cc5a08e66f62e2b6219f96e932093"
+        },
+        {
+          "slot": 1,
+          "name": "Stovepipe Ascent",
+          "context": "up ground",
+          "damage": 9,
+          "peakQuads": 78,
+          "videoSha256": "8e56f668e4d058041c4f39c3192d8fff8272fd280705ad6c25f517ab1714cf17"
+        },
+        {
+          "slot": 2,
+          "name": "Frontier Log Split",
+          "context": "down ground",
+          "damage": 13,
+          "peakQuads": 90,
+          "videoSha256": "96c01bd7a7310901f553ad9eae455128a7300051956c84351c0c56aa47f543f6"
+        },
+        {
+          "slot": 3,
+          "name": "Gettysburg Address",
+          "context": "neutral air",
+          "damage": 8,
+          "peakQuads": 124,
+          "videoSha256": "b0f5c6d65a41ebedb1b7e1d511b00bdd00eeaef6737b4f9d0dad3ad3b10177bb"
+        },
+        {
+          "slot": 4,
+          "name": "Stovepipe Ascent",
+          "context": "up air",
+          "damage": 8,
+          "peakQuads": 78,
+          "videoSha256": "9d5739991154b27c30e39815479357af21047508348742f7954da7057e5f7fbd"
+        },
+        {
+          "slot": 5,
+          "name": "Frontier Log Split",
+          "context": "down air",
+          "damage": 11,
+          "peakQuads": 105,
+          "videoSha256": "d9a8001f55384843747d5191cdc4fd0d9eab98a11de6416a8759057f34334d81"
+        }
+      ]
+    }
+  ],
+  "visualReview": {
+    "method": "Native frame inspection of setup, action and follow-through; approved original and previous regressed clips retained.",
+    "findings": [
+      "Separated pleats and rigid keyboard restored; compression follows each hit onset.",
+      "Outlined straw is visible against foliage and detaches from the rising actor.",
+      "Particles keep connected strokes and continuous fade."
+    ],
+    "limitation": "Does not establish fresh model selection reliability or parity of body choreography with the bespoke reference."
+  },
+  "capture": {
+    "format": "1280x960, H264/yuv420p, 180 frames at 60 fps, faststart",
+    "overlay": false,
+    "camera": "Same default native camera; slot 4 uses the same 500:0,1700,7000:0,1700,0 wide camera as the previous published clips."
+  }
+}

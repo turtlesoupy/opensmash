@@ -86,3 +86,34 @@ test('standard cost accounting includes cache writes and all output tokens',asyn
  assert.equal(estimateGenerationUsd({model:'unknown',usage:{input_tokens:10,output_tokens:10}}),null);
  assert.equal(estimateGenerationUsd({model:'gpt-5.6-luna',serviceTier:'priority',usage:{input_tokens:10,output_tokens:10}}),null);
 });
+
+test('bellows keep keyboard rigid while every emission compresses the pleats',()=>{
+ const f=fixture();f.score.props[0].construction='bellows';
+ const m=expandRich(f).moves[0];
+ const keys=m.parts.filter(p=>p.hit===-1&&p.color.join(',')==='255,246,215');
+ assert.ok(keys.length>8);assert.ok(keys.every(p=>p.size[0]===23&&p.sizeTo[0]===23));
+ const folds=m.parts.filter(p=>p.color.join(',')==='162,45,100');
+ assert.ok(folds.some(p=>p.sizeTo[0]<p.size[0]));
+ const squeeze=keys.find(p=>p.end===m.hitboxes[0].start);
+ assert.ok(squeeze.to[0]<squeeze.from[0]);
+});
+test('particle glyphs stay connected, remain readable, and detach at their own birth',()=>{
+ const f=fixture();f.score.props[1].construction='music-note';
+ const m=expandRich(f).moves[0],particles=m.parts.filter(p=>p.anchorFrame>=0);
+ assert.ok(particles.length>0);assert.ok(particles.every(p=>p.anchorFrame<=p.start&&p.hit===-1));
+ const first=particles.filter(p=>p.start===m.hitboxes[0].start);
+ assert.equal(first.length,3);assert.equal(first[0].opacity,240);
+ const last=particles.filter(p=>p.anchorFrame===m.hitboxes[0].start).at(-1);
+ assert.ok(last.opacityTo<first[0].opacity);
+ assert.ok(particles.some(p=>p.opacityTo<p.opacity));
+ assert.ok(Math.max(...first.map(p=>p.from[1]+p.size[1]))-Math.min(...first.map(p=>p.from[1]-p.size[1]))>=100);
+ const later=particles.filter(p=>p.anchorFrame===m.hitboxes[0].start&&p.start===m.hitboxes[0].start+4);
+ const angle=.2,dx=first[1].from[0]-first[0].from[0],dy=first[1].from[1]-first[0].from[1];
+ assert.ok(Math.abs((later[1].from[0]-later[0].from[0])-(dx*Math.cos(angle)-dy*Math.sin(angle)))<1e-6);
+});
+test('particle anchors cannot follow future frames or detach dangerous hit cues',()=>{
+ const f=fixture(),implementation=expandRich(f),args={...f,implementation,rich:true,profile:{joints:{torso:6,head:12},fkind:0,hash:'test'}};
+ const p=implementation.moves[0].parts.find(p=>p.hit>=0);p.anchorFrame=0;
+ assert.throws(()=>compileSet(args),/invalid particle birth anchor/);
+ p.anchorFrame=p.start+1;assert.throws(()=>compileSet(args),/invalid particle birth anchor/);
+});

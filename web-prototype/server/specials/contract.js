@@ -30,7 +30,7 @@ const richParts=richImplementationSchema.properties.moves.items.properties.parts
 richParts.maxItems=1024;
 richParts.items.properties.from=vec(4096);richParts.items.properties.to=vec(4096);
 richParts.items.properties.size=arr(num(1,500),2,2);
-Object.assign(richParts.items.properties,{angle:num(-6.284,6.284),opacity:num(0,255),fade:num(0,150),sizeTo:arr(num(1,500),2,2),opacityTo:num(0,255)});
+Object.assign(richParts.items.properties,{anchorFrame:int(-1,149),angle:num(-6.284,6.284),opacity:num(0,255),fade:num(0,150),sizeTo:arr(num(1,500),2,2),opacityTo:num(0,255)});
 richParts.items.required.push('angle','opacity','fade','sizeTo','opacityTo');
 
 // Shared strict subset used by the model schema and compiler. Reject unknown fields.
@@ -93,6 +93,7 @@ export function compileSet({brief,implementation,profile,character,player=0,rich
     if(new Set(tracks.map(t=>t.joint)).size!==tracks.length) throw new Error(`${slot}: aliased pose joints`);
     for(const p of m.parts) {
       if(p.end<=p.start || p.end>contract.duration || p.hit>=m.hitboxes.length) throw new Error(`${slot}: invalid visual lifetime`);
+      if(p.anchorFrame!==undefined && (p.anchorFrame>p.start || p.hit>=0&&p.anchorFrame>=0)) throw new Error(`${slot}: invalid particle birth anchor`);
       if(p.hit>=0) {
         const h=m.hitboxes[p.hit];
         if(p.start!==h.start||p.end!==h.end) throw new Error(`${slot}: danger cue lifetime differs from collision`);

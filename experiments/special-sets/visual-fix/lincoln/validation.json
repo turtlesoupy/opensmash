@@ -1,0 +1,188 @@
+{
+  "status": "ready",
+  "judges": 0,
+  "visualQuality": "not-assessed",
+  "packageFileHash": "5e789dc73c2d2a860f333a9e5c448e454fcb56f0e693bcaf08fb8b2e8331e426",
+  "bundleHash": "e1e4241d68369a756d9e72857479bbc669c45b142d9ef8176e99ef69f4128091",
+  "binaryHash": "cc884e4f640c3bea01000b248c7a5dad893b0c1ac6cbdaf6ea9c9f7dff962724",
+  "contexts": [
+    {
+      "slot": 0,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 10
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "activecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/private/tmp/visual-fix-lincoln/verified/slot-0.mp4",
+      "passed": true
+    },
+    {
+      "slot": 1,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 9
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "activecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/private/tmp/visual-fix-lincoln/verified/slot-1.mp4",
+      "passed": true
+    },
+    {
+      "slot": 2,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 13
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "activecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/private/tmp/visual-fix-lincoln/verified/slot-2.mp4",
+      "passed": true
+    },
+    {
+      "slot": 3,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 8
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "activecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "landing",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/private/tmp/visual-fix-lincoln/verified/slot-3.mp4",
+      "passed": true
+    },
+    {
+      "slot": 4,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 8
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "activecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "landing",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/private/tmp/visual-fix-lincoln/verified/slot-4.mp4",
+      "passed": true
+    },
+    {
+      "slot": 5,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 11
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "activecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "landing",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/private/tmp/visual-fix-lincoln/verified/slot-5.mp4",
+      "passed": true
+    }
+  ],
+  "runtimeValidated": true
+}

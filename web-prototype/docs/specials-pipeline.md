@@ -170,3 +170,29 @@ rollout are separate creative outputs. Recorded costs must include both writer
 and implementer; native validation/capture and hosting are separate.
 
 Aerial neutral/down showcase and contact fixtures begin at height 2400, above the side platforms, so the complete action can play. Separate low-height (1100) landing scenarios test normal cancellation. This fixes the earlier fixture that landed after about twelve frames and could hide later effects. Every authored hit now has its own native contact probe. Horizontal ground impulses remain grounded; they no longer turn into zero-height jumps that cancel on landing.
+
+### Visual construction correction (September 9)
+
+Mechanical acceptance did not catch the compact accordion/particle regression.
+The implementation score now explicitly selects `construction`: `pieces` for
+arbitrary geometry, or reusable `bellows`, `music-note`, and `straw` primitives.
+New structured-output calls require this choice; older scores default to `pieces`.
+There is no character-name lookup or automatic substitution. The bellows library
+preserves the approved prototype's construction: repeated separated pleats,
+rigid red cases, ivory keys/buttons, and extension timed to every emission.
+
+Glyphs have a minimum 100-unit extent, retain strong alpha before their final fade,
+and rotate as connected objects. Straw additionally uses a thicker outlined
+silhouette. Trail motion inherits both axes of the local hit trajectory. Every
+compiled trail segment carries `anchorFrame`, the original emission frame.
+Native v4 rendering samples the fighter root at that simulation frame, so a rising
+fighter cannot drag falling fragments upward. History is bounded per player,
+cleared at move entry, paused with the move during hitlag, and discarded on cancel.
+Danger cues cannot use birth anchors: they must follow the actual current hitbox.
+Older packets without this optional v4 field retain their previous behavior.
+
+The corrected Weird Al fixture explicitly selects three primitives in an authored
+visual migration. It is not an untouched new model result. Descriptions, tracks,
+launches, and hitboxes remain identical. This isolates the construction/runtime
+fix; it does not measure fresh model visual reliability. Production remains two
+creative stages and deterministic validation, with no judge or model repair loop.

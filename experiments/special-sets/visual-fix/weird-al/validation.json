@@ -1,0 +1,188 @@
+{
+  "status": "ready",
+  "judges": 0,
+  "visualQuality": "not-assessed",
+  "packageFileHash": "01a48635af8d78d6d50d63864bc545c2576f6a9b2da0dade401027b6e1259803",
+  "bundleHash": "c425f4d11bddc812e011e906862816ca5b23e8217e535448129463035543415b",
+  "binaryHash": "cc884e4f640c3bea01000b248c7a5dad893b0c1ac6cbdaf6ea9c9f7dff962724",
+  "contexts": [
+    {
+      "slot": 0,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 14
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "activecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/private/tmp/visual-fix-weird-al-final/verified/slot-0.mp4",
+      "passed": true
+    },
+    {
+      "slot": 1,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 11
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "activecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/private/tmp/visual-fix-weird-al-final/verified/slot-1.mp4",
+      "passed": true
+    },
+    {
+      "slot": 2,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 15
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "activecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/private/tmp/visual-fix-weird-al-final/verified/slot-2.mp4",
+      "passed": true
+    },
+    {
+      "slot": 3,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 12
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "activecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "landing",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/private/tmp/visual-fix-weird-al-final/verified/slot-3.mp4",
+      "passed": true
+    },
+    {
+      "slot": 4,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 10
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "activecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "landing",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/private/tmp/visual-fix-weird-al-final/verified/slot-4.mp4",
+      "passed": true
+    },
+    {
+      "slot": 5,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 13
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "activecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "landing",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/private/tmp/visual-fix-weird-al-final/verified/slot-5.mp4",
+      "passed": true
+    }
+  ],
+  "runtimeValidated": true
+}
