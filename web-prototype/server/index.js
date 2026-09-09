@@ -1,3 +1,5 @@
+import { videoResponse } from "./specials/video.js";
+import { createSpecialJobs } from "./specials/jobs.js";
 import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { spawn } from "node:child_process";
 import { createReadStream } from "node:fs";
@@ -141,6 +143,19 @@ const fighterJobs = createFighterJobs({
   reservedSlugs: async () => (await bakedRoster()).slugs,
 });
 
+const specialJobs = createSpecialJobs({
+  repoRoot:PIPELINE_PROJECT_ROOT,
+  jobsRoot:path.join(APP_ROOT,"data","special-jobs"),
+  jobDatabase:createJobDatabase({jobsRoot:path.join(APP_ROOT,"data","special-jobs"),collectionName:process.env.FIRESTORE_SPECIALS_COLLECTION||"specialJobs"}),
+  objectStore,dispatcher,
+  resolveCharacter:async(id,ownerId)=>{
+    const job=fighterJobs.get(id,ownerId);
+    if(job?.status!=="complete")return null;
+    return {character:{id,name:job.character.name},target:job.character.base,
+      bundle:fighterJobs.artifact(id,ownerId,"bundle"),portrait:fighterJobs.artifact(id,ownerId,"portrait")};
+  },
+});
+
 const PORT = Number(process.env.PORT || 4174);
 const HOST = process.env.HOST || (process.env.NODE_ENV === "production" ? "0.0.0.0" : "127.0.0.1");
 const IS_PRODUCTION = process.env.NODE_ENV === "production";
@@ -220,6 +235,7 @@ const MIME_TYPES = {
   ".jpeg": "image/jpeg",
   ".jpg": "image/jpeg",
   ".js": "text/javascript; charset=utf-8",
+  ".mjs": "text/javascript; charset=utf-8",
   ".json": "application/json; charset=utf-8",
   ".glb": "model/gltf-binary",
   ".ico": "image/x-icon",
@@ -980,6 +996,26 @@ async function handleRequest(req, res, vite) {
     });
   }
 
+  const specialPreview=pathname.match(/^\/engine\/specials\/([a-f0-9-]+)\/([a-f0-9-]+)\/([0-5])\.mp4$/);
+  if(req.method==="GET"&&specialPreview) {
+    if(!fighterJobs.isAccessible(specialPreview[1],user?.uid))return json(res,404,{error:"Fighter not found"});
+    try {
+      const artifact=await specialJobs.preview(specialPreview[2],specialPreview[1],Number(specialPreview[3]));
+      if(!artifact)return json(res,404,{error:"Preview not found"});
+      const clip=videoResponse(await objectStore.read(artifact.key),req.headers.range);
+      res.writeHead(clip.status,clip.headers);res.end(clip.body);return;
+    } catch(error){return json(res,404,{error:error.message});}
+  }
+
+  const specialArtifact=pathname.match(/^\/engine\/specials\/([a-f0-9-]+)\/([a-f0-9-]+)\.json$/);
+  if(req.method==="GET"&&specialArtifact) {
+    if(!fighterJobs.isAccessible(specialArtifact[1],user?.uid))return json(res,404,{error:"Fighter not found"});
+    try {
+      const {packet}=await specialJobs.readyPackage(specialArtifact[2],specialArtifact[1]);
+      return json(res,200,packet,{"Cache-Control":"private, no-store"});
+    } catch(error){return json(res,error.status||404,{error:error.message});}
+  }
+
   if (req.method === "GET" && pathname === "/api/fighters") {
     return json(res, 200, { jobs: fighterJobs.list(user.uid) });
   }
@@ -1000,6 +1036,38 @@ async function handleRequest(req, res, vite) {
     } catch (error) {
       return json(res, error.status || 400, { error: error.message || "Could not create fighter." });
     }
+  }
+
+  const specialsMatch=pathname.match(/^\/api\/fighters\/([a-f0-9-]+)\/specials(?:\/([a-f0-9-]+)(?:\/(cancel|retry|equip))?)?$/);
+  if(specialsMatch) {
+    const [,fighterId,runId,action]=specialsMatch;
+    try {
+      if(!fighterJobs.get(fighterId,user.uid)) return json(res,404,{error:"Fighter not found"});
+      if(req.method==="GET"&&!runId) return json(res,200,{job:await specialJobs.latest(fighterId,user.uid),enabled:process.env.SPECIALS_ENABLED==="1"});
+      if(req.method==="POST"&&!runId) {
+        if(!creationEnabled()||process.env.SPECIALS_ENABLED!=="1") return json(res,503,{error:"Special generation is not enabled on this worker yet."});
+        const body=await readJsonBody(req);
+        return json(res,202,{job:await specialJobs.create(fighterId,user.uid,body.requestId)});
+      }
+      if(runId) {
+        const job=await specialJobs.get(runId,user.uid);
+        if(job.characterId!==fighterId) return json(res,404,{error:"Set does not belong to this fighter"});
+        if(req.method==="GET"&&!action)return json(res,200,{job});
+        if(req.method==="POST"&&action==="cancel")return json(res,200,{job:await specialJobs.cancel(runId,user.uid)});
+        if(req.method==="POST"&&action==="retry") {
+          if(!creationEnabled()||process.env.SPECIALS_ENABLED!=="1")return json(res,503,{error:"Special generation is disabled"});
+          return json(res,202,{job:await specialJobs.retry(runId,user.uid)});
+        }
+        if(req.method==="POST"&&action==="equip") {
+          const {job:ready}=await specialJobs.readyPackage(runId,fighterId);
+          const currentBundle=fighterJobs.artifact(fighterId,user.uid,"bundle");
+          if(currentBundle?.key!==ready.bundle.key)return json(res,409,{error:"Character changed since generation"});
+          const specials={id:runId,target:ready.profile.target,packageHash:ready.packageHash,url:`/engine/specials/${fighterId}/${runId}.json`};
+          return json(res,200,{job:await fighterJobs.equipSpecials(fighterId,user.uid,specials)});
+        }
+      }
+      return json(res,405,{error:"Unsupported special operation"});
+    } catch(error) {return json(res,error.status||400,{error:error.message});}
   }
 
   const fighterEventsMatch = pathname.match(/^\/api\/fighters\/([a-f0-9-]+)\/events$/);
@@ -1354,6 +1422,7 @@ await jobDatabase.init();
 await dispatcher.init();
 await authService.init();
 await fighterJobs.init();
+await specialJobs.init();
 await bakedRoster().catch((error) => console.warn(`Baked roster unavailable at boot: ${error.message}`));
 server.listen(PORT, HOST, () => {
   console.log(`OpenSmash web: http://${HOST}:${PORT}`);

@@ -158,3 +158,17 @@ test("firestore insert counts site-wide usage with aggregations, not document re
   fake.docs.set("old", { id: "old", slug: "old", ownerId: "x", status: "complete", createdAt: iso(2 * 24 * 60 * 60 * 1000) });
   await database.insert({ id: "next", slug: "next", ownerId: "someone", status: "queued", createdAt: iso(0) }, { quota: { ...quota, maxGlobalDaily: 42 } });
 });
+
+test('local claims serialize concurrent workers and preserve cancellation fences', async () => {
+  const root=await mkdtemp(path.join(os.tmpdir(),'special-claim-race-'));
+  try {
+    const first=createJobDatabase({jobsRoot:root}),second=createJobDatabase({jobsRoot:root});
+    await first.init();await second.init();
+    await first.insert({id:'race-job',slug:'race-job',ownerId:'owner',status:'queued',createdAt:new Date().toISOString()});
+    const claims=await Promise.all([first.claim('race-job','one',60),second.claim('race-job','two',60)]);
+    assert.equal(claims.filter(c=>c.claimed).length,1);
+    const winner=claims.find(c=>c.claimed).job;
+    await first.save({...winner,status:'cancelled',lease:null});
+    await assert.rejects(()=>second.save({...winner,status:'complete'},{executionId:winner.lease.executionId}),/no longer leased/);
+  } finally {await rm(root,{recursive:true,force:true});}
+});

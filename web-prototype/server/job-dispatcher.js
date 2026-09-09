@@ -38,6 +38,7 @@ class CloudRunDispatcher {
           env: [
             { name: "JOB_ID", value: job.id },
             { name: "JOB_REVISION", value: String(job.revision || 0) },
+            { name: "JOB_KIND", value: job.jobKind || "fighter" },
           ],
         }],
       },
@@ -90,7 +91,7 @@ export class CloudRunServiceDispatcher {
       response = await this.fetchImpl(`${this.url}/run`, {
         method: "POST",
         headers,
-        body: JSON.stringify({ jobId: job.id, revision: job.revision || 0 }),
+        body: JSON.stringify({ jobId: job.id, revision: job.revision || 0, ...(job.jobKind ? {jobKind:job.jobKind} : {}) }),
         signal: controller.signal,
       });
       if (!response.ok) {

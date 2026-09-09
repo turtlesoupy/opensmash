@@ -490,3 +490,15 @@ test("explicit slot roles seed VS character select as well as direct battles", (
   assert.match(query.get("SSB64_BOOT_BATTLE"), /^-1,\d+,4,1,0,-1$/);
   assert.equal(query.get("player"), "2");
 });
+
+test('equipped special hashes travel with primary and opponent character bindings',()=>{
+ const specials={target:'mario',url:'/engine/specials/one/set.json',packageHash:'abc'};
+ const main={...CHARACTER,specials};
+ const opponent={...CHARACTER,slug:'other',specials:{...specials,url:'/engine/specials/two/set.json'}};
+ const query=queryFor({type:'character',character:main,opponents:[{type:'character',character:opponent}]});
+ assert.equal(query.get('specials'),specials.url);assert.equal(query.get('specials_hash'),'abc');
+ const extra=query.getAll('inject_player').map(JSON.parse);
+ assert.ok(extra.some(e=>e.specialsUrl===opponent.specials.url&&e.specialsHash==='abc'));
+ const otherRig=queryFor({type:'character',character:main},{...DEFAULT_ADVANCED_OPTIONS,characterMesh:'link'});
+ assert.equal(otherRig.has('specials'),false);
+});

@@ -655,11 +655,14 @@ export default function App() {
       setFighterJobs((current) => reconcileVisibleFighterJobs(current, result.jobs));
     }
 
+    const refreshSpecials=()=>refreshFighterJobs().catch(()=>{});
+    window.addEventListener("specials-equipped",refreshSpecials);
     refreshFighterJobs().catch(() => {});
     const timer = window.setInterval(() => refreshFighterJobs().catch(() => {}), 15_000);
     return () => {
       cancelled = true;
       window.clearInterval(timer);
+      window.removeEventListener("specials-equipped",refreshSpecials);
     };
   }, [user?.uid]);
 

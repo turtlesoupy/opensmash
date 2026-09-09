@@ -1,0 +1,30 @@
+{
+  "character": {
+    "id": "prototype-weird-al",
+    "name": "Weird Al Yankovic",
+    "description": "Curly-haired musical parodist in a Hawaiian shirt, known for accordion polkas, Eat It and Amish Paradise. Cheerful theatrical energy."
+  },
+  "profile": {
+    "target": "mario",
+    "fkind": 0,
+    "joints": {
+      "torso": 6,
+      "head": 12,
+      "rightUpperArm": 8,
+      "rightForearm": 9,
+      "rightHand": 10,
+      "leftUpperArm": 14,
+      "leftForearm": 15,
+      "leftHand": 16,
+      "rightThigh": 19,
+      "rightShin": 20,
+      "leftThigh": 24,
+      "leftShin": 25
+    },
+    "hash": "c8a76e7fad0da98a862540bb360f6e27d77a75bd2a72f7fdb49c8651006848b1",
+    "units": "engine-world-units",
+    "forward": "x",
+    "up": "y",
+    "depth": "z"
+  }
+}

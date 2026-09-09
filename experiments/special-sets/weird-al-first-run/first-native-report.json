@@ -1,0 +1,137 @@
+{
+  "status": "ready",
+  "judges": 0,
+  "visualQuality": "not-assessed",
+  "packageFileHash": "7608543303d0c80be20bdb71d3334f43d7f02163eb792ef2f8ad14cb28050948",
+  "bundleHash": "c425f4d11bddc812e011e906862816ca5b23e8217e535448129463035543415b",
+  "binaryHash": "24cf2a8e694da35203f9dead5cd6338539a7544e64c74572c736d6de18bcb1c9",
+  "contexts": [
+    {
+      "slot": 0,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 11
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "slot": 1,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 9
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "slot": 2,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 15
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "slot": 3,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 9
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "slot": 4,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 8
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "passed": true
+    },
+    {
+      "slot": 5,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 13
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "runtimeValidated": true
+}

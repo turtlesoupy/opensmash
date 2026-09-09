@@ -1,3 +1,4 @@
+import SpecialsPanel from "./SpecialsPanel.jsx";
 import { useEffect, useRef, useState } from "react";
 import { availableFighterTargets, CHARACTER_MESHES } from "../shared/fighter-targets.js";
 import ModalPage from "./ModalPage.jsx";
@@ -197,6 +198,8 @@ export default function FighterJobModal({ job, onClose, onDelete, onRetry, onSav
                 </select>
               </section>
             )}
+
+            {job.status === "complete" && onSaveSettings && <SpecialsPanel fighterId={job.id} target={retarget} />}
 
             {job.status === "complete" && downloadUrl && (
               <section className="fighter-settings fighter-download" aria-labelledby="fighter-download-label">

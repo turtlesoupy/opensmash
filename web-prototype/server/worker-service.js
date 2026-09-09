@@ -1,3 +1,4 @@
+import { createSpecialJobs } from "./specials/jobs.js";
 // Long-lived fighter worker: a Cloud Run *service* (min-instances keep it
 // warm) instead of a Cloud Run Job execution per fighter, which spent one to
 // four minutes provisioning a task before the pipeline could start.
@@ -60,6 +61,8 @@ export function createWorkerServiceHandler({ claim, run, instanceId, heartbeatMs
     }
     const jobId = typeof body.jobId === "string" ? body.jobId : "";
     if (!JOB_ID_PATTERN.test(jobId)) return json(res, 400, { error: "jobId is required" });
+    const jobKind=body.jobKind||"fighter";
+    if(!["fighter","specials"].includes(jobKind))return json(res,400,{error:"Unknown job kind"});
     if (current) return json(res, 409, { error: "busy", jobId: current.jobId });
 
     runs += 1;
@@ -68,7 +71,7 @@ export function createWorkerServiceHandler({ claim, run, instanceId, heartbeatMs
     try {
       let claim_;
       try {
-        claim_ = await claim(jobId, executionId);
+        claim_ = await claim(jobId, executionId,jobKind);
       } catch (error) {
         console.error(`Could not claim fighter job '${jobId}':`, error);
         return json(res, 503, { error: `claim failed: ${error.message}` });
@@ -90,7 +93,7 @@ export function createWorkerServiceHandler({ claim, run, instanceId, heartbeatMs
       heartbeat.unref();
       let result = null;
       try {
-        result = await run(jobId, executionId);
+        result = await run(jobId, executionId,jobKind);
       } catch (error) {
         console.error(`Fighter job '${jobId}' crashed in the worker:`, error);
         result = { status: "failed", error: error.message };
@@ -150,7 +153,15 @@ if (isMain) {
   // fighter-jobs keeps per-run worker state (lease owner, lease-lost flag,
   // current child), so every run gets a fresh instance over the shared
   // database and object store.
-  async function run(jobId, executionId) {
+  const specialsRoot=path.join(APP_ROOT,"data","special-jobs");
+  const specialsDatabase=createJobDatabase({jobsRoot:specialsRoot,collectionName:process.env.FIRESTORE_SPECIALS_COLLECTION||"specialJobs"});
+  await specialsDatabase.init();
+  async function run(jobId, executionId,jobKind) {
+    if(jobKind==="specials") {
+      const specials=createSpecialJobs({repoRoot:PIPELINE_PROJECT_ROOT,jobsRoot:specialsRoot,jobDatabase:specialsDatabase,objectStore,dispatcher:{driver:"external"}});
+      await specials.init({dispatchPending:false});
+      return specials.runSingle(jobId,executionId);
+    }
     const fighterJobs = createFighterJobs({
       appRoot: APP_ROOT,
       repoRoot: PIPELINE_PROJECT_ROOT,
@@ -165,7 +176,7 @@ if (isMain) {
   }
 
   const service = createWorkerServiceHandler({
-    claim: (jobId, executionId) => jobDatabase.claim(jobId, executionId, leaseSeconds),
+    claim: (jobId, executionId,jobKind) => (jobKind==="specials" ? specialsDatabase : jobDatabase).claim(jobId, executionId, jobKind==="specials" ? 2400 : leaseSeconds),
     run,
     instanceId,
   });

@@ -164,6 +164,7 @@ function resolvedCharacter(character, meshName) {
     ...character,
     fkind: mesh.fkind,
     base: meshName,
+    specials: character.specials?.target===meshName ? character.specials : null,
   };
 }
 
@@ -288,6 +289,7 @@ function characterAssets(character) {
     short: character.short || character.name,
     name: character.name || character.display || null,
     bundleUrl: character.bundleUrl || `bundles/${character.bundle}`,
+    ...(character.specials?.url ? {specialsUrl:character.specials.url,specialsHash:character.specials.packageHash} : {}),
     uiUrl: character.uiUrl || (character.ui ? `bundles/${character.slug}.osbui` : null),
     voiceUrl: character.voiceUrl || (character.voice ? `bundles/${character.slug}.wav` : null),
     // Opening-movie portrait (the Sector cockpit face): the 256px derivative
@@ -374,6 +376,7 @@ export function engineUrl(action, advancedOptions, gamepads = []) {
 
   if (character) {
     params.set("inject", character.bundleUrl || `bundles/${character.bundle}`);
+    if(character.specials?.url) { params.set("specials",character.specials.url);params.set("specials_hash",character.specials.packageHash); }
     if (character.uiUrl || character.ui) {
       params.set("inject_ui", character.uiUrl || `bundles/${character.slug}.osbui`);
     }

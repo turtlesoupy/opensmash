@@ -1,0 +1,11 @@
+{
+  "good": {
+    "activations": 1,
+    "targetDamage": 8
+  },
+  "wrong": {
+    "activations": 0,
+    "targetDamage": 14
+  },
+  "binaryHash": "0dc3d1ee270eac6b428581bb4a5f84032647a25240bed5cb45cc7647a59fb613"
+}

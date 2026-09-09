@@ -1,0 +1,140 @@
+{
+  "status": "complete",
+  "packageHash": "0055a837345bb45e0cf3368eaed395fe8945b61f230ba92c7b4bd0f5d01911ca",
+  "judges": 0,
+  "source": "Two actual model calls; frozen responses replayed through durable worker for integration acceptance.",
+  "contexts": [
+    {
+      "slot": 0,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 11
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/engine/specials/prototype-weird-al/0e70e9847bb2e83022dc9cd195963ec9c84a3a64/0.mp4",
+      "passed": true
+    },
+    {
+      "slot": 1,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 9
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/engine/specials/prototype-weird-al/0e70e9847bb2e83022dc9cd195963ec9c84a3a64/1.mp4",
+      "passed": true
+    },
+    {
+      "slot": 2,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 15
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/engine/specials/prototype-weird-al/0e70e9847bb2e83022dc9cd195963ec9c84a3a64/2.mp4",
+      "passed": true
+    },
+    {
+      "slot": 3,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 9
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/engine/specials/prototype-weird-al/0e70e9847bb2e83022dc9cd195963ec9c84a3a64/3.mp4",
+      "passed": true
+    },
+    {
+      "slot": 4,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 8
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/engine/specials/prototype-weird-al/0e70e9847bb2e83022dc9cd195963ec9c84a3a64/4.mp4",
+      "passed": true
+    },
+    {
+      "slot": 5,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 13
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/engine/specials/prototype-weird-al/0e70e9847bb2e83022dc9cd195963ec9c84a3a64/5.mp4",
+      "passed": true
+    }
+  ]
+}

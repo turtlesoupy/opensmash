@@ -1305,6 +1305,13 @@ export function createFighterJobs({
       return retry(id, ownerId);
     },
     updateSettings,
+    async equipSpecials(id, ownerId, specials) {
+      const job=ownedJob(id,ownerId);
+      if(!job || job.status!=="complete") throw new HttpError(404,"Completed fighter not found.");
+      if(specials && specials.target!==(job.retarget||"mario")) throw new HttpError(409,"This set was generated for a different rig. Switch back or generate a new set.");
+      const updated={...job,specials};
+      await saveJob(updated);jobs.set(id,updated);return publicJob(updated);
+    },
     async remove(id, ownerId) {
       return remove(id, ownerId);
     },

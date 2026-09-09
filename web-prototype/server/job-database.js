@@ -1,4 +1,5 @@
-import { mkdir, readFile, readdir, rename, rm, writeFile } from "node:fs/promises";
+import { setTimeout as delay } from "node:timers/promises";
+import { mkdir, readFile, readdir, rename, rm, writeFile, stat } from "node:fs/promises";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import { ACTIVE_JOB_STATUSES } from "./job-protocol.js";
@@ -78,20 +79,24 @@ class LocalJobDatabase {
   }
 
   async insert(job, { quota = null } = {}) {
+    return this.lock(async()=>{
     const existing = await this.list();
     if (existing.some((candidate) => candidate.slug === job.slug)) {
       throw duplicateSlugError(job.slug);
     }
     if (quota) assertQuota(quotaUsage(existing, job.ownerId), quota);
     await this.write(job);
+    });
   }
 
-  async save(job, { executionId = null } = {}) {
+  async save(job, { executionId = null, expectedRevision = null } = {}) {
+    return this.lock(async()=>{
     if (executionId) {
       const stored = await this.get(job.id);
-      if (stored?.lease?.executionId !== executionId) throw leaseLostError(job.id);
+      if (stored?.lease?.executionId !== executionId || (expectedRevision!==null && stored.revision!==expectedRevision)) throw leaseLostError(job.id);
     }
     await this.write(job);
+    });
   }
 
   async write(job) {
@@ -112,12 +117,39 @@ class LocalJobDatabase {
   }
 
   async claim(id, executionId, leaseSeconds) {
-    const decision = claimDecision(await this.get(id), executionId);
-    if (!decision.claimed) return decision;
-    decision.job.lease = leaseFor(executionId, leaseSeconds);
-    await this.write(decision.job);
-    return decision;
+    return this.lock(async()=>{
+      const decision = claimDecision(await this.get(id), executionId);
+      if (!decision.claimed) return decision;
+      decision.job.lease = leaseFor(executionId, leaseSeconds);
+      await this.write(decision.job);
+      return decision;
+    });
   }
+
+  // Serializes local processes as well as callers, including cancel vs fenced save.
+  async lock(fn) {
+    const lockPath=path.join(this.root,".mutation-lock");
+    const deadline=Date.now()+10000;
+    while(true) {
+      try {await mkdir(lockPath);await writeFile(path.join(lockPath,"pid"),String(process.pid));break;}
+      catch(e) {
+        if(e.code!=="EEXIST")throw e;
+        try {
+          const pid=Number(await readFile(path.join(lockPath,"pid"),"utf8"));
+          try {process.kill(pid,0);}catch(e){if(e.code==="ESRCH"){await rm(lockPath,{recursive:true,force:true});continue;}}
+        } catch(e) {
+          if(e.code==="ENOENT") {
+            const info=await stat(lockPath).catch(()=>null);
+            if(info && Date.now()-info.mtimeMs>30000)await rm(lockPath,{recursive:true,force:true});
+          } else throw e;
+        }
+        if(Date.now()>deadline)throw new Error("Local job database lock timed out");
+        await delay(10);
+      }
+    }
+    try {return await fn();}finally{await rm(lockPath,{recursive:true,force:true});}
+  }
+
 }
 
 export class FirestoreJobDatabase {
@@ -179,7 +211,7 @@ export class FirestoreJobDatabase {
     });
   }
 
-  async save(job, { executionId = null } = {}) {
+  async save(job, { executionId = null, expectedRevision = null } = {}) {
     const reference = this.collection.doc(job.id);
     if (!executionId) {
       await reference.set(job);
@@ -188,7 +220,7 @@ export class FirestoreJobDatabase {
     await this.collection.firestore.runTransaction(async (transaction) => {
       const document = await transaction.get(reference);
       const stored = document.exists ? document.data() : null;
-      if (stored?.lease?.executionId !== executionId) throw leaseLostError(job.id);
+      if (stored?.lease?.executionId !== executionId || (expectedRevision!==null && stored.revision!==expectedRevision)) throw leaseLostError(job.id);
       transaction.set(reference, job);
     });
   }
@@ -224,10 +256,10 @@ export class FirestoreJobDatabase {
   }
 }
 
-export function createJobDatabase({ jobsRoot }) {
+export function createJobDatabase({ jobsRoot, collectionName }) {
   if ((process.env.JOB_DATABASE || "local") === "firestore") {
     return new FirestoreJobDatabase({
-      collectionName: process.env.FIRESTORE_JOBS_COLLECTION || "fighterJobs",
+      collectionName: collectionName || process.env.FIRESTORE_JOBS_COLLECTION || "fighterJobs",
     });
   }
   return new LocalJobDatabase(jobsRoot);

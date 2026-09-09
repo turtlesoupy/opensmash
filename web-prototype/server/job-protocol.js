@@ -87,6 +87,7 @@ export function publicJob(job) {
       base: job.retarget || "mario",
       fkind: CHARACTER_MESHES.find(({ value }) => value === job.retarget)?.fkind ?? 0,
       bundle: `${job.slug}.osb6`,
+      specials: job.specials?.target === (job.retarget || "mario") ? job.specials : null,
     };
     result.costUsd = job.costUsd ?? null;
   }

@@ -134,3 +134,14 @@ test("bad requests are rejected", async () => {
     await close();
   }
 });
+
+test('special job kind reaches both claim and execution without fighter routing',async()=>{
+ const seen=[];const service=createWorkerServiceHandler({instanceId:'special-worker',
+  claim:async(id,execution,kind)=>{seen.push(['claim',kind]);return {claimed:true,job:{}};},
+  run:async(id,execution,kind)=>{seen.push(['run',kind]);return {status:'complete'};}});
+ const {base,close}=await listen(service);
+ try {
+  const response=await fetch(`${base}/run`,{method:'POST',body:JSON.stringify({jobId:'special-123456',jobKind:'specials'})});
+  await response.text();assert.equal(response.status,200);assert.deepEqual(seen,[['claim','specials'],['run','specials']]);
+ }finally{await close();}
+});
