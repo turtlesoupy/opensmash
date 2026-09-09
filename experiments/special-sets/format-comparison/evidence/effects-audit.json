@@ -1,0 +1,37 @@
+{
+  "date": "2026-09-09",
+  "reference": "Weird Al \u2014 Polka Pressure",
+  "referenceMoveHash": "c2f1dafe36513ec1522059329ad5f015f5bdfda08ef6c4ccce31f16580f7feb0",
+  "binaryHash": "0dc3d1ee270eac6b428581bb4a5f84032647a25240bed5cb45cc7647a59fb613",
+  "bundleHash": "c425f4d11bddc812e011e906862816ca5b23e8217e535448129463035543415b",
+  "control": {
+    "scenario": "wave",
+    "nativeDamage": 14,
+    "beginCount": 1,
+    "endCount": 1,
+    "captureFrames": [
+      500,
+      679
+    ],
+    "captureCount": 180,
+    "effectsObserved": [
+      "accordion bellows and keys",
+      "curved pressure wave",
+      "musical note trail"
+    ]
+  },
+  "depthDiagnostic": {
+    "source": "original-full/package.json",
+    "slot": 1,
+    "onlyChangedFields": "Every visual part from[2] and to[2] increased by 120; attack, pose, timing and collision unchanged.",
+    "result": "Previously obscured accordion parts become visible.",
+    "approvedFix": false
+  },
+  "findings": [
+    "Reduced neutral/up emitted no decorative particles and show props for only 4\u20135 frames.",
+    "Full-set props at z=0 can be obscured by the fighter.",
+    "The generic v3 format caps the entire move at 16 rectangles; the richer v2 Polka Pressure renderer remains functional.",
+    "The cost comparison was not a same-fidelity test against the user-approved reference."
+  ],
+  "modelCalls": 0
+}

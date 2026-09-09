@@ -16,7 +16,7 @@ def read_validation(d):
  return json.loads(q.read_text()) if q.exists() else None
 for id in ids:
  d=root/id;r=json.loads((d/'result.json').read_text());v=read_validation(d/'validation')
- label=('Earlier full reference · Astra' if id=='original-full' else ('Astra' if 'astra' in id else 'Luna')+' · '+r['format'])
+ label=('Earlier full-set attempt · Astra' if id=='original-full' else ('Astra' if 'astra' in id else 'Luna')+' · '+r['format'])
  checks=sum(bool(s.get('passed')) for c in v['contexts'] for s in c['scenarios']) if v else 0
  failure='; '.join(f"slot {c['slot']}: {name}" for c in v['contexts'] for z in c['scenarios'] for name,ok in z.get('checks',{}).items() if not ok) if v else None
  status=(f'{checks}/18 passed' if v and v['status']=='ready' else f'{checks}/18; failed' if v else 'Compiler rejected' if r['status']=='failed' else 'Running')
@@ -65,6 +65,6 @@ if fixed:
  (files/'compiler-correction.json').write_text(json.dumps(dict(change=json.loads((root/'luna-reduced-launch-fix/change.json').read_text()),validation=correction),indent=2))
  report['compilerCorrection']=correction
  (files/'report.json').write_text(json.dumps(report,indent=2))
-data=dict(runs=runs,summary=summary,corrected=fixed,groups=[dict(id='clips',label='Earlier full reference vs reduced Luna',note=('The reduced side includes the compiler correction to air-up launch timing. All other moves are unchanged. ' if fixed else '')+'Synchronized at normal speed, with identical crops for a closer view. Full-stage originals are linked below each clip. Same descriptions, bundle and capture window.',clips=clips)])
+data=dict(runs=runs,summary=summary,corrected=fixed,groups=[dict(id='clips',label='Earlier full-set attempt vs reduced Luna (both below target)',note=('The reduced side includes the compiler correction to air-up launch timing. All other moves are unchanged. ' if fixed else '')+'Synchronized at normal speed, with identical crops for a closer view. Full-stage originals are linked below each clip. Same descriptions, bundle and capture window.',clips=clips)])
 (site/'app/format-comparison/results.json').write_text(json.dumps(data,indent=2))
 print(json.dumps({'clips':sum(bool(c['src']) for c in clips),'runs':runs}))

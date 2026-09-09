@@ -1,5 +1,7 @@
 # Reduced authoring comparison
 
+**Visual baseline correction (2026-09-09):** this experiment is below the user-approved Polka Pressure reference. Mechanical qualification did not establish visual fidelity. See `visual-baseline.md` and `evidence/effects-audit.json`. The token savings are not an equal-quality comparison.
+
 This experiment compares full numerical authoring with a small reduced format.
 It does not change the production/default generator or native runtime ABI.
 
