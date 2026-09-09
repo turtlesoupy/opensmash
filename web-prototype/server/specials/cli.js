@@ -16,7 +16,9 @@ const character={...JSON.parse(await readFile(characterFile,'utf8')),bundleHash:
 const profile=await rigProfile(root,target);
 await writeFile(path.join(outputDir,'input.json'),JSON.stringify({character,profile},null,2));
 try {
- const result=await generateSet({format:process.env.SPECIALS_FORMAT||'rich',character,profile,checkpoint:async(stage,value)=>{
+ const frozen=process.env.SPECIALS_BRIEF_FILE?JSON.parse(await readFile(process.env.SPECIALS_BRIEF_FILE,'utf8')):null;
+ const principlesText=process.env.SPECIALS_PRINCIPLES_FILE?await readFile(process.env.SPECIALS_PRINCIPLES_FILE,'utf8'):null;
+ const result=await generateSet({brief:frozen?.brief??frozen,principlesText,format:process.env.SPECIALS_FORMAT||'rich',character,profile,checkpoint:async(stage,value)=>{
    await writeFile(path.join(outputDir,`${stage}.json`),JSON.stringify(value,null,2),{flag:'wx'});
    console.log(JSON.stringify({stage,hash:hash(value)}));
  }});

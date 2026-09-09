@@ -8,7 +8,7 @@ const root=path.resolve(import.meta.dirname,'../..');
 const fixture=()=>({
  character:{id:'fixture'},
  brief:{identity:'Theatrical musician',palette:[255,220,120],moves:SLOTS.map(slot=>({slot,name:slot,signature:'Pleated instrument',anticipation:'Pull',action:'Squeeze',recovery:'Fold',groundAirDifference:'Tuck legs',counterplay:'Punish recovery',startup:slot.endsWith('air')?12:20,duration:slot.endsWith('air')?70:80,damage:12}))},
- score:{colors:[[40,25,60],[255,220,120]],props:[{id:'instrument',pieces:[{at:[-100,0,0],size:[5,65],color:0,angle:0,repeat:13,step:[16,0,0]},{at:[110,-60,4],size:[20,5],color:1,angle:0,repeat:8,step:[0,17,0]}]},{id:'note',pieces:[{at:[0,0,0],size:[14,7],color:1,angle:0,repeat:1,step:[0,0,0]},{at:[10,18,0],size:[3,20],color:1,angle:0,repeat:1,step:[0,0,0]}]}],moves:['neutral','up','down'].map(kind=>({kind,tracks:['torso','head'].map(joint=>({joint,keys:[{frame:12,degrees:[20,0,0]},{frame:36,degrees:[-20,0,0]}]})),hits:[{delay:0,length:8,weight:1,angle:60,radius:160,from:[200,240,0],to:[500,260,0]}],assemblies:[{prop:'instrument',keys:[{frame:4,at:[150,240,0],scale:[.7,1]},{frame:18,at:[150,240,0],scale:[1,1]},{frame:32,at:[180,240,0],scale:[.6,1]},{frame:64,at:[150,200,0],scale:[.8,1]}]}],cueColors:[0,1],trails:[{prop:'note',hit:0,count:6,life:17,spread:100,drift:[0,3]}],velocity:[],air:{tracks:[],hitShift:[0,0,0],velocity:[]}}))}
+ score:{colors:[[40,25,60],[255,220,120]],props:[{id:'instrument',pieces:[{at:[-100,0,0],size:[5,65],mount:[],color:0,angle:0,repeat:13,step:[16,0,0]},{at:[110,-60,4],size:[20,5],mount:[],color:1,angle:0,repeat:8,step:[0,17,0]}]},{id:'note',pieces:[{at:[0,0,0],size:[14,7],mount:[],color:1,angle:0,repeat:1,step:[0,0,0]},{at:[10,18,0],size:[3,20],mount:[],color:1,angle:0,repeat:1,step:[0,0,0]}]}],moves:['neutral','up','down'].map(kind=>({kind,tracks:['torso','head'].map(joint=>({joint,keys:[{frame:12,degrees:[20,0,0]},{frame:36,degrees:[-20,0,0]}]})),hits:[{delay:0,length:8,weight:1,angle:60,radius:160,from:[200,240,0],to:[500,260,0]}],assemblies:[{prop:'instrument',keys:[{frame:4,at:[150,240,0],scale:[.7,1]},{frame:18,at:[150,240,0],scale:[1,1]},{frame:32,at:[180,240,0],scale:[.6,1]},{frame:64,at:[150,200,0],scale:[.8,1]}]}],cueColors:[0,1],trails:[{prop:'note',hit:0,count:6,life:17,spread:100,drift:[0,3]}],velocity:[],air:{tracks:[],hitShift:[0,0,0],velocity:[]}}))}
 });
 test('compact repeated geometry yields detailed six-context packets with bounded peaks and identical replay',async()=>{
  const args={...fixture(),profile:await rigProfile(root)},before=JSON.stringify(args);
@@ -30,7 +30,7 @@ test('rich authoring is the default two-call upload pipeline with frozen descrip
   events.push(req.name);if(req.name==='special_implementation')assert.equal(req.input.briefHash,hash(f.brief));
   return {value:req.name==='special_description'?f.brief:f.score,provenance:{model:'fixture'}};
  },checkpoint:async stage=>events.push(stage)});
- assert.deepEqual(events,['special_description','description','special_implementation','implementation','compiled']);
+ assert.deepEqual(events,['principles','special_description','description','special_implementation','implementation','compiled']);
  assert.equal(result.report.judges,0);assert.equal(result.report.format,'rich');assert.equal(result.packet.sets[0].moves[0].version,4);
 });
 test('rich effects compile for all twelve supported rigs',async()=>{
@@ -116,4 +116,36 @@ test('particle anchors cannot follow future frames or detach dangerous hit cues'
  const p=implementation.moves[0].parts.find(p=>p.hit>=0);p.anchorFrame=0;
  assert.throws(()=>compileSet(args),/invalid particle birth anchor/);
  p.anchorFrame=p.start+1;assert.throws(()=>compileSet(args),/invalid particle birth anchor/);
+});
+
+test('general rigid mounts preserve decoration spacing while adjacent material stretches',()=>{
+ const f=fixture();f.score.props[0].pieces=[
+  {at:[0,0,0],size:[80,60],mount:[],color:0,angle:0,repeat:1,step:[0,0,0]},
+  {at:[110,-40,4],size:[12,8],mount:[100,0],color:1,angle:0,repeat:3,step:[0,40,0]},
+ ];
+ const m=expandRich(f).moves[0],segment=m.parts.filter(p=>p.start===4&&p.end===18);
+ const keys=segment.filter(p=>p.color[0]===255),body=segment.find(p=>p.color[0]===40);
+ assert.equal(keys.length,3);assert.notEqual(body.size[0],body.sizeTo[0]);
+ for(const key of keys)assert.deepEqual(key.size,key.sizeTo);
+ assert.notEqual(keys[0].from[0],keys[0].to[0]);
+ assert.equal(keys[1].from[1]-keys[0].from[1],keys[1].to[1]-keys[0].to[1]);
+});
+test('new generation forbids preset selection and retains rejected raw output without a repair call',async()=>{
+ const f=fixture(),stages=[];let calls=0;
+ await assert.rejects(()=>generateSet({character:f.character,profile:{joints:{torso:6,head:12},fkind:0,hash:'test'},model:async req=>{
+  calls++;if(req.name==='special_description')return {value:f.brief,provenance:{model:'fixture'}};
+  assert.equal(req.schema.properties.props.items.properties.construction,undefined);
+  f.score.props[0].construction='bellows';return {value:f.score,provenance:{model:'fixture'}};
+ },checkpoint:async stage=>stages.push(stage)}),/unknown field construction/);
+ assert.equal(calls,2);assert.deepEqual(stages,['principles','description','implementation']);
+});
+test('principles and authoring contract remain frozen when resuming an existing description',async()=>{
+ const f=fixture(),profile={joints:{torso:6,head:12},fkind:0,hash:'test'};let snapshot;
+ await generateSet({character:f.character,profile,principlesText:'Version A: readable silhouette.',model:async req=>({value:req.name==='special_description'?f.brief:f.score,provenance:{model:'fixture'}}),checkpoint:async(stage,value)=>{if(stage==='principles')snapshot=value;}});
+ let calls=0;
+ const result=await generateSet({character:f.character,profile,brief:f.brief,policy:snapshot,principlesText:'Version B must not replace A.',model:async req=>{
+  calls++;assert.ok(req.instructions.startsWith('Version A'));assert.ok(!req.instructions.includes('Version B'));return {value:f.score,provenance:{model:'fixture'}};
+ }});
+ assert.equal(calls,1);assert.equal(result.report.principles.hash,hash(snapshot.text));assert.equal(result.report.manualReview.status,'pending');
+ await assert.rejects(()=>generateSet({character:f.character,profile,brief:f.brief,policy:{...snapshot,text:'tampered'},model:async()=>{throw Error('must not call');}}),/Invalid frozen principles snapshot/);
 });

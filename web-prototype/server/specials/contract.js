@@ -40,7 +40,7 @@ export function validate(schema, value, at='$') {
   if(schema.type==='object') {
     if(!value || typeof value!=='object' || Array.isArray(value)) fail('expected object');
     for(const key of Object.keys(value)) if(!Object.hasOwn(schema.properties,key)) fail(`unknown field ${key}`);
-    for(const key of schema.required) validate(schema.properties[key],value[key],`${at}.${key}`);
+    for(const key of Object.keys(schema.properties)) if(schema.required.includes(key)||Object.hasOwn(value,key)) validate(schema.properties[key],value[key],`${at}.${key}`);
   } else if(schema.type==='array') {
     if(!Array.isArray(value) || value.length<schema.minItems || value.length>schema.maxItems) fail('invalid array length');
     value.forEach((v,i)=>validate(schema.items,v,`${at}[${i}]`));

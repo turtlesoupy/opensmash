@@ -89,7 +89,8 @@ export function createSpecialJobs({repoRoot,jobsRoot,jobDatabase,objectStore,dis
     if(job.artifacts.compiled) result=JSON.parse((await objectStore.read(job.artifacts.compiled.key)).toString());
     else {
       const referenceImage=job.portrait ? `data:${job.portrait.contentType||'image/png'};base64,${(await objectStore.read(job.portrait.key,{public:job.portrait.public===true})).toString('base64')}` : null;
-      result=await generateSet({format:authoringFormat,character:job.character,profile:job.profile,model,brief:job.brief,referenceImage,checkpoint,signal:controller.signal});
+      const policy=job.artifacts.principles?JSON.parse((await objectStore.read(job.artifacts.principles.key)).toString()):null;
+      result=await generateSet({policy,format:authoringFormat,character:job.character,profile:job.profile,model,brief:job.brief,referenceImage,checkpoint,signal:controller.signal});
     }
     const outputRoot=path.join(jobsRoot,id);await mkdir(outputRoot,{recursive:true});
     const bundlePath=path.join(outputRoot,'character.osb');
@@ -107,6 +108,7 @@ export function createSpecialJobs({repoRoot,jobsRoot,jobDatabase,objectStore,dis
         context.preview=`/engine/specials/${job.character.id}/${job.id}/${context.slot}.mp4`;
       }
     }
+    report.principles=result.report?.principles;report.manualReview=result.report?.manualReview;
     report.generation=result.report?.generation;report.representation=result.report?.representation;
     job.artifacts.report=await artifact(job,'report',report);
     job.report=report;job.status='complete';job.stage='ready';await save();
