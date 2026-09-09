@@ -1,0 +1,2315 @@
+{
+  "implementation": {
+    "colors": [
+      [
+        18,
+        18,
+        22
+      ],
+      [
+        38,
+        25,
+        19
+      ],
+      [
+        112,
+        67,
+        35
+      ],
+      [
+        224,
+        190,
+        112
+      ],
+      [
+        238,
+        230,
+        196
+      ],
+      [
+        104,
+        25,
+        24
+      ],
+      [
+        12,
+        48,
+        72
+      ],
+      [
+        210,
+        210,
+        205
+      ]
+    ],
+    "props": [
+      {
+        "id": "parchment",
+        "pieces": [
+          {
+            "at": [
+              0,
+              0,
+              0
+            ],
+            "size": [
+              150,
+              95
+            ],
+            "color": 4,
+            "angle": 0,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": [
+              -75,
+              0,
+              3
+            ],
+            "size": [
+              8,
+              78
+            ],
+            "color": 3,
+            "angle": 0,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": [
+              -35,
+              30,
+              4
+            ],
+            "size": [
+              48,
+              4
+            ],
+            "color": 6,
+            "angle": 0,
+            "repeat": 3,
+            "step": [
+              0,
+              -25,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": [
+              35,
+              12,
+              4
+            ],
+            "size": [
+              42,
+              4
+            ],
+            "color": 6,
+            "angle": 0,
+            "repeat": 2,
+            "step": [
+              0,
+              -27,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": [
+              82,
+              0,
+              3
+            ],
+            "size": [
+              7,
+              78
+            ],
+            "color": 3,
+            "angle": 0,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "quill",
+        "pieces": [
+          {
+            "at": [
+              0,
+              0,
+              0
+            ],
+            "size": [
+              115,
+              7
+            ],
+            "color": 3,
+            "angle": 0.4,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": [
+              108,
+              44,
+              2
+            ],
+            "size": [
+              18,
+              5
+            ],
+            "color": 4,
+            "angle": 0.4,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": [
+              -70,
+              -24,
+              2
+            ],
+            "size": [
+              20,
+              8
+            ],
+            "color": 3,
+            "angle": 0,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "inkwell",
+        "pieces": [
+          {
+            "at": [
+              0,
+              0,
+              0
+            ],
+            "size": [
+              32,
+              22
+            ],
+            "color": 1,
+            "angle": 0,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": [
+              0,
+              20,
+              2
+            ],
+            "size": [
+              22,
+              7
+            ],
+            "color": 3,
+            "angle": 0,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "inkwave",
+        "pieces": [
+          {
+            "at": [
+              0,
+              0,
+              0
+            ],
+            "size": [
+              125,
+              18
+            ],
+            "color": 1,
+            "angle": 0.25,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": [
+              80,
+              35,
+              3
+            ],
+            "size": [
+              105,
+              10
+            ],
+            "color": 4,
+            "angle": 0.45,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": [
+              160,
+              62,
+              4
+            ],
+            "size": [
+              90,
+              7
+            ],
+            "color": 6,
+            "angle": 0.55,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": [
+              224,
+              87,
+              5
+            ],
+            "size": [
+              48,
+              5
+            ],
+            "color": 3,
+            "angle": 0.6,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "paperScrap",
+        "pieces": [
+          {
+            "at": [
+              0,
+              0,
+              0
+            ],
+            "size": [
+              34,
+              24
+            ],
+            "color": 4,
+            "angle": 0.2,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": [
+              0,
+              0,
+              2
+            ],
+            "size": [
+              20,
+              3
+            ],
+            "color": 6,
+            "angle": 0.2,
+            "repeat": 2,
+            "step": [
+              0,
+              12,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "hat",
+        "pieces": [
+          {
+            "at": [
+              0,
+              0,
+              0
+            ],
+            "size": [
+              76,
+              18
+            ],
+            "color": 1,
+            "angle": 0,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": [
+              0,
+              75,
+              0
+            ],
+            "size": [
+              50,
+              72
+            ],
+            "color": 1,
+            "angle": 0,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": [
+              0,
+              136,
+              2
+            ],
+            "size": [
+              62,
+              10
+            ],
+            "color": 3,
+            "angle": 0,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": [
+              0,
+              91,
+              4
+            ],
+            "size": [
+              28,
+              5
+            ],
+            "color": 5,
+            "angle": 0,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": [
+              0,
+              136,
+              5
+            ],
+            "size": [
+              35,
+              4
+            ],
+            "color": 3,
+            "angle": 0,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "hatArc",
+        "pieces": [
+          {
+            "at": [
+              0,
+              0,
+              0
+            ],
+            "size": [
+              72,
+              12
+            ],
+            "color": 1,
+            "angle": 0,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": [
+              48,
+              22,
+              3
+            ],
+            "size": [
+              48,
+              7
+            ],
+            "color": 3,
+            "angle": 0.35,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": [
+              -48,
+              22,
+              3
+            ],
+            "size": [
+              48,
+              7
+            ],
+            "color": 3,
+            "angle": -0.35,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          }
+        ]
+      },
+      {
+        "id": "logAxe",
+        "pieces": [
+          {
+            "at": [
+              0,
+              0,
+              0
+            ],
+            "size": [
+              125,
+              55
+            ],
+            "color": 2,
+            "angle": 0,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": [
+              -80,
+              8,
+              3
+            ],
+            "size": [
+              10,
+              42
+            ],
+            "color": 1,
+            "angle": 0,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": [
+              -45,
+              55,
+              4
+            ],
+            "size": [
+              8,
+              20
+            ],
+            "color": 3,
+            "angle": 0,
+            "repeat": 2,
+            "step": [
+              45,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": [
+              0,
+              57,
+              5
+            ],
+            "size": [
+              35,
+              8
+            ],
+            "color": 4,
+            "angle": 0,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": [
+              150,
+              155,
+              0
+            ],
+            "size": [
+              13,
+              150
+            ],
+            "color": 2,
+            "angle": -0.45,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          },
+          {
+            "at": [
+              90,
+              285,
+              2
+            ],
+            "size": [
+              58,
+              18
+            ],
+            "color": 7,
+            "angle": -0.45,
+            "repeat": 1,
+            "step": [
+              0,
+              0,
+              0
+            ],
+            "mount": [
+              0,
+              0
+            ]
+          }
+        ]
+      }
+    ],
+    "moves": [
+      {
+        "kind": "neutral",
+        "tracks": [
+          {
+            "joint": "rightUpperArm",
+            "keys": [
+              {
+                "frame": 1,
+                "degrees": [
+                  -20,
+                  0,
+                  25
+                ]
+              },
+              {
+                "frame": 24,
+                "degrees": [
+                  -55,
+                  0,
+                  70
+                ]
+              },
+              {
+                "frame": 44,
+                "degrees": [
+                  15,
+                  0,
+                  -80
+                ]
+              },
+              {
+                "frame": 72,
+                "degrees": [
+                  -20,
+                  0,
+                  20
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightForearm",
+            "keys": [
+              {
+                "frame": 1,
+                "degrees": [
+                  20,
+                  0,
+                  20
+                ]
+              },
+              {
+                "frame": 24,
+                "degrees": [
+                  -25,
+                  0,
+                  75
+                ]
+              },
+              {
+                "frame": 44,
+                "degrees": [
+                  0,
+                  0,
+                  -110
+                ]
+              },
+              {
+                "frame": 72,
+                "degrees": [
+                  15,
+                  0,
+                  15
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftUpperArm",
+            "keys": [
+              {
+                "frame": 1,
+                "degrees": [
+                  10,
+                  0,
+                  -25
+                ]
+              },
+              {
+                "frame": 24,
+                "degrees": [
+                  -35,
+                  0,
+                  -75
+                ]
+              },
+              {
+                "frame": 44,
+                "degrees": [
+                  -5,
+                  0,
+                  80
+                ]
+              },
+              {
+                "frame": 72,
+                "degrees": [
+                  10,
+                  0,
+                  -20
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftForearm",
+            "keys": [
+              {
+                "frame": 1,
+                "degrees": [
+                  -10,
+                  0,
+                  -15
+                ]
+              },
+              {
+                "frame": 24,
+                "degrees": [
+                  -20,
+                  0,
+                  -65
+                ]
+              },
+              {
+                "frame": 44,
+                "degrees": [
+                  5,
+                  0,
+                  100
+                ]
+              },
+              {
+                "frame": 72,
+                "degrees": [
+                  -10,
+                  0,
+                  -15
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "head",
+            "keys": [
+              {
+                "frame": 1,
+                "degrees": [
+                  8,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 24,
+                "degrees": [
+                  18,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 56,
+                "degrees": [
+                  -4,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 72,
+                "degrees": [
+                  0,
+                  0,
+                  0
+                ]
+              }
+            ]
+          }
+        ],
+        "hits": [
+          {
+            "delay": 25,
+            "length": 12,
+            "weight": 10,
+            "angle": 8,
+            "radius": 145,
+            "from": [
+              220,
+              170,
+              20
+            ],
+            "to": [
+              520,
+              205,
+              20
+            ]
+          },
+          {
+            "delay": 9,
+            "length": 12,
+            "weight": 10,
+            "angle": 8,
+            "radius": 145,
+            "from": [
+              260,
+              170,
+              20
+            ],
+            "to": [
+              650,
+              225,
+              20
+            ]
+          },
+          {
+            "delay": 10,
+            "length": 14,
+            "weight": 10,
+            "angle": 8,
+            "radius": 150,
+            "from": [
+              300,
+              170,
+              20
+            ],
+            "to": [
+              800,
+              245,
+              20
+            ]
+          }
+        ],
+        "assemblies": [
+          {
+            "prop": "parchment",
+            "keys": [
+              {
+                "frame": 1,
+                "at": [
+                  105,
+                  150,
+                  20
+                ],
+                "scale": [
+                  0.55,
+                  0.55
+                ]
+              },
+              {
+                "frame": 24,
+                "at": [
+                  120,
+                  155,
+                  20
+                ],
+                "scale": [
+                  0.8,
+                  0.8
+                ]
+              },
+              {
+                "frame": 44,
+                "at": [
+                  360,
+                  190,
+                  40
+                ],
+                "scale": [
+                  1.05,
+                  1.05
+                ]
+              },
+              {
+                "frame": 72,
+                "at": [
+                  160,
+                  145,
+                  20
+                ],
+                "scale": [
+                  0.65,
+                  0.65
+                ]
+              }
+            ]
+          },
+          {
+            "prop": "quill",
+            "keys": [
+              {
+                "frame": 1,
+                "at": [
+                  -80,
+                  125,
+                  30
+                ],
+                "scale": [
+                  0.7,
+                  0.7
+                ]
+              },
+              {
+                "frame": 24,
+                "at": [
+                  80,
+                  165,
+                  35
+                ],
+                "scale": [
+                  0.8,
+                  0.8
+                ]
+              },
+              {
+                "frame": 44,
+                "at": [
+                  360,
+                  210,
+                  50
+                ],
+                "scale": [
+                  1.1,
+                  1.1
+                ]
+              },
+              {
+                "frame": 72,
+                "at": [
+                  -55,
+                  120,
+                  25
+                ],
+                "scale": [
+                  0.65,
+                  0.65
+                ]
+              }
+            ]
+          },
+          {
+            "prop": "inkwell",
+            "keys": [
+              {
+                "frame": 1,
+                "at": [
+                  -110,
+                  85,
+                  15
+                ],
+                "scale": [
+                  0.8,
+                  0.8
+                ]
+              },
+              {
+                "frame": 24,
+                "at": [
+                  -95,
+                  90,
+                  15
+                ],
+                "scale": [
+                  0.8,
+                  0.8
+                ]
+              },
+              {
+                "frame": 72,
+                "at": [
+                  -100,
+                  85,
+                  15
+                ],
+                "scale": [
+                  0.8,
+                  0.8
+                ]
+              }
+            ]
+          }
+        ],
+        "cueColors": [
+          1,
+          6
+        ],
+        "trails": [
+          {
+            "prop": "inkwave",
+            "hit": 0,
+            "count": 4,
+            "life": 18,
+            "spread": 55,
+            "drift": [
+              5,
+              1
+            ]
+          },
+          {
+            "prop": "inkwave",
+            "hit": 1,
+            "count": 4,
+            "life": 18,
+            "spread": 65,
+            "drift": [
+              6,
+              1
+            ]
+          },
+          {
+            "prop": "inkwave",
+            "hit": 2,
+            "count": 4,
+            "life": 20,
+            "spread": 75,
+            "drift": [
+              7,
+              1
+            ]
+          }
+        ],
+        "velocity": [],
+        "air": {
+          "tracks": [
+            {
+              "joint": "rightUpperArm",
+              "keys": [
+                {
+                  "frame": 1,
+                  "degrees": [
+                    -20,
+                    0,
+                    35
+                  ]
+                },
+                {
+                  "frame": 14,
+                  "degrees": [
+                    -40,
+                    0,
+                    65
+                  ]
+                },
+                {
+                  "frame": 28,
+                  "degrees": [
+                    10,
+                    0,
+                    -75
+                  ]
+                },
+                {
+                  "frame": 40,
+                  "degrees": [
+                    -10,
+                    0,
+                    15
+                  ]
+                }
+              ]
+            },
+            {
+              "joint": "leftUpperArm",
+              "keys": [
+                {
+                  "frame": 1,
+                  "degrees": [
+                    15,
+                    0,
+                    -35
+                  ]
+                },
+                {
+                  "frame": 14,
+                  "degrees": [
+                    -30,
+                    0,
+                    -65
+                  ]
+                },
+                {
+                  "frame": 28,
+                  "degrees": [
+                    -5,
+                    0,
+                    75
+                  ]
+                },
+                {
+                  "frame": 40,
+                  "degrees": [
+                    10,
+                    0,
+                    -15
+                  ]
+                }
+              ]
+            }
+          ],
+          "hitShift": [
+            0,
+            -35,
+            0
+          ],
+          "velocity": [
+            0,
+            -3
+          ]
+        }
+      },
+      {
+        "kind": "up",
+        "tracks": [
+          {
+            "joint": "rightUpperArm",
+            "keys": [
+              {
+                "frame": 1,
+                "degrees": [
+                  -60,
+                  0,
+                  35
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  -85,
+                  0,
+                  20
+                ]
+              },
+              {
+                "frame": 28,
+                "degrees": [
+                  -20,
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  10,
+                  0,
+                  -10
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftUpperArm",
+            "keys": [
+              {
+                "frame": 1,
+                "degrees": [
+                  -55,
+                  0,
+                  -35
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  -85,
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": 28,
+                "degrees": [
+                  -20,
+                  0,
+                  20
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  10,
+                  0,
+                  10
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightThigh",
+            "keys": [
+              {
+                "frame": 1,
+                "degrees": [
+                  35,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  65,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 28,
+                "degrees": [
+                  -15,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  10,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftThigh",
+            "keys": [
+              {
+                "frame": 1,
+                "degrees": [
+                  -35,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 12,
+                "degrees": [
+                  -65,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 28,
+                "degrees": [
+                  15,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 40,
+                "degrees": [
+                  -10,
+                  0,
+                  0
+                ]
+              }
+            ]
+          }
+        ],
+        "hits": [
+          {
+            "delay": 13,
+            "length": 6,
+            "weight": 9,
+            "angle": 85,
+            "radius": 105,
+            "from": [
+              0,
+              260,
+              20
+            ],
+            "to": [
+              0,
+              540,
+              20
+            ]
+          },
+          {
+            "delay": 6,
+            "length": 6,
+            "weight": 9,
+            "angle": 85,
+            "radius": 105,
+            "from": [
+              0,
+              330,
+              20
+            ],
+            "to": [
+              0,
+              650,
+              20
+            ]
+          },
+          {
+            "delay": 6,
+            "length": 7,
+            "weight": 9,
+            "angle": 85,
+            "radius": 110,
+            "from": [
+              0,
+              410,
+              20
+            ],
+            "to": [
+              0,
+              760,
+              20
+            ]
+          }
+        ],
+        "assemblies": [
+          {
+            "prop": "hat",
+            "keys": [
+              {
+                "frame": 1,
+                "at": [
+                  0,
+                  175,
+                  30
+                ],
+                "scale": [
+                  0.75,
+                  0.75
+                ]
+              },
+              {
+                "frame": 12,
+                "at": [
+                  0,
+                  170,
+                  30
+                ],
+                "scale": [
+                  1,
+                  0.55
+                ]
+              },
+              {
+                "frame": 22,
+                "at": [
+                  0,
+                  310,
+                  40
+                ],
+                "scale": [
+                  1.15,
+                  1.25
+                ]
+              },
+              {
+                "frame": 40,
+                "at": [
+                  0,
+                  250,
+                  30
+                ],
+                "scale": [
+                  0.8,
+                  0.8
+                ]
+              }
+            ]
+          },
+          {
+            "prop": "hatArc",
+            "keys": [
+              {
+                "frame": 1,
+                "at": [
+                  0,
+                  250,
+                  35
+                ],
+                "scale": [
+                  0.5,
+                  0.5
+                ]
+              },
+              {
+                "frame": 13,
+                "at": [
+                  0,
+                  360,
+                  40
+                ],
+                "scale": [
+                  0.8,
+                  0.8
+                ]
+              },
+              {
+                "frame": 22,
+                "at": [
+                  0,
+                  510,
+                  45
+                ],
+                "scale": [
+                  0.7,
+                  0.7
+                ]
+              },
+              {
+                "frame": 30,
+                "at": [
+                  0,
+                  420,
+                  35
+                ],
+                "scale": [
+                  0.45,
+                  0.45
+                ]
+              }
+            ]
+          }
+        ],
+        "cueColors": [
+          1,
+          3
+        ],
+        "trails": [
+          {
+            "prop": "hatArc",
+            "hit": 0,
+            "count": 3,
+            "life": 14,
+            "spread": 45,
+            "drift": [
+              -8,
+              -5
+            ]
+          },
+          {
+            "prop": "hatArc",
+            "hit": 1,
+            "count": 3,
+            "life": 14,
+            "spread": 50,
+            "drift": [
+              8,
+              -5
+            ]
+          },
+          {
+            "prop": "hatArc",
+            "hit": 2,
+            "count": 3,
+            "life": 14,
+            "spread": 55,
+            "drift": [
+              0,
+              -8
+            ]
+          }
+        ],
+        "velocity": [
+          0,
+          8
+        ],
+        "air": {
+          "tracks": [
+            {
+              "joint": "rightUpperArm",
+              "keys": [
+                {
+                  "frame": 1,
+                  "degrees": [
+                    -80,
+                    0,
+                    20
+                  ]
+                },
+                {
+                  "frame": 12,
+                  "degrees": [
+                    -70,
+                    0,
+                    10
+                  ]
+                },
+                {
+                  "frame": 28,
+                  "degrees": [
+                    -15,
+                    0,
+                    -20
+                  ]
+                },
+                {
+                  "frame": 40,
+                  "degrees": [
+                    10,
+                    0,
+                    -10
+                  ]
+                }
+              ]
+            },
+            {
+              "joint": "leftUpperArm",
+              "keys": [
+                {
+                  "frame": 1,
+                  "degrees": [
+                    -80,
+                    0,
+                    -20
+                  ]
+                },
+                {
+                  "frame": 12,
+                  "degrees": [
+                    -70,
+                    0,
+                    -10
+                  ]
+                },
+                {
+                  "frame": 28,
+                  "degrees": [
+                    -15,
+                    0,
+                    20
+                  ]
+                },
+                {
+                  "frame": 40,
+                  "degrees": [
+                    10,
+                    0,
+                    10
+                  ]
+                }
+              ]
+            }
+          ],
+          "hitShift": [
+            0,
+            55,
+            0
+          ],
+          "velocity": [
+            0,
+            10
+          ]
+        }
+      },
+      {
+        "kind": "down",
+        "tracks": [
+          {
+            "joint": "rightUpperArm",
+            "keys": [
+              {
+                "frame": 1,
+                "degrees": [
+                  55,
+                  0,
+                  35
+                ]
+              },
+              {
+                "frame": 28,
+                "degrees": [
+                  -115,
+                  0,
+                  55
+                ]
+              },
+              {
+                "frame": 60,
+                "degrees": [
+                  -25,
+                  0,
+                  -35
+                ]
+              },
+              {
+                "frame": 88,
+                "degrees": [
+                  15,
+                  0,
+                  -10
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightForearm",
+            "keys": [
+              {
+                "frame": 1,
+                "degrees": [
+                  -35,
+                  0,
+                  25
+                ]
+              },
+              {
+                "frame": 28,
+                "degrees": [
+                  -75,
+                  0,
+                  35
+                ]
+              },
+              {
+                "frame": 60,
+                "degrees": [
+                  35,
+                  0,
+                  -45
+                ]
+              },
+              {
+                "frame": 88,
+                "degrees": [
+                  10,
+                  0,
+                  -10
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftUpperArm",
+            "keys": [
+              {
+                "frame": 1,
+                "degrees": [
+                  35,
+                  0,
+                  -35
+                ]
+              },
+              {
+                "frame": 28,
+                "degrees": [
+                  -100,
+                  0,
+                  -65
+                ]
+              },
+              {
+                "frame": 60,
+                "degrees": [
+                  -20,
+                  0,
+                  45
+                ]
+              },
+              {
+                "frame": 88,
+                "degrees": [
+                  10,
+                  0,
+                  15
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftForearm",
+            "keys": [
+              {
+                "frame": 1,
+                "degrees": [
+                  -25,
+                  0,
+                  -25
+                ]
+              },
+              {
+                "frame": 28,
+                "degrees": [
+                  -65,
+                  0,
+                  -35
+                ]
+              },
+              {
+                "frame": 60,
+                "degrees": [
+                  30,
+                  0,
+                  55
+                ]
+              },
+              {
+                "frame": 88,
+                "degrees": [
+                  10,
+                  0,
+                  10
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "rightThigh",
+            "keys": [
+              {
+                "frame": 1,
+                "degrees": [
+                  35,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 28,
+                "degrees": [
+                  55,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 60,
+                "degrees": [
+                  -20,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 88,
+                "degrees": [
+                  10,
+                  0,
+                  0
+                ]
+              }
+            ]
+          },
+          {
+            "joint": "leftThigh",
+            "keys": [
+              {
+                "frame": 1,
+                "degrees": [
+                  -25,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 28,
+                "degrees": [
+                  -45,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 60,
+                "degrees": [
+                  20,
+                  0,
+                  0
+                ]
+              },
+              {
+                "frame": 88,
+                "degrees": [
+                  -10,
+                  0,
+                  0
+                ]
+              }
+            ]
+          }
+        ],
+        "hits": [
+          {
+            "delay": 29,
+            "length": 10,
+            "weight": 13,
+            "angle": 70,
+            "radius": 125,
+            "from": [
+              160,
+              110,
+              25
+            ],
+            "to": [
+              220,
+              -180,
+              25
+            ]
+          },
+          {
+            "delay": 7,
+            "length": 14,
+            "weight": 13,
+            "angle": 8,
+            "radius": 135,
+            "from": [
+              180,
+              55,
+              20
+            ],
+            "to": [
+              -220,
+              55,
+              20
+            ]
+          },
+          {
+            "delay": 12,
+            "length": 16,
+            "weight": 13,
+            "angle": 8,
+            "radius": 145,
+            "from": [
+              180,
+              55,
+              20
+            ],
+            "to": [
+              760,
+              55,
+              20
+            ]
+          }
+        ],
+        "assemblies": [
+          {
+            "prop": "logAxe",
+            "keys": [
+              {
+                "frame": 1,
+                "at": [
+                  170,
+                  80,
+                  25
+                ],
+                "scale": [
+                  0.85,
+                  0.85
+                ]
+              },
+              {
+                "frame": 28,
+                "at": [
+                  180,
+                  80,
+                  25
+                ],
+                "scale": [
+                  1,
+                  1
+                ]
+              },
+              {
+                "frame": 60,
+                "at": [
+                  180,
+                  55,
+                  35
+                ],
+                "scale": [
+                  1.1,
+                  1.1
+                ]
+              },
+              {
+                "frame": 88,
+                "at": [
+                  130,
+                  80,
+                  25
+                ],
+                "scale": [
+                  0.8,
+                  0.8
+                ]
+              }
+            ]
+          },
+          {
+            "prop": "inkwave",
+            "keys": [
+              {
+                "frame": 1,
+                "at": [
+                  140,
+                  55,
+                  15
+                ],
+                "scale": [
+                  0.3,
+                  0.3
+                ]
+              },
+              {
+                "frame": 36,
+                "at": [
+                  180,
+                  55,
+                  25
+                ],
+                "scale": [
+                  0.85,
+                  0.65
+                ]
+              },
+              {
+                "frame": 48,
+                "at": [
+                  300,
+                  55,
+                  25
+                ],
+                "scale": [
+                  0.8,
+                  0.6
+                ]
+              },
+              {
+                "frame": 76,
+                "at": [
+                  650,
+                  55,
+                  20
+                ],
+                "scale": [
+                  0.5,
+                  0.4
+                ]
+              }
+            ]
+          }
+        ],
+        "cueColors": [
+          2,
+          6
+        ],
+        "trails": [
+          {
+            "prop": "paperScrap",
+            "hit": 0,
+            "count": 5,
+            "life": 18,
+            "spread": 70,
+            "drift": [
+              -2,
+              5
+            ]
+          },
+          {
+            "prop": "paperScrap",
+            "hit": 1,
+            "count": 5,
+            "life": 20,
+            "spread": 85,
+            "drift": [
+              -5,
+              3
+            ]
+          },
+          {
+            "prop": "paperScrap",
+            "hit": 2,
+            "count": 5,
+            "life": 20,
+            "spread": 95,
+            "drift": [
+              7,
+              4
+            ]
+          }
+        ],
+        "velocity": [],
+        "air": {
+          "tracks": [
+            {
+              "joint": "rightUpperArm",
+              "keys": [
+                {
+                  "frame": 1,
+                  "degrees": [
+                    25,
+                    0,
+                    45
+                  ]
+                },
+                {
+                  "frame": 14,
+                  "degrees": [
+                    -60,
+                    0,
+                    65
+                  ]
+                },
+                {
+                  "frame": 30,
+                  "degrees": [
+                    -105,
+                    0,
+                    20
+                  ]
+                },
+                {
+                  "frame": 40,
+                  "degrees": [
+                    -20,
+                    0,
+                    -35
+                  ]
+                }
+              ]
+            },
+            {
+              "joint": "leftUpperArm",
+              "keys": [
+                {
+                  "frame": 1,
+                  "degrees": [
+                    20,
+                    0,
+                    -35
+                  ]
+                },
+                {
+                  "frame": 14,
+                  "degrees": [
+                    -45,
+                    0,
+                    -60
+                  ]
+                },
+                {
+                  "frame": 30,
+                  "degrees": [
+                    -90,
+                    0,
+                    -15
+                  ]
+                },
+                {
+                  "frame": 40,
+                  "degrees": [
+                    -15,
+                    0,
+                    35
+                  ]
+                }
+              ]
+            },
+            {
+              "joint": "rightThigh",
+              "keys": [
+                {
+                  "frame": 1,
+                  "degrees": [
+                    25,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "frame": 14,
+                  "degrees": [
+                    55,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "frame": 32,
+                  "degrees": [
+                    -25,
+                    0,
+                    0
+                  ]
+                },
+                {
+                  "frame": 40,
+                  "degrees": [
+                    10,
+                    0,
+                    0
+                  ]
+                }
+              ]
+            }
+          ],
+          "hitShift": [
+            80,
+            -80,
+            0
+          ],
+          "velocity": [
+            0,
+            -4
+          ]
+        }
+      }
+    ]
+  },
+  "format": "rich",
+  "briefHash": "351f1a53ed194e4d11698d15600194cd4d91589fbbed6425963b5f8a1c4bfe0f",
+  "provenance": {
+    "model": "gpt-5.6-luna",
+    "responseId": "resp_0d4fbcc1d0216fff016aa157b8d8fc87d1834ebd27e87652b5",
+    "usage": {
+      "input_tokens": 4761,
+      "input_tokens_details": {
+        "cache_write_tokens": 2955,
+        "cached_tokens": 1803
+      },
+      "output_tokens": 4519,
+      "output_tokens_details": {
+        "reasoning_tokens": 260
+      },
+      "total_tokens": 9280
+    },
+    "generationMs": 30142,
+    "serviceTier": "default"
+  }
+}

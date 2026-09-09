@@ -1,0 +1,17 @@
+{
+  "weird-al": {
+    "implementation.json": "19cfa5d5feacffa611ea5fcb880db8584614648b2d5b942070fd557eb179f5fb",
+    "input.json": "8c540002929c5870efc9a8df76ac05e28d4fb56667cdb6768f44395a9835b69a",
+    "compiled.json": "7c4f6805672b1f780fd70d8d95cfe32f42475b41e2bb9ac3abb2e231cf4c77bf",
+    "description.json": "55ae83f32c2cbf461928988bd05c33108c17b8eea60b0eb79913d33651275201",
+    "package.json": "778dc68aa51ee1e3264de33945fa9463dbb306063f96556adcb8cbf019f0a949",
+    "principles.json": "17b363e2cb2d36a68fb8aba720c008326e9925c22347ba6217c0855b63f36cb3"
+  },
+  "lincoln": {
+    "implementation.json": "538fd3fbb15a99586513e4a7caba0adeef327566eb806b20b00febbe21e48757",
+    "input.json": "fd7b27265cafbc634badbf5ef080bfdfe11955a942f776e9529141da8e794330",
+    "description.json": "de365287928744fcde997540a1e75c240d21add648979bd5d9b54436621afcbf",
+    "failure.json": "185f1cbf1447c5bd78f1823dcf9151f580309b36d89295ba6eb4aeec5abc87aa",
+    "principles.json": "17b363e2cb2d36a68fb8aba720c008326e9925c22347ba6217c0855b63f36cb3"
+  }
+}

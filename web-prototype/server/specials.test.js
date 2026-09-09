@@ -6,7 +6,7 @@ import os from 'node:os';
 import path from 'node:path';
 import {SLOTS,rigProfile,compileSet,hash} from './specials/contract.js';
 import {generateSet} from './specials/generate.js';
-import {createSpecialJobs} from './specials/jobs.js';
+import {createSpecialJobs,publicSpecialJob} from './specials/jobs.js';
 import {createJobDatabase} from './job-database.js';
 import {createObjectStore} from './object-store.js';
 const repo=path.resolve(import.meta.dirname,'../..');
@@ -97,4 +97,26 @@ test('preview URLs support mobile MP4 range requests',()=>{
  assert.equal(videoResponse(bytes,'bytes=9-').body.toString(),'9');
  assert.equal(videoResponse(bytes,'bytes=99-').status,416);
  assert.equal(videoResponse(bytes,'bytes=0-1,5-6').status,416);
+});
+
+
+test('mechanical readiness does not imply human visual approval; failed attempts keep principle metadata',()=>{
+ const base={id:'test',character:{id:'char'},profile:{target:'mario'},principles:{version:'v1',hash:'principle-hash',contractHash:'contract-hash'}};
+ const failed=publicSpecialJob({...base,status:'failed'});
+ assert.equal(failed.principles.hash,'principle-hash');assert.equal(failed.ready,false);
+ const ready=publicSpecialJob({...base,status:'complete',report:{runtimeValidated:true}});
+ assert.equal(ready.ready,true);assert.equal(ready.manualReview.status,'pending');
+});
+
+test('failed compiled sets keep owner-only review clips without becoming equippable',async t=>{
+ const {jobs}=await service(t,{validate:async({outputRoot})=>{
+  const preview=path.join(outputRoot,'review.mp4');await writeFile(preview,'review fixture');
+  return {status:'failed',runtimeValidated:false,error:'A native hit missed',contexts:SLOTS.map((_,slot)=>({slot,passed:false,scenarios:[],...(slot===0?{preview}:{})}))};
+ }});
+ const created=await jobs.create('char1','owner','request-review-failure');await jobs.settled();
+ const failed=await jobs.get(created.id,'owner');assert.equal(failed.status,'failed');assert.equal(failed.ready,false);
+ assert.match(failed.contexts[0].preview,/\.mp4$/);
+ assert.ok(await jobs.preview(created.id,'char1',0,'owner'));
+ await assert.rejects(()=>jobs.preview(created.id,'char1',0,'intruder'),/not found/);
+ await assert.rejects(()=>jobs.readyPackage(created.id,'char1'),/not found/);
 });

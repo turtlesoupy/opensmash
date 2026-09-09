@@ -30,9 +30,12 @@ loop. Failed artifacts are retained. Explicit retries reuse the description;
 validation retries also reuse the compiled package. First-run model outputs and
 native results are under `experiments/special-sets/weird-al-first-run/`.
 
-The five writing principles are in `server/specials/generate.js`: recognizable
-identity, body-led timing, distinct move roles, honest danger cues, and restrained
-visuals. Numerical contracts are authoritative; prose must agree with them.
+The shared visual principles live in `server/specials/principles.md`. Both creative
+stages receive the same frozen text. Numerical contracts remain authoritative.
+Each rich job stores a principles snapshot containing its text/hash, complete
+static stage instructions and implementation schema. Explicit retries reuse that
+snapshot, so edits to the principles file cannot silently change an in-flight job.
+The report marks visual review as pending and records the principles/contract hashes.
 
 ## Runtime
 
@@ -171,12 +174,13 @@ and implementer; native validation/capture and hosting are separate.
 
 Aerial neutral/down showcase and contact fixtures begin at height 2400, above the side platforms, so the complete action can play. Separate low-height (1100) landing scenarios test normal cancellation. This fixes the earlier fixture that landed after about twelve frames and could hide later effects. Every authored hit now has its own native contact probe. Horizontal ground impulses remain grounded; they no longer turn into zero-height jumps that cancel on landing.
 
-### Visual construction correction (September 9)
+### Historical hand correction (September 9)
 
 Mechanical acceptance did not catch the compact accordion/particle regression.
-The implementation score now explicitly selects `construction`: `pieces` for
+The hand-corrected fixture explicitly selected `construction`: `pieces` for
 arbitrary geometry, or reusable `bellows`, `music-note`, and `straw` primitives.
-New structured-output calls require this choice; older scores default to `pieces`.
+These remain available only to replay historical scores. The current generation
+schema forbids the construction field and cannot select a named preset.
 There is no character-name lookup or automatic substitution. The bellows library
 preserves the approved prototype's construction: repeated separated pleats,
 rigid red cases, ivory keys/buttons, and extension timed to every emission.
@@ -196,3 +200,56 @@ visual migration. It is not an untouched new model result. Descriptions, tracks,
 launches, and hitboxes remain identical. This isolates the construction/runtime
 fix; it does not measure fresh model visual reliability. Production remains two
 creative stages and deterministic validation, with no judge or model repair loop.
+
+
+### Current iteration loop: principles → untouched generation → human review
+
+Edit `server/specials/principles.md` to change visual guidance across every character.
+New uploads use it automatically. The implementer generates every palette, piece,
+repeat, particle glyph and motion key. `mount=[]` stretches a piece with its assembly;
+`mount=[x,y]` attaches a rigid piece at a deforming anchor, preserving its dimensions
+and internal spacing. This general control replaces special-case prop construction.
+The compiler supplies general timing, size/depth conventions, collision cues and
+independent particle motion. It does not supply named silhouettes or performance keys.
+
+For a controlled rerun, keep a description fixed while changing the principles:
+
+```sh
+SPECIALS_MODEL=gpt-5.6-luna \
+SPECIALS_ENV_FILE=/path/to/local.env \
+SPECIALS_BRIEF_FILE=/path/to/existing/description.json \
+SPECIALS_PRINCIPLES_FILE=/path/to/principles-v2.md \
+node web-prototype/server/specials/cli.js character.json NEW_OUTPUT_DIR mario character.osb
+```
+
+Omit `SPECIALS_BRIEF_FILE` for the normal two-stage generation of an uploaded
+character. Omit `SPECIALS_PRINCIPLES_FILE` to use the shared checked-in principles.
+Each attempt retains `principles.json`, frozen `description.json`, untouched
+`implementation.json`, and either compiled output or `failure.json`. Never
+rewrite an output to improve a comparison; a new principles version needs a new
+attempt. No automatic visual judge, repair or best-of selection is part of this loop.
+
+The first controlled principles cohort uses the previous Weird Al and Lincoln
+briefs, one fresh Luna implementation each, and no output edits. Lincoln's delay
+values were non-increasing and its entire set was rejected before native capture.
+Keep this failure visible; it is a timing-contract reliability issue, not a
+manual visual rating. Weird Al's clips are for human evaluation, with mechanical
+validation reported separately. The manually improved prior examples remain
+reference material, not evidence of fresh generation reliability.
+
+Prompt text is owned and versioned in the repository, consistent with [official
+OpenAI documentation](https://developers.openai.com/api/docs/guides/prompting/migrate-from-prompt-object).
+
+
+Compiled sets that fail native gameplay checks can still be inspected. The worker
+runs `capture_review_set.py` to capture missing contexts and reuses only clips whose
+packet, bundle and native-binary hashes match. This performs no visual evaluation
+and never grants runtime readiness. Failed-job review clips are owner-only;
+`readyPackage` and the Equip button still require complete mechanical acceptance.
+The upload panel shows review links for failed sets and labels them accordingly.
+Compile failures retain their source outputs but cannot produce native review clips.
+
+In the v1 cohort, Weird Al passed twelve ground scenarios, then failed aerial-neutral
+contact (7% observed versus 14% authored). The remaining moves were captured for
+review without repairing the output. Lincoln was rejected for non-increasing hit
+onsets. Both failures remain visible; neither set is ready to equip.

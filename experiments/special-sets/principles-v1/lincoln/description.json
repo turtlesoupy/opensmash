@@ -1,0 +1,94 @@
+{
+  "brief": {
+    "identity": "prototype-lincoln — a tall, deliberate Abraham Lincoln performance built around the Gettysburg Address, his stovepipe hat, and frontier log splitting. Keep the black suit, beard, and hat silhouette unobscured; all attacks use restrained parchment, ink, wood, and brass accents.",
+    "palette": [
+      151,
+      243,
+      226
+    ],
+    "moves": [
+      {
+        "slot": "neutral-ground",
+        "name": "Gettysburg Address",
+        "signature": "Lincoln produces a visibly folded handwritten parchment in one hand and a brass-trimmed quill in the other, evoking the Gettysburg Address rather than a generic magic blast.",
+        "anticipation": "Frames 1–24: he straightens his coat, lowers his chin, opens the parchment with both hands, and draws the quill through a small ink well. The quill makes three measured writing strokes; each stroke briefly leaves a dark ink line on the parchment. His rear foot plants and his free elbow pulls back for a clear spoken-address stance.",
+        "action": "Frames 25–56: he thrusts the parchment forward and sweeps the quill in a broad horizontal arc. Three layered curved ink-and-paper waves travel forward along the same shallow trajectory, emitted on frames 25, 34, and 44. Each wave is a thick crescent with visible handwritten linework and a brass quill-tip edge; the timed native hitboxes occupy the crescent bodies and expire with their matching wave. Small rectangular paper scraps peel outward from the parchment and drift away on separate gravity trails; they never seek the opponent and fade independently.",
+        "recovery": "Frames 57–96: the parchment folds shut, the quill is returned to the ink well, and Lincoln rocks back from the address with one arm extended before settling into a readable two-foot stance. The final ink wave and its hitbox finish their shared lifetime before frame 72; remaining paper scraps continue outward, dimming to transparency by frame 88. His beard, hat, and suit remain visible throughout.",
+        "groundAirDifference": "On the ground, the planted stance gives the three waves a stable, nearly level trajectory and the full 96-frame, 24-frame-startup performance. In the air, Lincoln tucks his knees during the writing beats, angles the parchment slightly downward, and releases the same three descending crescents during a 48-frame, 14-frame-startup version so the finale completes before landing; the recovery twists him upright instead of freezing his fall.",
+        "counterplay": "The writing setup is conspicuous and interruptible, while the waves have fixed forward travel, finite lifetimes, and no tracking. The gaps between the three emission beats permit jumps, short hops, or movement through the first crescent; the parchment and quill clearly show which side will be struck.",
+        "damage": 10,
+        "startup": 24,
+        "duration": 96
+      },
+      {
+        "slot": "up-ground",
+        "name": "Stovepipe Ascent",
+        "signature": "Lincoln grabs and launches from his distinctive black stovepipe hat, whose crown visibly telescopes open into layered felt-and-brass rings before snapping him upward.",
+        "anticipation": "Frames 1–12: he presses the hat down with both hands, bends deeply at the knees, and compresses the hat crown like a staged spring. A brass rim and inner red lining become visible, making the launch direction readable.",
+        "action": "Frames 13–28: the hat crown expands under him and a vertical stack of short curved hat-rim hitboxes rises with his root launch. Lincoln shoots upward immediately in the air version, one hand clamped to the hat and the other extended for balance. Three narrow black-and-brass arcs emit upward in sequence, following his rise rather than targeting anyone; each arc lasts only for the matching ascending segment.",
+        "recovery": "Frames 29–44: the hat collapses back to normal size as Lincoln reaches the apex, turns his shoulder forward, and descends in a controlled upright pose. Felt flecks and tiny brass buckle-shaped fragments fall away under gravity and fade; they are decorative only and do not create extra hits. He finishes with the hat reseated and both legs visibly ready for landing.",
+        "groundAirDifference": "On the ground, the crouch supplies a short vertical hop followed by a strong rising launch, with a 44-frame, 12-frame-startup sequence. In the air, the root launches on frame 1 with no grounded crouch, then the same hat expansion and three rising hit arcs occur during the 44-frame, 12-frame-startup sequence; the shortened apex and recovery finish before a normal landing window.",
+        "counterplay": "The hat compression clearly telegraphs the vertical line. The attack has little horizontal reach, fixed rising arcs, and a vulnerable recovery after the last arc; opponents can move beside the ascent or punish the landing rather than guessing against a homing move.",
+        "damage": 9,
+        "startup": 12,
+        "duration": 44
+      },
+      {
+        "slot": "down-ground",
+        "name": "Frontier Log Split",
+        "signature": "Lincoln stages a frontier log-splitting setup with a short-handled, visibly wooden-handled splitting axe and a broad steel wedge, evoking frontier labor without reducing the move to a generic axe slam.",
+        "anticipation": "Frames 1–28: he sets a squat half-log in front of him, rolls one shoulder, and lifts the axe overhead in two deliberate beats. The log shows bark ridges, end grain, and a pale wedge already seated in its top; the axe blade flashes only when it reaches the apex.",
+        "action": "Frames 29–60: Lincoln drives the axe down through the wedge. A close-range vertical hitbox covers the blade and log, followed by two low, layered curved ground waves that split left and right along the floor on frames 36 and 48. The wave bodies use bark-like brown edges and dark ink cracks, share the exact forward ground trajectory of their hitboxes, and expire with them. The log visibly opens on the decisive impact; its chips are small independent gravity trails that move away from the center and fade rather than flying at a target.",
+        "recovery": "Frames 61–96: the axe remains buried for a beat, Lincoln braces with both hands, then pulls it free and steps back into a wide, low stance. The final ground wave ends before frame 78; bark chips and a few parchment-like ink labels age independently and disappear by frame 90. His shoulders and axe return to neutral only after a readable follow-through.",
+        "groundAirDifference": "On the ground, the half-log is planted close to Lincoln, making the blade and the two lateral floor waves a compact space-control tool over 96 frames with 28-frame startup. In the air, he folds the log into a small suspended stump, chops diagonally downward, and emits the two shorter waves beneath him during a 48-frame, 14-frame-startup version; the hit path is intentionally downward and the recovery turns the axe across his body before landing.",
+        "counterplay": "The tall overhead windup exposes Lincoln and the close range is obvious. The initial blade hit is strongest near his feet; the two floor waves travel only outward on fixed paths, leaving a clear gap above and behind him. Jumping the split or attacking during the axe-retrieval recovery is reliable counterplay.",
+        "damage": 13,
+        "startup": 28,
+        "duration": 96
+      },
+      {
+        "slot": "neutral-air",
+        "name": "Gettysburg Address",
+        "signature": "Lincoln opens the same folded Gettysburg parchment and writes with the same brass-trimmed quill, preserving the recognizable speechmaking prop in the air.",
+        "anticipation": "Frames 1–14: he draws the parchment across his chest, gives two compact quill strokes, and turns his torso toward the opponent while his legs bicycle once. The paper edge and ink well are kept close to the body for a readable aerial silhouette.",
+        "action": "Frames 15–32: he snaps the parchment outward and sweeps the quill forward, releasing two layered curved ink waves on frames 15 and 24. They travel horizontally from his chest with matching timed native hitboxes and finite lifetimes. Thin paper rectangles detach from the folded sheet, drift diagonally away with light gravity, and fade independently; they never alter course or make contact.",
+        "recovery": "Frames 33–48: he rolls the parchment closed, retracts the quill, and extends one leg while turning his shoulders upright. The second wave completes before frame 40, leaving at least 16 frames of visible follow-through as Lincoln resumes his fall with the hat and beard unobstructed.",
+        "groundAirDifference": "This is the air remap of the grounded address: two faster waves instead of three, a slightly downward-forward angle, 48-frame duration, and 14-frame startup so the full writing, attack, and recovery occur before landing. The ground version remains planted and horizontal; the aerial version rotates the torso and uses the legs for balance.",
+        "counterplay": "The two beats are individually readable and non-homing. The first wave can be avoided by moving inward or above Lincoln, while the second leaves a clear gap if the opponent reacts to the quill sweep; the close body remains vulnerable during the writing setup.",
+        "damage": 8,
+        "startup": 14,
+        "duration": 48
+      },
+      {
+        "slot": "up-air",
+        "name": "Stovepipe Ascent",
+        "signature": "Lincoln uses his distinctive stovepipe hat as a springlike rising implement, with the felt crown, inner red lining, brass rim, and buckle all visibly constructed.",
+        "anticipation": "Frames 1–10: in midair he clamps the hat to his head, bends his knees, and compresses the crown into stacked rings. The hat points straight up and the free hand opens beneath it, clearly previewing the vertical recovery.",
+        "action": "Frames 1–24: the root launches immediately, carrying Lincoln upward as the hat expands. Three short upward-curving rim hitboxes emit at frames 1, 9, and 17, each aligned to the same vertical rising path and ending with its corresponding visible arc. Felt dust and tiny brass flecks separate sideways and fall under gravity; they are finite decorative fragments, not projectiles.",
+        "recovery": "Frames 25–44: the crown contracts, Lincoln rotates from a tucked pose into an upright descent, and he reseats the hat with one hand. The last arc expires before frame 28, leaving more than 16 frames of recovery and no lingering dangerous visual.",
+        "groundAirDifference": "The air version is the primary recovery: root launch occurs on frame 1, with 12-frame startup for the first meaningful hit, and the 44-frame total ends before landing. The ground version begins with a visible crouch and reaches slightly higher, while the air version has less vertical travel after the launch and a more compact diagonal body pose.",
+        "counterplay": "The vertical line is telegraphed by the hat compression and offers little side coverage. Opponents can move horizontally outside the rising arcs, wait for the hat to close, or punish the exposed descent; none of the felt or brass fragments tracks a target.",
+        "damage": 8,
+        "startup": 12,
+        "duration": 44
+      },
+      {
+        "slot": "down-air",
+        "name": "Frontier Log Split",
+        "signature": "Lincoln performs a compact airborne frontier split using the same bark-covered half-log, seated steel wedge, and wooden-handled axe.",
+        "anticipation": "Frames 1–14: he draws a small half-log and wedge close to his knees, raises the axe over one shoulder, and curls into a clear downward-chop silhouette. The axe head and pale end grain remain visually separate from his suit.",
+        "action": "Frames 15–32: he drives the axe diagonally down and slightly forward, producing one close blade hit followed by two short curved bark-and-ink waves that spread along the downward-forward path on frames 20 and 27. Their visible arcs and hitboxes share the same trajectory and lifetime. Log chips detach in several sizes, fall away under gravity, and fade without targeting or adding hitboxes.",
+        "recovery": "Frames 33–48: the axe completes its follow-through below him, the split log opens, and Lincoln pulls the handle across his body while extending his legs for a controlled descent. The second wave ends before frame 32, leaving at least 16 frames of safe recovery; all chips fade separately before landing.",
+        "groundAirDifference": "The air version is a 48-frame, 14-frame-startup downward space-control tool: it starts the chop earlier, angles the attack beneath Lincoln, and finishes before landing. The ground version uses a planted log, a taller overhead windup, two longer lateral floor waves, and the 96-frame close-range performance. Both preserve the same axe, wedge, bark, and split-log identity.",
+        "counterplay": "The airborne windup exposes Lincoln above the axe and the attack does not cover his rear. The blade and waves occupy a fixed diagonal lane, so opponents can move behind him, drift through the gap before the second wave, or punish the recovery after the handle is pulled free.",
+        "damage": 11,
+        "startup": 14,
+        "duration": 48
+      }
+    ]
+  },
+  "briefHash": "351f1a53ed194e4d11698d15600194cd4d91589fbbed6425963b5f8a1c4bfe0f",
+  "provenance": {
+    "resumed": true
+  }
+}

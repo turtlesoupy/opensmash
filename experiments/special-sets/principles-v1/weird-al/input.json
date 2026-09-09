@@ -1,0 +1,31 @@
+{
+  "character": {
+    "id": "prototype-weird-al",
+    "name": "Weird Al Yankovic",
+    "description": "Curly-haired musical parodist in a Hawaiian shirt, known for accordion polkas, Eat It and Amish Paradise. Cheerful theatrical energy. Approved visual reference: Polka Pressure, a detailed red accordion with ivory keys and expanding pleated bellows, two rhythmic squeezes then a large curved chord wave with tumbling musical notes. Preserve this as the neutral design. Other specials should have comparable spectacle, staging and character identity, with a usable recovery and distinct down move.",
+    "bundleHash": "c425f4d11bddc812e011e906862816ca5b23e8217e535448129463035543415b"
+  },
+  "profile": {
+    "target": "mario",
+    "fkind": 0,
+    "joints": {
+      "torso": 6,
+      "head": 12,
+      "rightUpperArm": 8,
+      "rightForearm": 9,
+      "rightHand": 10,
+      "leftUpperArm": 14,
+      "leftForearm": 15,
+      "leftHand": 16,
+      "rightThigh": 19,
+      "rightShin": 20,
+      "leftThigh": 24,
+      "leftShin": 25
+    },
+    "hash": "c8a76e7fad0da98a862540bb360f6e27d77a75bd2a72f7fdb49c8651006848b1",
+    "units": "engine-world-units",
+    "forward": "x",
+    "up": "y",
+    "depth": "z"
+  }
+}

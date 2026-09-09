@@ -1,0 +1,94 @@
+{
+  "brief": {
+    "identity": "Weird Al Yankovic — cheerful theatrical musical parody fighter; approved references are preserved through a detailed stage-prop style, rhythmic buildup, curved attacks, and character-specific falling fragments.",
+    "palette": [
+      145,
+      28,
+      42
+    ],
+    "moves": [
+      {
+        "slot": "neutral-ground",
+        "name": "Polka Pressure",
+        "signature": "Polka Pressure: a detailed red accordion with ivory keys, visible ribs, straps, grille, and expanding pleated bellows.",
+        "anticipation": "Weird Al plants his feet, hooks both hands into the straps, and compresses the accordion twice in a clear left-right rhythm. The bellows visibly tighten and the keys depress on each beat.",
+        "action": "The second squeeze opens the bellows to full width and emits three layered, forward-curving chord waves along the same trajectory: a short low arc, a middle arc, then a larger upper arc. Each wave is a timed native hitbox with a clear ivory-and-red leading rim. Tumbling eighth notes, rests, and tiny accordion-button fragments peel away from the wave edges, travel outward on fixed decorative paths, and fade without targeting anything.",
+        "recovery": "The bellows collapse unevenly, Al rocks backward from the recoil, and the accordion settles against his torso while his free hand remains theatrically raised. The final chord dissipates before the neutral pose returns.",
+        "groundAirDifference": "On the ground he braces wide and the waves travel horizontally at chest height. In the air he curls his knees around the accordion, angles the instrument downward, and emits the same three-beat identity on a slightly descending forward arc; the shorter air version ends before landing.",
+        "counterplay": "The two squeezes are readable startup, the wave layers have finite reach and visible gaps, and the accordion recoil leaves him exposed. The decorative notes are not hits and simply fall or drift away.",
+        "damage": 14,
+        "startup": 24,
+        "duration": 96
+      },
+      {
+        "slot": "neutral-air",
+        "name": "Polka Pressure",
+        "signature": "Polka Pressure: the same red accordion, ivory keys, metal grille, straps, and visibly expanding pleated bellows.",
+        "anticipation": "In midair Weird Al tucks his legs, pulls the accordion close, and makes two compact rhythmic bellows squeezes. The keys visibly depress before the attack begins.",
+        "action": "On the second squeeze he snaps the bellows open and produces three compact curved chord waves in a descending forward line. The waves share the same travel direction and lifetime, while detached musical notes and button-shaped fragments drift away from their edges and fade as harmless decoration.",
+        "recovery": "He folds the bellows shut, rotates back toward a neutral falling pose, and lets the accordion hang from its straps for the remaining follow-through.",
+        "groundAirDifference": "This air version uses a compact torso curl and descending diagonal emission rather than the grounded horizontal stance. It is compressed to finish before landing while retaining both buildup squeezes and all three attack beats.",
+        "counterplay": "The startup squeezes telegraph the move, each short wave has finite range, and the landing recovery is vulnerable. Falling notes cannot hit or chase opponents.",
+        "damage": 12,
+        "startup": 12,
+        "duration": 48
+      },
+      {
+        "slot": "up-ground",
+        "name": "Amish Paradise Hoe Lift",
+        "signature": "Amish Paradise: a black straw hat, wooden hoe with a reinforced metal blade, and a small stitched hay bundle recalling the video’s rural work imagery.",
+        "anticipation": "Weird Al tips the hat over his eyes, plants the hoe head against the floor, and bends his knees into a theatrical pole-vault crouch. A brief straw-and-dust buildup marks the launch point.",
+        "action": "He immediately springs upward from the hoe, carrying the prop along his body. The metal blade sweeps through two rising curved hitboxes—an initial close diagonal cut followed by a broader overhead crescent as he turns. The hoe remains visibly in his hands; straw glyphs and dust clods detach behind him, fall under gravity, and fade.",
+        "recovery": "At the apex he pulls the hoe across his chest, hat tilted back, then extends one leg and drifts into a readable falling pose. The last crescent ends before the hoe settles onto his shoulder.",
+        "groundAirDifference": "From the ground, the planted hoe gives a strong vertical launch after the short crouch. In the air, the hoe is already braced beneath him and the root launch happens immediately, preserving the rising recovery without requiring ground contact.",
+        "counterplay": "The launch direction is vertical and predictable, the second crescent is wider but ends quickly, and the exposed recovery has no lingering hitbox. Straw pieces are gravity trails only.",
+        "damage": 11,
+        "startup": 12,
+        "duration": 44
+      },
+      {
+        "slot": "up-air",
+        "name": "Amish Paradise Hoe Lift",
+        "signature": "Amish Paradise: black straw hat, wooden hoe, reinforced blade, and stitched hay bundle with visible grain and twine.",
+        "anticipation": "While airborne, Weird Al tucks the hoe close, dips his hat, and briefly compresses into a compact vaulting pose with a small dust puff beneath the blade.",
+        "action": "He launches immediately upward, rotating the hoe through a close diagonal sweep and then a broad overhead curved sweep. The hitboxes follow the hoe’s visible blade path. Detached straw glyphs and small dirt clods drop away with gravity and fade independently.",
+        "recovery": "He finishes with the hoe hugged diagonally across his chest, legs extended for controlled drift, and the hat lifting off his brow before he returns to his falling pose.",
+        "groundAirDifference": "The air version begins with the prop already under his centerline and has no planted-floor pause. Its two rising sweeps are compact and end before landing, retaining a functional vertical recovery.",
+        "counterplay": "The compact startup is visible, the hit arcs occupy predictable rising paths, and the ending drift leaves him punishable. Detached debris never becomes a projectile.",
+        "damage": 10,
+        "startup": 10,
+        "duration": 42
+      },
+      {
+        "slot": "down-ground",
+        "name": "Eat It Dinner Bell",
+        "signature": "Eat It: an oversized silver fork striking a ceramic dinner plate, with a red-checkered napkin tucked through the handle and a visible layered rim on the plate.",
+        "anticipation": "Weird Al crouches beside the plate, raises the fork over one shoulder, and gives two audible-looking preparatory taps against the rim. His shoulders and elbows wind up clearly before the close-range attack.",
+        "action": "He slams the fork into the plate for a central clatter burst, then sweeps the fork around the plate in a low circle. Two short curved rim waves expand along the floor in opposite lateral directions, followed by a larger shallow forward arc. Ceramic spark shapes and tiny fork-tine glyphs break outward from the plate, never fly toward a target, and fade.",
+        "recovery": "The plate wobbles on his palm, the fork sticks briefly in its center, and Weird Al staggers backward with an exaggerated hungry grin before lowering both props.",
+        "groundAirDifference": "On the ground the plate is planted as a close-range space-control anchor, with low waves covering both sides and a stronger forward finale. The stance is low and stable, but the long prop recovery is punishable.",
+        "counterplay": "The crouch and two rim taps telegraph the active zone. The waves stay low, have finite length, and leave a gap above them; the plate wobble creates clear endlag. Decorative ceramic pieces are harmless.",
+        "damage": 15,
+        "startup": 24,
+        "duration": 96
+      },
+      {
+        "slot": "down-air",
+        "name": "Eat It Dinner Bell",
+        "signature": "Eat It: oversized silver fork, ceramic plate with a raised rim, and red-checkered napkin with visible fabric folds.",
+        "anticipation": "In the air Weird Al pulls the plate under his torso, raises the fork, and makes two quick rim taps while tucking his knees around the prop.",
+        "action": "He drives the fork into the plate, producing a compact downward-centered clatter hit, then rolls the plate through two short curved arcs beneath him. A final shallow forward arc follows the plate’s rim. Tiny ceramic and fork-tine fragments separate radially, fall away, and fade rather than becoming attacks.",
+        "recovery": "He catches the wobbling plate against his stomach, kicks his legs out to brake, and descends with the fork held safely across his chest. The final follow-through remains visibly vulnerable.",
+        "groundAirDifference": "The air version is a short downward and forward space-control burst rather than a grounded side-to-side anchor. It retains the two-tap buildup and multiple plate beats but is timed to finish before landing.",
+        "counterplay": "The active area is concentrated below and slightly ahead, making the sides and back safer. The compact plate arcs have finite lifetimes, and the recovery after the final wobble is punishable.",
+        "damage": 13,
+        "startup": 12,
+        "duration": 48
+      }
+    ]
+  },
+  "briefHash": "63710e2c67ad7e3656ddb20e39bd4485ca457d8782bb4c33fd802a629711557e",
+  "provenance": {
+    "resumed": true
+  }
+}

@@ -1,0 +1,192 @@
+{
+  "generationCommit": "732857426a4a6b9c415626cc26c3daacd21e04fc",
+  "date": "2026-09-09",
+  "firstAttemptsOnly": true,
+  "modelCalls": 2,
+  "modelJudges": 0,
+  "generatedOutputEdits": 0,
+  "presetsAllowed": false,
+  "manualReview": "pending",
+  "rules": [
+    {
+      "name": "One readable idea",
+      "text": "Build each special around a recognizable character reference and a dominant silhouette. Use a few distinctive construction details rather than an anonymous block or unrelated decorative noise."
+    },
+    {
+      "name": "Perform the action",
+      "text": "The body and prop should anticipate, act decisively, follow through, and recover together. Match deformation and emission to each beat. A multi-beat description needs distinct visible beats and a stronger finish."
+    },
+    {
+      "name": "Respect material and construction",
+      "text": "Rigid components keep their shape and internal spacing; flexible material deforms between its attachments. Separate silhouette, structural regions, and surface detail. Leave actual gaps between repeated details; an opaque foreground row must not cover the construction it describes. For an unrotated repeated stripe, its full width is twice its half-size."
+    },
+    {
+      "name": "Design for the match camera",
+      "text": "Prioritize silhouette, contrasting structural regions, then fine detail. Main forms need a dark boundary and bright readable accents. Details that shrink to hairlines should become thicker or simpler, including on a phone-sized view. Use depth deliberately so important effects appear in front of the body instead of inside it."
+    },
+    {
+      "name": "Make particles part of the action",
+      "text": "Choose a recognizable, connected fragment shape that belongs to this move. Give it enough thickness and contrast to read against busy scenery. Emit where the action occurs, let fragments depart and fall independently, then fade. Sparse should mean intentional, not invisible."
+    },
+    {
+      "name": "Show honest danger",
+      "text": "Strong active cues follow the real hit region and its lifetime. Decorative trails may linger more quietly. Never seek the opponent or draw a contact explosion without real contact. Keep the fighter readable."
+    },
+    {
+      "name": "Preserve identity across contexts",
+      "text": "Ground and air versions share an idea, with deliberate stance, timing and motion differences. Neutral, recovery and down specials have distinct roles. Aerial spectacle must fit its usable duration."
+    }
+  ],
+  "cases": [
+    {
+      "id": "weird-al",
+      "name": "Weird Al",
+      "model": "gpt-5.6-luna",
+      "usage": {
+        "input_tokens": 3914,
+        "input_tokens_details": {
+          "cache_write_tokens": 3911,
+          "cached_tokens": 0
+        },
+        "output_tokens": 4881,
+        "output_tokens_details": {
+          "reasoning_tokens": 607
+        },
+        "total_tokens": 8795
+      },
+      "generationMs": 33566,
+      "estimatedUsd": 0.00683555,
+      "compiled": true,
+      "nativeStatus": "failed",
+      "nativePassed": 12,
+      "readyToEquip": false,
+      "error": "Aerial neutral delivered 7% in the native contact probe instead of its authored 14%. Validation stopped at that failure.",
+      "principlesHash": "89b3c5ff988ebd165efce3ffd8c887358bc1bd121a6783348bd9c7c1c7b91f29",
+      "contractHash": "7ee3ebfe2af5d9e2ad079e98ed467f7ebf6808ef263f16d4c5fdfee39fe9b76f",
+      "briefHash": "63710e2c67ad7e3656ddb20e39bd4485ca457d8782bb4c33fd802a629711557e",
+      "implementationFileHash": "19cfa5d5feacffa611ea5fcb880db8584614648b2d5b942070fd557eb179f5fb",
+      "moves": [
+        {
+          "slot": 0,
+          "name": "Polka Pressure",
+          "context": "neutral ground",
+          "src": "/clips/principles-v1/weird-al-0.mp4",
+          "videoHash": "4fc06aec5dbad5d26a8bde900e7257f93f4007bcab2dbf581acbb6841a8106a2",
+          "captureSource": "hash-matched validation capture"
+        },
+        {
+          "slot": 3,
+          "name": "Polka Pressure",
+          "context": "neutral air",
+          "src": "/clips/principles-v1/weird-al-3.mp4",
+          "videoHash": "8f45c0e4c7b46353edeb2684999a68e82f9094e9284bc4a275717b8ff2eead01",
+          "captureSource": "review-only capture; no mechanical approval"
+        },
+        {
+          "slot": 1,
+          "name": "Amish Paradise Hoe Lift",
+          "context": "up ground",
+          "src": "/clips/principles-v1/weird-al-1.mp4",
+          "videoHash": "66c747996e89743b95840e6cf5496e662a5194d485ba80ee0c7ac80b0e73dced",
+          "captureSource": "hash-matched validation capture"
+        },
+        {
+          "slot": 4,
+          "name": "Amish Paradise Hoe Lift",
+          "context": "up air",
+          "src": "/clips/principles-v1/weird-al-4.mp4",
+          "videoHash": "b7f829ed7d63439e589552337ef11875f441a39249df1587f4cbb33c60b9109f",
+          "captureSource": "review-only capture; no mechanical approval"
+        },
+        {
+          "slot": 2,
+          "name": "Eat It Dinner Bell",
+          "context": "down ground",
+          "src": "/clips/principles-v1/weird-al-2.mp4",
+          "videoHash": "31b897e5dc5f935797a25a2b63102cab5cd2d86e14aff9d771d6ac7dbc6c9ab5",
+          "captureSource": "hash-matched validation capture"
+        },
+        {
+          "slot": 5,
+          "name": "Eat It Dinner Bell",
+          "context": "down air",
+          "src": "/clips/principles-v1/weird-al-5.mp4",
+          "videoHash": "5b08e177f3c082558b2c11ee1f8793194d3b930efdedae0e13ba596d0961ee83",
+          "captureSource": "review-only capture; no mechanical approval"
+        }
+      ]
+    },
+    {
+      "id": "lincoln",
+      "name": "Abraham Lincoln",
+      "model": "gpt-5.6-luna",
+      "usage": {
+        "input_tokens": 4761,
+        "input_tokens_details": {
+          "cache_write_tokens": 2955,
+          "cached_tokens": 1803
+        },
+        "output_tokens": 4519,
+        "output_tokens_details": {
+          "reasoning_tokens": 260
+        },
+        "total_tokens": 9280
+      },
+      "generationMs": 30142,
+      "estimatedUsd": 0.00619821,
+      "compiled": false,
+      "nativeStatus": "not-run",
+      "nativePassed": 0,
+      "readyToEquip": false,
+      "error": "beat onsets must increase",
+      "principlesHash": "89b3c5ff988ebd165efce3ffd8c887358bc1bd121a6783348bd9c7c1c7b91f29",
+      "contractHash": "7ee3ebfe2af5d9e2ad079e98ed467f7ebf6808ef263f16d4c5fdfee39fe9b76f",
+      "briefHash": "351f1a53ed194e4d11698d15600194cd4d91589fbbed6425963b5f8a1c4bfe0f",
+      "implementationFileHash": "538fd3fbb15a99586513e4a7caba0adeef327566eb806b20b00febbe21e48757",
+      "moves": [
+        {
+          "slot": 0,
+          "name": "Gettysburg Address",
+          "context": "neutral ground",
+          "src": null
+        },
+        {
+          "slot": 1,
+          "name": "Stovepipe Ascent",
+          "context": "up ground",
+          "src": null
+        },
+        {
+          "slot": 2,
+          "name": "Frontier Log Split",
+          "context": "down ground",
+          "src": null
+        },
+        {
+          "slot": 3,
+          "name": "Gettysburg Address",
+          "context": "neutral air",
+          "src": null
+        },
+        {
+          "slot": 4,
+          "name": "Stovepipe Ascent",
+          "context": "up air",
+          "src": null
+        },
+        {
+          "slot": 5,
+          "name": "Frontier Log Split",
+          "context": "down air",
+          "src": null
+        }
+      ]
+    }
+  ],
+  "summary": "Weird Al compiled but failed aerial-neutral contact validation. Lincoln failed compilation. These clips are for human visual review; neither set is ready to equip.",
+  "confounds": [
+    "The general rigid-mount control was introduced with this principles version. This is not a principles-text-only A/B test.",
+    "The old hand-corrected examples used named primitives; the new schema forbids them.",
+    "Existing descriptions were frozen; the description-writing stage was exercised by tests, not by fresh model calls in this cohort."
+  ]
+}

@@ -1000,7 +1000,7 @@ async function handleRequest(req, res, vite) {
   if(req.method==="GET"&&specialPreview) {
     if(!fighterJobs.isAccessible(specialPreview[1],user?.uid))return json(res,404,{error:"Fighter not found"});
     try {
-      const artifact=await specialJobs.preview(specialPreview[2],specialPreview[1],Number(specialPreview[3]));
+      const artifact=await specialJobs.preview(specialPreview[2],specialPreview[1],Number(specialPreview[3]),user?.uid);
       if(!artifact)return json(res,404,{error:"Preview not found"});
       const clip=videoResponse(await objectStore.read(artifact.key),req.headers.range);
       res.writeHead(clip.status,clip.headers);res.end(clip.body);return;

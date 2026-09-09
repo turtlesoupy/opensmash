@@ -34,12 +34,13 @@ export default function SpecialsPanel({fighterId,target}) {
   <h3>Custom specials</h3>
   <p>Create a complete neutral, up, and down special set, including air moves. Available for offline matches.</p>
   {!enabled&&<p>Special generation requires an enabled validation worker.</p>}
-  {job&&<p role="status">{job.ready?'All six moves validated':job.stage}{job.error?`: ${job.error}`:''}</p>}
-  {job?.ready&&job.contexts.map(context=>context.preview&&<p key={context.slot}><a href={context.preview} target="_blank" rel="noreferrer">Watch {['neutral ground','up ground','down ground','neutral air','up air','down air'][context.slot]}</a></p>)}
+  {job&&<p role="status">{job.ready?'Gameplay checks passed for all six moves':job.stage}{job.error?`: ${job.error}`:''}</p>}
+  {job?.contexts?.some(context=>context.preview)&&<p>{job.ready?'Review animation and effects before equipping.':'Review clips only: this set failed gameplay checks and cannot be equipped.'}</p>}
+  {job?.contexts?.map(context=>context.preview&&<p key={context.slot}><a href={context.preview} target="_blank" rel="noreferrer">Watch {['neutral ground','up ground','down ground','neutral air','up air','down air'][context.slot]}</a></p>)}
   {job?.description&&<details><summary>Attack descriptions</summary>{job.description.moves.map(move=><p key={move.slot}><strong>{move.name}</strong> ({move.slot}) — {move.action}</p>)}</details>}
   {enabled&&!active&&<button type="button" disabled={busy} onClick={()=>act('generate')}>Generate all specials</button>}
   {active&&<button type="button" disabled={busy} onClick={()=>act('cancel')}>Cancel generation</button>}
-  {enabled&&job?.status==='failed'&&<button type="button" disabled={busy} onClick={()=>act('retry')}>Retry from saved description</button>}
+  {enabled&&job?.status==='failed'&&<button type="button" disabled={busy} onClick={()=>act('retry')}>Retry saved attempt</button>}
   {job?.ready&&job.target===target&&<button type="button" disabled={busy||equipped} onClick={()=>act('equip')}>{equipped?'Equipped for next match':'Equip special set'}</button>}
   {job?.ready&&job.target!==target&&<p>This set uses the {job.target} rig. Switch back or generate a set for {target}.</p>}
 

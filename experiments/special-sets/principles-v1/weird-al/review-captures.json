@@ -1,0 +1,53 @@
+{
+  "packageFileHash": "778dc68aa51ee1e3264de33945fa9463dbb306063f96556adcb8cbf019f0a949",
+  "bundleHash": "c425f4d11bddc812e011e906862816ca5b23e8217e535448129463035543415b",
+  "binaryHash": "cc884e4f640c3bea01000b248c7a5dad893b0c1ac6cbdaf6ea9c9f7dff962724",
+  "status": "captured",
+  "runtimeValidated": false,
+  "visualQuality": "pending-human-review",
+  "judges": 0,
+  "contexts": [
+    {
+      "slot": 0,
+      "source": "hash-matched validation capture",
+      "captured": true,
+      "preview": "/private/tmp/principles-v1-weird-al/review/slot-0.mp4",
+      "sha256": "4fc06aec5dbad5d26a8bde900e7257f93f4007bcab2dbf581acbb6841a8106a2"
+    },
+    {
+      "slot": 1,
+      "source": "hash-matched validation capture",
+      "captured": true,
+      "preview": "/private/tmp/principles-v1-weird-al/review/slot-1.mp4",
+      "sha256": "66c747996e89743b95840e6cf5496e662a5194d485ba80ee0c7ac80b0e73dced"
+    },
+    {
+      "slot": 2,
+      "source": "hash-matched validation capture",
+      "captured": true,
+      "preview": "/private/tmp/principles-v1-weird-al/review/slot-2.mp4",
+      "sha256": "31b897e5dc5f935797a25a2b63102cab5cd2d86e14aff9d771d6ac7dbc6c9ab5"
+    },
+    {
+      "slot": 3,
+      "source": "review-only capture; no mechanical approval",
+      "captured": true,
+      "preview": "/private/tmp/principles-v1-weird-al/review/slot-3.mp4",
+      "sha256": "8f45c0e4c7b46353edeb2684999a68e82f9094e9284bc4a275717b8ff2eead01"
+    },
+    {
+      "slot": 4,
+      "source": "review-only capture; no mechanical approval",
+      "captured": true,
+      "preview": "/private/tmp/principles-v1-weird-al/review/slot-4.mp4",
+      "sha256": "b7f829ed7d63439e589552337ef11875f441a39249df1587f4cbb33c60b9109f"
+    },
+    {
+      "slot": 5,
+      "source": "review-only capture; no mechanical approval",
+      "captured": true,
+      "preview": "/private/tmp/principles-v1-weird-al/review/slot-5.mp4",
+      "sha256": "5b08e177f3c082558b2c11ee1f8793194d3b930efdedae0e13ba596d0961ee83"
+    }
+  ]
+}

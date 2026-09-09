@@ -16,6 +16,7 @@ export function publicSpecialJob(job) {
     target:job.profile.target,createdAt:job.createdAt,updatedAt:job.updatedAt,
     contexts:job.report?.contexts||SLOTS.map(slot=>({slot,passed:false})),judges:0,
     ready:job.status==='complete'&&job.report?.runtimeValidated===true,
+    principles:job.report?.principles||job.principles||null,manualReview:job.report?.manualReview||{status:'pending'},
     generation:job.report?.generation||null,packageHash:job.packageHash||null,description:job.brief||null};
 }
 export function nativeValidator({engineRoot=process.env.SPECIALS_ENGINE_ROOT}={}) {
@@ -24,10 +25,25 @@ export function nativeValidator({engineRoot=process.env.SPECIALS_ENGINE_ROOT}={}
   const packagePath=path.join(outputRoot,'package.json');
   await writeFile(packagePath,JSON.stringify({...packet,sets:packet.sets.map(set=>({...set,bundle_path:bundlePath}))}));
   const evidence=path.join(outputRoot,`validation-${randomUUID()}`);
-  await exec(process.env.PYTHON||'python3',[path.join(engineRoot,'experiments/custom-attacks/validate_set.py'),
-    '--package',packagePath,'--bundle',bundlePath,'--output',evidence,'--capture'],{signal,timeout:30*60*1000,maxBuffer:1024*1024});
+  try {
+    await exec(process.env.PYTHON||'python3',[path.join(engineRoot,'experiments/custom-attacks/validate_set.py'),
+      '--package',packagePath,'--bundle',bundlePath,'--output',evidence,'--capture'],{signal,timeout:30*60*1000,maxBuffer:1024*1024});
+  } catch(e) { if(signal?.aborted)throw e; /* A failed report may still be reviewable. */ }
   const report=JSON.parse(await readFile(path.join(evidence,'report.json'),'utf8'));
-  if(!runtimeReady(report)||report.packageFileHash!==hash(await readFile(packagePath))||report.bundleHash!==hash(await readFile(bundlePath))) throw new Error('Runtime validation did not accept all six contexts');
+  if(report.packageFileHash!==hash(await readFile(packagePath))||report.bundleHash!==hash(await readFile(bundlePath))) throw new Error('Runtime validation input mismatch');
+  if(!runtimeReady(report)) {
+    report.status='failed';report.runtimeValidated=false;
+    const review=path.join(outputRoot,`review-${randomUUID()}`);
+    try {
+      await exec(process.env.PYTHON||'python3',[path.join(engineRoot,'experiments/custom-attacks/capture_review_set.py'),
+        '--package',packagePath,'--bundle',bundlePath,'--output',review,'--validation',evidence],{signal,timeout:20*60*1000,maxBuffer:1024*1024});
+      const captured=JSON.parse(await readFile(path.join(review,'report.json'),'utf8'));
+      if(captured.packageFileHash!==report.packageFileHash||captured.bundleHash!==report.bundleHash||captured.binaryHash!==report.binaryHash)throw new Error('Review capture input mismatch');
+      const checked=new Map(report.contexts.map(c=>[c.slot,c]));
+      report.contexts=Array.from({length:6},(_,slot)=>({...checked.get(slot),slot,passed:checked.get(slot)?.passed===true,scenarios:checked.get(slot)?.scenarios||[],reviewOnly:true,
+        preview:captured.contexts.find(c=>c.slot===slot&&c.captured)?.preview}));
+    } catch(e) {if(signal?.aborted)throw e;report.reviewError=e.message;}
+  }
   return report;
  };
 }
@@ -80,6 +96,7 @@ export function createSpecialJobs({repoRoot,jobsRoot,jobDatabase,objectStore,dis
       controller.signal.throwIfAborted();
       job.artifacts[stage]=await artifact(job,stage,value);
       (job.history ||= []).push({stage,artifact:job.artifacts[stage],at:new Date().toISOString()});
+      if(stage==='principles')job.principles={version:value.version,hash:value.hash,contractHash:value.contractHash};
       if(stage==='description'){job.brief=value.brief;job.stage='implementing';}
       if(stage==='implementation')job.stage='compiling';
       if(stage==='compiled'){job.stage='validating';job.packageHash=value.report.packageHash;}
@@ -97,7 +114,7 @@ export function createSpecialJobs({repoRoot,jobsRoot,jobDatabase,objectStore,dis
     await writeFile(bundlePath,await objectStore.read(job.bundle.key,{public:job.bundle.public===true}));
     if(hash(await readFile(bundlePath))!==job.character.bundleHash) throw new Error('Character bundle changed after description');
     const report=await validator({packet:result.packet,bundlePath,outputRoot,signal:controller.signal});
-    if(!runtimeReady(report)) throw new Error('Incomplete runtime validation');
+    const accepted=runtimeReady(report);
     controller.signal.throwIfAborted();
     job.artifacts.package=await artifact(job,'package',result.packet);
     for(const context of report.contexts) {
@@ -111,7 +128,9 @@ export function createSpecialJobs({repoRoot,jobsRoot,jobDatabase,objectStore,dis
     report.principles=result.report?.principles;report.manualReview=result.report?.manualReview;
     report.generation=result.report?.generation;report.representation=result.report?.representation;
     job.artifacts.report=await artifact(job,'report',report);
-    job.report=report;job.status='complete';job.stage='ready';await save();
+    job.report=report;
+    if(!accepted)throw new Error(report.error||'Incomplete runtime validation');
+    job.status='complete';job.stage='ready';await save();
   } catch(e) {
     if(e.code!=='LEASE_LOST'&&!controller.signal.aborted) {
       job.status='failed';job.error=e.message;
@@ -180,9 +199,9 @@ export function createSpecialJobs({repoRoot,jobsRoot,jobDatabase,objectStore,dis
     if(job?.character.id!==characterId||job.status!=='complete'||!job.report?.runtimeValidated)throw error(404,'Validated special set not found');
     return {job,packet:JSON.parse((await objectStore.read(job.artifacts.package.key)).toString())};
   },
-  async preview(id,characterId,slot) {
+  async preview(id,characterId,slot,ownerId) {
     const job=await jobDatabase.get(id);
-    if(job?.character.id!==characterId||job.status!=='complete')throw error(404,'Preview not found');
+    if(job?.character.id!==characterId||!(job.status==='complete'||job.status==='failed'&&ownerId&&job.ownerId===ownerId))throw error(404,'Preview not found');
     return job.artifacts[`preview-${slot}`]||null;
   },
   runSingle,
