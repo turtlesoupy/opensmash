@@ -1,0 +1,192 @@
+{
+  "status": "ready",
+  "judges": 0,
+  "visualQuality": "not-assessed",
+  "packageFileHash": "0ecaa7f71a910a3f88406f7fdd7dcec99e737ac1442def6f13ce53e1155f1aaf",
+  "bundleHash": "c425f4d11bddc812e011e906862816ca5b23e8217e535448129463035543415b",
+  "binaryHash": "622db05d23ffab77656d062249a34bd0e9e855be4927c2f1af85d4a13417ba6f",
+  "contexts": [
+    {
+      "slot": 0,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 14
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "activecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/private/tmp/rich-specials-weird-al-final/validation/slot-0.mp4",
+      "passed": true
+    },
+    {
+      "slot": 1,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 11
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "activecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/private/tmp/rich-specials-weird-al-final/validation/slot-1.mp4",
+      "passed": true
+    },
+    {
+      "slot": 2,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 15
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "activecancel",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/private/tmp/rich-specials-weird-al-final/validation/slot-2.mp4",
+      "passed": true
+    },
+    {
+      "slot": 3,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 12
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "activecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "landing",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/private/tmp/rich-specials-weird-al-final/validation/slot-3.mp4",
+      "passed": true
+    },
+    {
+      "slot": 4,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 10
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "activecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "landing",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/private/tmp/rich-specials-weird-al-final/validation/slot-4.mp4",
+      "passed": true,
+      "captureOverride": {
+        "camera": "500:0,1700,7000:0,1700,0",
+        "gameplayUnchanged": true
+      }
+    },
+    {
+      "slot": 5,
+      "scenarios": [
+        {
+          "scenario": "probe",
+          "passed": true,
+          "damage": 13
+        },
+        {
+          "scenario": "miss",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "wavecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "activecancel",
+          "passed": true,
+          "damage": 0
+        },
+        {
+          "scenario": "landing",
+          "passed": true,
+          "damage": 0
+        }
+      ],
+      "preview": "/private/tmp/rich-specials-weird-al-final/validation/slot-5.mp4",
+      "passed": true
+    }
+  ],
+  "runtimeValidated": true
+}

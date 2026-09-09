@@ -34,7 +34,7 @@ test('incomplete sets, drifted contract, pose discontinuities and disconnected c
 });
 test('two stages checkpoint description before implementation; no judge or repair call',async()=>{
  const f=fixture(),events=[];const profile=await rigProfile(repo);
- const result=await generateSet({character,profile,model:async req=>{
+ const result=await generateSet({format:'full',character,profile,model:async req=>{
   events.push(req.name);if(req.name==='special_implementation') assert.equal(req.input.briefHash,hash(f.brief));
   return {value:req.name==='special_description'?f.brief:f.implementation,provenance:{model:'test'}};
  },checkpoint:async stage=>events.push(stage)});
@@ -48,7 +48,7 @@ async function service(t,{validate,model}={}) {
  const bundle=await store.putFile('characters/test.osb',bundleFile,{public:false});
  const database=createJobDatabase({jobsRoot:path.join(dir,'jobs')});
  let calls=0;
- const jobs=createSpecialJobs({repoRoot:repo,jobsRoot:path.join(dir,'jobs'),jobDatabase:database,objectStore:store,dispatcher:{driver:'local'},
+ const jobs=createSpecialJobs({authoringFormat:'full',repoRoot:repo,jobsRoot:path.join(dir,'jobs'),jobDatabase:database,objectStore:store,dispatcher:{driver:'local'},
   resolveCharacter:async(id,owner)=>owner==='owner'?{character:{id,name:'Uploaded musician'},bundle,target:'mario'}:null,
   model:model||(async req=>{calls++;return {value:req.name==='special_description'?fixture().brief:fixture().implementation,provenance:{model:'test'}};}),
   validator:validate||(async()=>({status:'ready',runtimeValidated:true,contexts:SLOTS.map(slot=>({slot,passed:true}))}))});

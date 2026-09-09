@@ -25,6 +25,14 @@ export const implementationSchema = obj({moves:arr(obj({slot,tracks:arr(trackSch
   hitboxes:arr(hitSchema,1,8),parts:arr(partSchema,1,16),
   motion:obj({frame:int(-1,149),velocity:arr(num(-60,100),2,2)})}),6,6)});
 
+export const richImplementationSchema=structuredClone(implementationSchema);
+const richParts=richImplementationSchema.properties.moves.items.properties.parts;
+richParts.maxItems=1024;
+richParts.items.properties.from=vec(4096);richParts.items.properties.to=vec(4096);
+richParts.items.properties.size=arr(num(1,500),2,2);
+Object.assign(richParts.items.properties,{angle:num(-6.284,6.284),opacity:num(0,255),fade:num(0,150),sizeTo:arr(num(1,500),2,2),opacityTo:num(0,255)});
+richParts.items.required.push('angle','opacity','fade','sizeTo','opacityTo');
+
 // Shared strict subset used by the model schema and compiler. Reject unknown fields.
 export function validate(schema, value, at='$') {
   const fail = why => { throw new Error(`${at}: ${why}`); };
@@ -63,8 +71,8 @@ export async function rigProfile(repoRoot, target='mario') {
   if(!joints.torso || Object.keys(joints).length<2) throw new Error('rig has insufficient animation capabilities');
   return {target,fkind:source.fkind,joints,hash:hash(source),units:'engine-world-units',forward:'x',up:'y',depth:'z'};
 }
-export function compileSet({brief,implementation,profile,character,player=0}) {
-  validateBrief(brief);validate(implementationSchema,implementation);complete(implementation.moves);
+export function compileSet({brief,implementation,profile,character,player=0,rich=false}) {
+  validateBrief(brief);validate(rich?richImplementationSchema:implementationSchema,implementation);complete(implementation.moves);
   if(!Number.isInteger(player)||player<0||player>3) throw new Error('invalid player');
   const moves=SLOTS.map((slot,index)=>{
     const contract=brief.moves.find(m=>m.slot===slot), m=implementation.moves.find(m=>m.slot===slot);
@@ -90,10 +98,13 @@ export function compileSet({brief,implementation,profile,character,player=0}) {
         if(p.start!==h.start||p.end!==h.end) throw new Error(`${slot}: danger cue lifetime differs from collision`);
       }
     }
+    if(rich) for(let frame=0;frame<contract.duration;frame++) {
+      if(m.parts.filter(p=>frame>=p.start&&frame<p.end).length>224) throw new Error(`${slot}: visible effects budget exceeded`);
+    }
     m.hitboxes.forEach((h,i)=>{if(!m.parts.some(p=>p.hit===i)) throw new Error(`${slot}: missing danger cue ${i}`);});
     if(m.motion.frame>=contract.duration || m.motion.velocity[0]>60 || m.motion.velocity[1]<-80) throw new Error(`${slot}: invalid launch`);
     if(index%3===1 && (m.motion.frame<0||m.motion.frame>contract.startup||m.motion.velocity[1]<30)) throw new Error(`${slot}: up special requires launch by first hit`);
-    return {version:3,name:contract.name,fkind:profile.fkind,player,slot:index,duration:contract.duration,blend_in:Math.min(8,contract.startup),
+    return {version:rich?4:3,name:contract.name,fkind:profile.fkind,player,slot:index,duration:contract.duration,blend_in:Math.min(8,contract.startup),
       tracks,hitboxes:m.hitboxes.map(h=>({...h,joint:0})),parts:m.parts,motion:m.motion};
   });
   const result={format:ABI,character,rigHash:profile.hash,briefHash:hash(brief),sets:[{player,fkind:profile.fkind,moves}]};

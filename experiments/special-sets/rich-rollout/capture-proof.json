@@ -1,0 +1,24 @@
+{
+  "wideCamera": "500:0,1700,7000:0,1700,0",
+  "reason": "Keep the complete rising effect in frame. Gameplay telemetry is byte-identical to the default-camera miss.",
+  "characters": [
+    {
+      "id": "weird-al",
+      "gameplayTelemetryHash": "4f2b3a4a4a2762661687bf2776e3da640c17086259b46b7b49e3e8de02fd9e07",
+      "originalLogHash": "a6f1a504633a3624450998336090654b8dd37bd66ccb6d8b0b4094a59c864bde",
+      "wideLogHash": "4e35cdd8118590a9fd3fa0abb8705368e1a3a661530929d14c8c8a412a270562"
+    },
+    {
+      "id": "lincoln",
+      "gameplayTelemetryHash": "c1685cb8ab7f1f5215559d93bc319da54efe8e305b8256add2c21d838aef1a39",
+      "originalLogHash": "c8ddc0abc6425f18ccc2ad9e4044a804e2c86585bdefd7b6026189eb69e67df3",
+      "wideLogHash": "87696e3e765006ab32d56dfb02ccb37897ee4eda87f504ca22d12cac0a997476"
+    }
+  ],
+  "naturalContact": {
+    "character": "weird-al",
+    "damage": 4,
+    "scenario": "wave",
+    "targetRepositionedDuringAttack": false
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "attempts": [
+    {
+      "id": "weird-al-v1",
+      "modelCalls": 2,
+      "estimatedUsd": 0.01008735,
+      "originalFailure": "neutral-ground: missing sustained anticipation/action/recovery assembly",
+      "outputTokens": 7631
+    },
+    {
+      "id": "weird-al-v2",
+      "modelCalls": 2,
+      "estimatedUsd": 0.0097874,
+      "originalFailure": "neutral-ground: missing sustained anticipation/action/recovery assembly",
+      "outputTokens": 7262
+    },
+    {
+      "id": "weird-al-v3",
+      "modelCalls": 2,
+      "estimatedUsd": 0.01055975,
+      "originalFailure": "up-ground: invalid hit window/recovery",
+      "outputTokens": 7937
+    },
+    {
+      "id": "lincoln-v1",
+      "modelCalls": 2,
+      "estimatedUsd": 0.00991471,
+      "originalFailure": "up-ground: missing sustained anticipation/action/recovery assembly",
+      "outputTokens": 7583
+    },
+    {
+      "id": "lincoln-v2",
+      "modelCalls": 2,
+      "estimatedUsd": 0.011961449999999998,
+      "originalFailure": "down-ground: invalid hit window/recovery",
+      "outputTokens": 9180
+    }
+  ],
+  "totalModelCalls": 10,
+  "totalEstimatedUsd": 0.052310659999999995,
+  "note": "Development iterations, including failures. Final displayed outputs are unedited weird-al-v3 and lincoln-v2, recompiled after shared compiler/runtime fixes. No production judge, candidate ranking or automatic repair calls."
+}

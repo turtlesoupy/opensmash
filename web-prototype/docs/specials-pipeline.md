@@ -20,7 +20,7 @@ coverage, not a claim of completed native rollout qualification.
 3. A deterministic compiler checks completeness, limits, frozen damage/timing,
    usable recovery launches, seamless pose endpoints, and hit-bound visual cues.
 4. The native worker tests all six contexts for contact damage/reaction, an
-   out-of-range miss, interruption cleanup, and up-special recovery. It records
+   out-of-range miss, windup and active interruption cleanup, landing cancellation, and up-special recovery (27 scenarios per set). It records
    six 3-second previews automatically, without viewing or rating the frames.
 5. Only the complete validated package can be equipped. Browser loading checks
    its content hash, actual character bundle hash, rig, and player binding.
@@ -40,22 +40,20 @@ The engine worktree is `BattleShip/.claude/worktrees/custom-attacks`, branch
 `agent/custom-attacks`. The pipeline worktree is `attack-pipeline-worktree`,
 branch `agent/attack-pipeline`. These changes belong together.
 
-No Lua is required. Version 3 data describes native hit windows, root launch,
+No Lua is required. Version 4 data describes native hit windows, root launch,
 quaternion-interpolated local pose deltas, and rectangular prop/particle
 assemblies. Effects have bounded trajectories and lifetimes. Collision-bound
 pieces share their hit's trajectory; decorative pieces never query a target.
 Gravity, collision, damage, hitlag, and hit reactions remain engine-owned.
-Up specials consume recovery and finish in special fall. Landing, ledge catch,
+Up specials consume recovery and finish in special fall or special landing lag on a platform. Landing, ledge catch,
 damage, grabs, death, and other status changes cancel the active snapshot.
 
 Six slots are atomically loaded per player; an invalid reload retains the last
 complete registry, and an in-progress attack retains its snapshot. Four players
-may have distinct sets on the same rig. Existing v1/v2 experiment files remain
-supported. All generated v3 moves require a full set envelope.
+may have distinct sets on the same rig. Existing v1/v2 experiments and v3 sets remain supported. Generated v3/v4 moves require a full set envelope. New native and browser builds must ship together; old loaders reject v4 safely.
 
 Current limits: 150 frames, 12 semantic tracks with 16 keys, eight sequential hit
-windows, and 16 visual parts per context. The native ABI has additional headroom
-for old experiments. Effects are finite linear/spinning pieces; arbitrary Lua,
+windows, 1,024 compiled visual segments per context, and at most 224 simultaneously visible rectangles. Packages are limited to 1 MiB per character; the four-player registry accepts at most 4 MiB. The graphics heap allocation remains capped at 224 quads per fighter. Effects are finite interpolated/spinning pieces; arbitrary Lua,
 homing, reflection, healing, persistent projectiles, custom sound synthesis,
 and branching scripted state machines are outside this version. The generation
 prompt makes those capabilities explicit instead of promising unsupported moves.
@@ -75,7 +73,7 @@ From `web-prototype`:
 
 ```sh
 export OPENAI_API_KEY=... # use the normal secret environment
-export SPECIALS_MODEL=gpt-6-astra
+export SPECIALS_MODEL=gpt-5.6-luna # default; explicitly overridable
 export SPECIALS_ENABLED=1
 export SPECIALS_ENGINE_ROOT=/absolute/path/to/BattleShip/.claude/worktrees/custom-attacks
 npm run dev
@@ -139,3 +137,36 @@ Engine tests: `test_moves.cpp` for legacy loader/pose compatibility,
 `test_browser_sets.mjs` for bundle/hash/rig binding, and `validate_set.py` for
 actual native collision, recovery, cancellation, and preview capture. These
 checks do not assess visual quality or roster-wide game balance.
+
+## Rich compact score (default)
+
+`server/specials/rich.js` is the default implementer contract. `full` is an
+explicit legacy comparison option; `reduced.js` retains the earlier experiment.
+
+The implementer defines three designs with air overrides, shared palette,
+reusable detailed props, assembly keyframes, native hits, and particle glyph
+trails. Repeated folds, keys, borders and buttons use a count and step vector.
+The compiler generates layered curves and staggered trajectories. No new code,
+image model, Lua interpreter, judge, or model repair call is involved.
+
+Deterministic conventions remove redundant arithmetic:
+
+- Relative hit rhythm anchors at frozen startup and fits a shared action interval that leaves twelve recovery frames in both contexts. Body and prop keyframes follow the same time warp; overlapping windows clip at the next beat. Damage weights allocate the frozen total.
+- The main prop lifetime includes eight anticipation frames and at least eight
+  follow-through frames. Authored positions and scale keys remain intact.
+- Air timing remaps startup and recovery separately, with per-joint overrides.
+  Up recovery launches immediately in air, with a vertical speed floor of 70.
+- Props default to z=120 in front of the body; local z layers their details.
+  The signature prop has a 400-unit minimum extent before animated scale, and details have a one-world-unit minimum thickness.
+- Curved danger cues follow collision direction, radius, trajectory and lifetime.
+  Trails sample independent birth positions, then drift, fall, spin and fade.
+- Unknown references, collapsed keys, invalid hits, unsupported joints, excessive
+  packages and per-frame overflow fail closed. There is no silent truncation.
+
+The compact score and fully expanded packet describe the same implementation.
+Recompilation is deterministic; comparing byte sizes measures representation
+compression, not a model-quality win. Comparisons with the earlier full-model
+rollout are separate creative outputs. Recorded costs must include both writer
+and implementer; native validation/capture and hosting are separate.
+
+Aerial neutral/down showcase and contact fixtures begin at height 2400, above the side platforms, so the complete action can play. Separate low-height (1100) landing scenarios test normal cancellation. This fixes the earlier fixture that landed after about twelve frames and could hide later effects. Every authored hit now has its own native contact probe. Horizontal ground impulses remain grounded; they no longer turn into zero-height jumps that cancel on landing.

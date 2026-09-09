@@ -16,11 +16,11 @@ const character={...JSON.parse(await readFile(characterFile,'utf8')),bundleHash:
 const profile=await rigProfile(root,target);
 await writeFile(path.join(outputDir,'input.json'),JSON.stringify({character,profile},null,2));
 try {
- const result=await generateSet({character,profile,checkpoint:async(stage,value)=>{
+ const result=await generateSet({format:process.env.SPECIALS_FORMAT||'rich',character,profile,checkpoint:async(stage,value)=>{
    await writeFile(path.join(outputDir,`${stage}.json`),JSON.stringify(value,null,2),{flag:'wx'});
    console.log(JSON.stringify({stage,hash:hash(value)}));
  }});
- await writeFile(path.join(outputDir,'package.json'),JSON.stringify(result.packet,null,2),{flag:'wx'});
+ await writeFile(path.join(outputDir,'package.json'),JSON.stringify(result.packet),{flag:'wx'});
  console.log('Compiled all six contexts; run the engine validation suite before equipping.');
 } catch(error) {
  await writeFile(path.join(outputDir,'failure.json'),JSON.stringify({error:error.message,judges:0}));

@@ -1,0 +1,31 @@
+{
+  "character": {
+    "id": "prototype-lincoln",
+    "name": "Abraham Lincoln",
+    "description": "Abraham Lincoln, tall bearded president in a black suit and stovepipe hat. Character references: Gettysburg Address, handwritten parchment, quill and ink, Lincoln's distinctive hat, frontier log splitting. Create a theatrical staged set: recognizable detailed props, readable performance, a large decisive effect with independently falling paper or ink fragments. Avoid generic named axe slams.",
+    "bundleHash": "e1e4241d68369a756d9e72857479bbc669c45b142d9ef8176e99ef69f4128091"
+  },
+  "profile": {
+    "target": "mario",
+    "fkind": 0,
+    "joints": {
+      "torso": 6,
+      "head": 12,
+      "rightUpperArm": 8,
+      "rightForearm": 9,
+      "rightHand": 10,
+      "leftUpperArm": 14,
+      "leftForearm": 15,
+      "leftHand": 16,
+      "rightThigh": 19,
+      "rightShin": 20,
+      "leftThigh": 24,
+      "leftShin": 25
+    },
+    "hash": "c8a76e7fad0da98a862540bb360f6e27d77a75bd2a72f7fdb49c8651006848b1",
+    "units": "engine-world-units",
+    "forward": "x",
+    "up": "y",
+    "depth": "z"
+  }
+}

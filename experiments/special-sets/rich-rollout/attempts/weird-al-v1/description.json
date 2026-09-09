@@ -1,0 +1,107 @@
+{
+  "brief": {
+    "identity": "Weird Al Yankovic — cheerful theatrical musician in a Hawaiian shirt, curly hair, and red accordion. Special set references Polka Pressure, Amish Paradise, and Eat It.",
+    "palette": [
+      148,
+      28,
+      38
+    ],
+    "moves": [
+      {
+        "slot": "neutral-ground",
+        "name": "Polka Pressure",
+        "signature": "Reference: Weird Al's accordion polkas. He snaps open a detailed red accordion with ivory keys and pleated bellows, performs two rhythmic squeezes, then releases one large curved chord wave.",
+        "anticipation": "Weird Al plants his feet, leans back theatrically, and compresses the bellows twice; the keys and bellows visibly pulse on each beat.",
+        "action": "The accordion expands to full width and emits a broad forward-curving chord wave with a timed native hitbox traveling along its exact visible arc. The wave and hitbox expire together. A few small musical notes break off, drift away from the wave, and fade without targeting anything.",
+        "recovery": "He folds the accordion inward, rocks forward from the recoil, and briefly steadies himself with one foot back. The final pose leaves the accordion closed and readable.",
+        "groundAirDifference": "On the ground, the wave travels level and far enough to serve as a deliberate mid-range poke. The grounded stance has strong visual commitment but stable footing.",
+        "counterplay": "The two squeezes clearly telegraph the release. Opponents can jump over the level wave, punish the recovery, or approach during the bellows compression; the decorative notes have no hitbox.",
+        "damage": 11,
+        "startup": 14,
+        "duration": 38
+      },
+      {
+        "slot": "neutral-air",
+        "name": "Polka Pressure",
+        "signature": "Reference: Weird Al's accordion polkas. The same red accordion, ivory keys, and expanding bellows create a compact airborne chord burst.",
+        "anticipation": "In the air, Weird Al tucks his knees and compresses the bellows twice while turning his shoulders toward the intended side.",
+        "action": "He opens the accordion across his front and sends a shorter curved chord wave on a slightly downward-forward arc. Its native hitbox follows the visible wave and ends when the wave dissipates; loose notes drift outward and fade.",
+        "recovery": "He closes the bellows, kicks his legs out to regain balance, then returns to a neutral falling pose with the accordion held against his torso.",
+        "groundAirDifference": "The air version has a shorter range and a downward-forward trajectory, making it useful for intercepting approaches below him rather than functioning as a full horizontal ground poke.",
+        "counterplay": "The compact arc leaves the space above and behind him open. The squeeze rhythm is visible, and opponents can move outside the arc or punish his landing; falling notes are decorative only.",
+        "damage": 9,
+        "startup": 12,
+        "duration": 35
+      },
+      {
+        "slot": "up-ground",
+        "name": "Amish Paradise Lift",
+        "signature": "Reference: Weird Al's song “Amish Paradise.” A stylized wooden barn-roof prop unfolds beneath him while pale corn-row glyphs mark the rise.",
+        "anticipation": "Weird Al crouches, grips the accordion straps, and compresses the bellows hard while a small barn-roof assembly folds open at his feet.",
+        "action": "He springs upward with a strong root launch as the barn-roof prop snaps beneath him. A tight vertical native hitbox surrounds his rising torso and the prop for the first part of the ascent. Thin corn-row glyph trails fall independently behind him and fade instead of pursuing targets.",
+        "recovery": "At the top of the launch he hugs the accordion, turns sideways, and descends with one leg extended before returning to his normal falling pose.",
+        "groundAirDifference": "From the ground, the move begins with a low crouch and gives a high, mostly vertical recovery with a brief launch hitbox. It can also catch an opponent standing directly above the setup.",
+        "counterplay": "The launch is vertical and predictable, with no horizontal steering or homing element. The crouch signals the start, the hitbox ends early, and opponents can move beside the ascent or punish the landing.",
+        "damage": 8,
+        "startup": 11,
+        "duration": 42
+      },
+      {
+        "slot": "up-air",
+        "name": "Amish Paradise Lift",
+        "signature": "Reference: Weird Al's song “Amish Paradise.” The barn-roof assembly appears beneath his airborne feet as he kicks upward through it.",
+        "anticipation": "Weird Al draws his knees to his chest and compresses the accordion while turning his hatless curly silhouette toward the camera for a clear wind-up.",
+        "action": "He performs a compact upward root launch, with a brief native hitbox around his rising legs and the unfolding barn roof. Sparse corn-row glyphs peel off downward and fade independently; none track opponents.",
+        "recovery": "He reaches the apex in a spread-eagle pose, folds the accordion closed, and settles into a controlled fall with his knees tucked.",
+        "groundAirDifference": "The airborne version gives a smaller upward burst but preserves his existing air momentum, making it a practical recovery correction and an anti-air check rather than a full ground jump.",
+        "counterplay": "Its hitbox is brief and centered below him, leaving the sides exposed. The required knee tuck is readable, and opponents can wait out the rise or intercept him after the roof closes.",
+        "damage": 7,
+        "startup": 10,
+        "duration": 36
+      },
+      {
+        "slot": "down-ground",
+        "name": "Eat It Forkbeat",
+        "signature": "Reference: Weird Al's song “Eat It.” A comically oversized ivory dinner fork unfolds from the accordion case for a close-range theatrical strike.",
+        "anticipation": "Weird Al hunches over the case, raises one elbow, and gives a quick impatient table-tapping motion while the fork assembly folds into view beside him.",
+        "action": "He snaps the fork forward in a short sweeping arc at waist height, producing one strong native close-range hitbox along the visible fork head. A few crumbs and tiny music glyphs scatter away from the sweep and fade; they are decorative and cannot hit.",
+        "recovery": "He recoils with an exaggerated offended shrug, pulls the fork back into the case, and ends with the accordion tucked under one arm.",
+        "groundAirDifference": "On the ground, the fork sweep stays close to his body and covers the space immediately in front and slightly behind his leading shoulder, rewarding point-blank pressure without becoming a projectile.",
+        "counterplay": "The long wind-up is easy to see, the fork's short arc has limited range, and the recovery leaves him exposed. Opponents can step outside the sweep or jump over it.",
+        "damage": 13,
+        "startup": 16,
+        "duration": 35
+      },
+      {
+        "slot": "down-air",
+        "name": "Eat It Forkbeat",
+        "signature": "Reference: Weird Al's song “Eat It.” The same oversized dinner fork drops from the accordion case for a plunging close-range strike.",
+        "anticipation": "Weird Al folds his body around the accordion, tucks both knees, and angles the closed fork beneath his feet before committing downward.",
+        "action": "He snaps the fork open and drives it downward in a compact vertical stab with a native hitbox that shares the fork's exact short path. Two crumb-shaped decorative fragments fall past the hitbox and fade without targeting anything.",
+        "recovery": "The fork folds shut, he pulls his knees back up, and he spins once into a normal falling pose with the accordion held safely against his chest.",
+        "groundAirDifference": "In the air, the move is a downward stall-and-strike with a narrow vertical reach, useful for contesting space directly below him but intentionally poor at covering either side.",
+        "counterplay": "The narrow line and brief stall are readable, while the sides remain open. Opponents can move laterally, wait for the fork to close, or punish his landing; the falling crumbs are harmless decoration.",
+        "damage": 12,
+        "startup": 13,
+        "duration": 37
+      }
+    ]
+  },
+  "briefHash": "a7b32322eb131cf15f5033fb56031cb500138d3ba50c4e36acd8821363df7c1c",
+  "provenance": {
+    "model": "gpt-5.6-luna",
+    "responseId": "resp_075722838a6b0c77016aa1123da2d487d1a248d921ba1dc7a9",
+    "usage": {
+      "input_tokens": 699,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 2213,
+      "output_tokens_details": {
+        "reasoning_tokens": 642
+      },
+      "total_tokens": 2912
+    }
+  }
+}

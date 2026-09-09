@@ -1,0 +1,163 @@
+{
+  "characters": [
+    {
+      "id": "weird-al",
+      "name": "Weird Al Yankovic",
+      "model": [
+        "gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "outputTokens": 7937,
+      "estimatedUsd": 0.01055975,
+      "authoringBytes": 12014,
+      "expandedBytes": 593520,
+      "passed": 27,
+      "total": 27,
+      "moves": [
+        {
+          "slot": 0,
+          "context": "Neutral \u00b7 ground",
+          "name": "Polka Pressure",
+          "damage": 14,
+          "parts": 482,
+          "peakQuads": 80
+        },
+        {
+          "slot": 1,
+          "context": "Up \u00b7 ground",
+          "name": "Amish Paradise Hoe Lift",
+          "damage": 11,
+          "parts": 306,
+          "peakQuads": 82
+        },
+        {
+          "slot": 2,
+          "context": "Down \u00b7 ground",
+          "name": "Eat It Dinner Bell",
+          "damage": 15,
+          "parts": 391,
+          "peakQuads": 72
+        },
+        {
+          "slot": 3,
+          "context": "Neutral \u00b7 air",
+          "name": "Polka Pressure",
+          "damage": 12,
+          "parts": 434,
+          "peakQuads": 95
+        },
+        {
+          "slot": 4,
+          "context": "Up \u00b7 air",
+          "name": "Amish Paradise Hoe Lift",
+          "damage": 10,
+          "parts": 306,
+          "peakQuads": 82
+        },
+        {
+          "slot": 5,
+          "context": "Down \u00b7 air",
+          "name": "Eat It Dinner Bell",
+          "damage": 13,
+          "parts": 379,
+          "peakQuads": 87
+        }
+      ],
+      "packageHash": "0ecaa7f71a910a3f88406f7fdd7dcec99e737ac1442def6f13ce53e1155f1aaf",
+      "binaryHash": "622db05d23ffab77656d062249a34bd0e9e855be4927c2f1af85d4a13417ba6f",
+      "bundleHash": "c425f4d11bddc812e011e906862816ca5b23e8217e535448129463035543415b",
+      "descriptionHash": "63710e2c67ad7e3656ddb20e39bd4485ca457d8782bb4c33fd802a629711557e",
+      "scoreHash": "b66f9aa76b52dfc7fac05727ae19584e4e7a71eb3c07f76af917adce12a956e9"
+    },
+    {
+      "id": "lincoln",
+      "name": "Abraham Lincoln",
+      "model": [
+        "gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "outputTokens": 9180,
+      "estimatedUsd": 0.011961449999999998,
+      "authoringBytes": 14234,
+      "expandedBytes": 665073,
+      "passed": 27,
+      "total": 27,
+      "moves": [
+        {
+          "slot": 0,
+          "context": "Neutral \u00b7 ground",
+          "name": "Gettysburg Address",
+          "damage": 10,
+          "parts": 528,
+          "peakQuads": 104
+        },
+        {
+          "slot": 1,
+          "context": "Up \u00b7 ground",
+          "name": "Stovepipe Ascent",
+          "damage": 9,
+          "parts": 333,
+          "peakQuads": 78
+        },
+        {
+          "slot": 2,
+          "context": "Down \u00b7 ground",
+          "name": "Frontier Log Split",
+          "damage": 13,
+          "parts": 461,
+          "peakQuads": 90
+        },
+        {
+          "slot": 3,
+          "context": "Neutral \u00b7 air",
+          "name": "Gettysburg Address",
+          "damage": 8,
+          "parts": 528,
+          "peakQuads": 124
+        },
+        {
+          "slot": 4,
+          "context": "Up \u00b7 air",
+          "name": "Stovepipe Ascent",
+          "damage": 8,
+          "parts": 333,
+          "peakQuads": 78
+        },
+        {
+          "slot": 5,
+          "context": "Down \u00b7 air",
+          "name": "Frontier Log Split",
+          "damage": 11,
+          "parts": 458,
+          "peakQuads": 105
+        }
+      ],
+      "packageHash": "aa48c2e21c5690a1d79b2817a7c097ff9a4c1b34b15efc3e0c6b420019c99c6c",
+      "binaryHash": "622db05d23ffab77656d062249a34bd0e9e855be4927c2f1af85d4a13417ba6f",
+      "bundleHash": "e1e4241d68369a756d9e72857479bbc669c45b142d9ef8176e99ef69f4128091",
+      "descriptionHash": "351f1a53ed194e4d11698d15600194cd4d91589fbbed6425963b5f8a1c4bfe0f",
+      "scoreHash": "9ca5583d5713acf3fbe7c6fa1810377b8cd8d09dbf574530cf66a66fe874b9f3"
+    }
+  ],
+  "summary": "Two characters, all six contexts each. Every authored hit, native reactions, complete showcases, misses, windup and active interruptions, landing cleanup, and recovery were tested. These are development samples, not a roster-wide reliability or balance benchmark.",
+  "productionJudges": 0,
+  "visualReview": "Development review by the implementing agent; no model judge is part of generation.",
+  "firstPassQualification": false,
+  "developmentNote": "Final packets recompile unedited recorded outputs after compiler and runtime fixes. Original failed attempts are retained; these are not claimed as fresh first-pass model wins.",
+  "pricingSource": "https://developers.openai.com/api/docs/pricing",
+  "pricingDate": "2026-09-09",
+  "pricingScope": "Displayed writer + implementer calls at standard rates; validation/capture/hosting and failed development attempts excluded.",
+  "limitations": [
+    "Native samples use the Mario rig; all twelve rigs have compiler coverage.",
+    "The bespoke reference and generated scores differ in choreography and art.",
+    "Offline prototype worktrees; production worker enablement remains a deployment step."
+  ],
+  "automatedTests": 298,
+  "nativeScenarios": 54,
+  "manualReviewFindings": [
+    "Signature props, collision-bound waves and independent fragments visible in all twelve captured contexts.",
+    "The matched Polka reference remains more intricately authored; generated prop geometry and poses are different, not claimed equivalent.",
+    "Default camera clipped a high aerial-up effect; the final aerial-up previews use an explicit wider camera.",
+    "All model outputs retained unchanged; fixes live in shared compiler, runtime, and validation fixture."
+  ]
+}

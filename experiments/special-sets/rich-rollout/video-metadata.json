@@ -1,0 +1,114 @@
+[
+  {
+    "file": "weird-al-4.mp4",
+    "bytes": 443538,
+    "sha256": "946e4442264cf5bcb402c0dee6cc920f95ec63b09d093aa37b567baa82e0e4a3",
+    "frames": 180,
+    "fps": 60,
+    "faststart": true
+  },
+  {
+    "file": "weird-al-5.mp4",
+    "bytes": 2498356,
+    "sha256": "2c7660c62ed44b3a14ac40eafcd4ffeb47c08fd530247a3a010d14ef24c8b51b",
+    "frames": 180,
+    "fps": 60,
+    "faststart": true
+  },
+  {
+    "file": "weird-al-1.mp4",
+    "bytes": 2492566,
+    "sha256": "e14e99b79e98aee3d96f5569ab56d88186810d63616edca4e6e70db6654bc03c",
+    "frames": 180,
+    "fps": 60,
+    "faststart": true
+  },
+  {
+    "file": "weird-al-0.mp4",
+    "bytes": 1499691,
+    "sha256": "587c76d6cfa985eba91dc6ac7ccf5667ce7f9cd7bac450ac1c5d1d891cdff64c",
+    "frames": 180,
+    "fps": 60,
+    "faststart": true
+  },
+  {
+    "file": "weird-al-2.mp4",
+    "bytes": 1528171,
+    "sha256": "bb76d38f49eafaaa7b99a2c076de6de09969628d30a155c53b9d19e2ae9432dc",
+    "frames": 180,
+    "fps": 60,
+    "faststart": true
+  },
+  {
+    "file": "weird-al-3.mp4",
+    "bytes": 2501384,
+    "sha256": "78d5a1bba81b4797455086002112d4bf69fc791895ede76a569a01b81f77dd73",
+    "frames": 180,
+    "fps": 60,
+    "faststart": true
+  },
+  {
+    "file": "weird-al-contact.mp4",
+    "bytes": 1867098,
+    "sha256": "a01cc50a628d594bd731adfeee04baa249f708f8e1d8d081ed1c6c3052b369dc",
+    "frames": 180,
+    "fps": 60,
+    "faststart": true
+  },
+  {
+    "file": "lincoln-4.mp4",
+    "bytes": 427108,
+    "sha256": "8f8a05300301a3f0c982f4cd5cb2aba42dbd1d0d7294c5bc92ae7802968b4c68",
+    "frames": 180,
+    "fps": 60,
+    "faststart": true
+  },
+  {
+    "file": "lincoln-5.mp4",
+    "bytes": 2482736,
+    "sha256": "cda713da02acc3b48bef28f15a6403e69fcb67a3e289397621cfaf0371f708f3",
+    "frames": 180,
+    "fps": 60,
+    "faststart": true
+  },
+  {
+    "file": "polka-reference.mp4",
+    "bytes": 1505762,
+    "sha256": "fee60b1d8dae830d367765a17626ab30ac69b6f5ca5f5d39d0c5cb9028f6c45b",
+    "frames": 180,
+    "fps": 60,
+    "faststart": true
+  },
+  {
+    "file": "lincoln-1.mp4",
+    "bytes": 2163370,
+    "sha256": "2591a0a32ab9580088cf2e12ea42479344ccf965a09eda45a8e5e87a283304e9",
+    "frames": 180,
+    "fps": 60,
+    "faststart": true
+  },
+  {
+    "file": "lincoln-0.mp4",
+    "bytes": 1525024,
+    "sha256": "0f71098927d3f5fa75978f1db92a5023d075d0c229def9e2bd7b3217e4750657",
+    "frames": 180,
+    "fps": 60,
+    "faststart": true
+  },
+  {
+    "file": "lincoln-2.mp4",
+    "bytes": 1515879,
+    "sha256": "e9f66460fffce7c5720cebd033ff2c08299af3ac562af932623f34781dbebecd",
+    "frames": 180,
+    "fps": 60,
+    "faststart": true
+  },
+  {
+    "file": "lincoln-3.mp4",
+    "bytes": 2498849,
+    "sha256": "34dd25bafec2237c414665c1c37097fe7fbc60751fca6d9fd47b96d8f617189b",
+    "frames": 180,
+    "fps": 60,
+    "faststart": true
+  }
+]

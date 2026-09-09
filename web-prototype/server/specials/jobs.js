@@ -16,7 +16,7 @@ export function publicSpecialJob(job) {
     target:job.profile.target,createdAt:job.createdAt,updatedAt:job.updatedAt,
     contexts:job.report?.contexts||SLOTS.map(slot=>({slot,passed:false})),judges:0,
     ready:job.status==='complete'&&job.report?.runtimeValidated===true,
-    packageHash:job.packageHash||null,description:job.brief||null};
+    generation:job.report?.generation||null,packageHash:job.packageHash||null,description:job.brief||null};
 }
 export function nativeValidator({engineRoot=process.env.SPECIALS_ENGINE_ROOT}={}) {
  return async ({packet,bundlePath,outputRoot,signal})=>{
@@ -32,7 +32,7 @@ export function nativeValidator({engineRoot=process.env.SPECIALS_ENGINE_ROOT}={}
  };
 }
 export function createSpecialJobs({repoRoot,jobsRoot,jobDatabase,objectStore,dispatcher,
-  model=createModel(),validator=nativeValidator(),resolveCharacter}) {
+  model=createModel(),authoringFormat='rich',validator=nativeValidator(),resolveCharacter}) {
  let queue=Promise.resolve(),reconcileTimer=null;
  const active=new Map();
  // Local API serialization; shared deployments additionally use DB slug reservations and leases.
@@ -89,7 +89,7 @@ export function createSpecialJobs({repoRoot,jobsRoot,jobDatabase,objectStore,dis
     if(job.artifacts.compiled) result=JSON.parse((await objectStore.read(job.artifacts.compiled.key)).toString());
     else {
       const referenceImage=job.portrait ? `data:${job.portrait.contentType||'image/png'};base64,${(await objectStore.read(job.portrait.key,{public:job.portrait.public===true})).toString('base64')}` : null;
-      result=await generateSet({character:job.character,profile:job.profile,model,brief:job.brief,referenceImage,checkpoint,signal:controller.signal});
+      result=await generateSet({format:authoringFormat,character:job.character,profile:job.profile,model,brief:job.brief,referenceImage,checkpoint,signal:controller.signal});
     }
     const outputRoot=path.join(jobsRoot,id);await mkdir(outputRoot,{recursive:true});
     const bundlePath=path.join(outputRoot,'character.osb');
@@ -107,6 +107,7 @@ export function createSpecialJobs({repoRoot,jobsRoot,jobDatabase,objectStore,dis
         context.preview=`/engine/specials/${job.character.id}/${job.id}/${context.slot}.mp4`;
       }
     }
+    report.generation=result.report?.generation;report.representation=result.report?.representation;
     job.artifacts.report=await artifact(job,'report',report);
     job.report=report;job.status='complete';job.stage='ready';await save();
   } catch(e) {

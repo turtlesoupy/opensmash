@@ -1,0 +1,107 @@
+{
+  "brief": {
+    "identity": "Weird Al Yankovic — cheerful theatrical accordionist in a curly-haired silhouette and bright Hawaiian shirt. Approved references preserved: Polka Pressure, Amish Paradise, and Eat It.",
+    "palette": [
+      145,
+      0,
+      0
+    ],
+    "moves": [
+      {
+        "slot": "neutral-ground",
+        "name": "Polka Pressure",
+        "signature": "Polka Pressure directly preserves the approved reference: Weird Al plants a detailed red accordion with ivory keys, corner straps, metal grille, and expanding pleated bellows.",
+        "anticipation": "He grins, plants his feet wide, raises the accordion to chest height, and compresses the bellows in a visible two-beat rhythm. The keys and grille flash on each squeeze while his shoulders rock theatrically.",
+        "action": "The first squeeze creates a short layered curved chord wave in front of him; the second creates a wider overlapping wave. On the third beat he snaps the bellows fully open and releases the decisive broad chord arc. Tumbling eighth notes and treble-clef fragments are emitted beside the wave, travel outward on their own shallow arcs, and fade without targeting or creating extra hits.",
+        "recovery": "The accordion folds halfway shut as Weird Al leans back with one foot sliding forward, then he settles into a readable open-chested pose with the instrument lowered. The chord waves and fragments expire during at least 16 frames of follow-through.",
+        "groundAirDifference": "On the ground he braces the accordion against his hip and the final chord travels horizontally. In the air he tucks one knee, holds the accordion diagonally, and the same three-beat rhythm produces a slightly downward-curving wave, preserving the identity while making the landing angle intentional.",
+        "counterplay": "The two squeezes clearly telegraph the final release. The character remains committed during the bellows snap, the wave has a finite forward lifetime, and the decorative notes visibly peel away and fade rather than pursuing opponents.",
+        "damage": 14,
+        "startup": 24,
+        "duration": 96
+      },
+      {
+        "slot": "neutral-air",
+        "name": "Polka Pressure",
+        "signature": "The airborne version uses the same red accordion, ivory keys, metal grille, and pleated bellows as the approved Polka Pressure reference.",
+        "anticipation": "Weird Al curls around the accordion with knees tucked and performs two exaggerated midair squeezes. The bellows visibly contract and expand on separate rhythmic beats, with his curly hair and shirt tails lagging behind the motion.",
+        "action": "A compact curved chord wave appears on the first beat, a second offset wave on the next, and a larger layered arc on the final full squeeze. Small musical notes and clefs tumble away from the accordion in different directions, age independently, and fade without tracking a target.",
+        "recovery": "He folds the bellows inward, turns sideways, and extends one leg to regain balance before returning to a neutral falling pose. The prop stays in both hands and all effects end well before the animation finishes, leaving clear landing recovery.",
+        "groundAirDifference": "The air version has a tighter radius and a downward-slanting final arc, allowing it to threaten space below without becoming a stationary aerial burst. The body pose is compact during anticipation and stretched diagonally during release.",
+        "counterplay": "The compact startup pose and two audible-looking visual squeezes identify the release timing. The final arc is finite and leaves no lingering hitbox around the character after the recovery turn.",
+        "damage": 12,
+        "startup": 22,
+        "duration": 88
+      },
+      {
+        "slot": "up-ground",
+        "name": "Amish Paradise Lift",
+        "signature": "Amish Paradise Lift references the song's rural imagery with a staged wooden butter churn: a brown barrel, pale lid, long vertical dasher handle, iron hoops, and a small butter-yellow crank.",
+        "anticipation": "Weird Al crouches beside the churn, grips its handle, and pumps it twice in a strong escalating rhythm. The lid rattles, the iron hoops shift visibly, and his hatless curly silhouette compresses low before the launch.",
+        "action": "On the third pump he drives the handle downward and the churn's internal dasher snaps upward. A tight layered native hitbox rises with him as root launch immediately carries Weird Al vertically. The churn and handle rotate through a clean upward arc, with a few wooden shaving and butter-colored glyph fragments falling away under gravity and fading instead of flying toward anyone.",
+        "recovery": "At the apex he hugs the churn to his chest, turns it sideways, and drops into a feet-first braced pose. The prop closes and the hitbox ends before landing, leaving a short controlled descent rather than an indefinite active state.",
+        "groundAirDifference": "From the ground, the first pump is a low crouch and the root launch begins on the decisive third pump. In the air he starts immediately with the churn tucked beneath him, gaining a strong vertical rise with a smaller lateral reach and no ground-dependent setup.",
+        "counterplay": "The two visible pumps expose the launch timing, while the rising hitbox follows the readable churn-and-body arc. The vulnerable recovery begins at the apex, and the falling fragments are decorative, finite, and non-homing.",
+        "damage": 11,
+        "startup": 14,
+        "duration": 58
+      },
+      {
+        "slot": "up-air",
+        "name": "Amish Paradise Lift",
+        "signature": "The aerial version keeps the detailed Amish Paradise butter churn, including its wooden barrel, iron hoops, long dasher, and butter-yellow crank.",
+        "anticipation": "Weird Al immediately pulls the churn close, bends both knees, and gives one compressed pump while rotating his torso upward. The lid and dasher visibly preload the next motion.",
+        "action": "He snaps the dasher overhead and receives immediate root launch. A narrow upward native hitbox follows the churn handle, then a second smaller hitbox catches the upper part of the rising arc. Wooden shaving and butter-colored fragments fall behind him with gravity and fade independently.",
+        "recovery": "He clamps the lid shut, turns into a vertical feet-down silhouette, and lowers the churn to his side. The attack ends before landing, with both hands visibly occupied and no lingering effect.",
+        "groundAirDifference": "This version starts without a crouch or delay and favors vertical recovery over horizontal coverage. The body tucks tightly during the rise, then opens into a straight descending pose for predictable drift control.",
+        "counterplay": "The immediate lift is useful but narrow. The handle direction shows the attack path, the second hit is limited to the upper arc, and the clearly exposed descending pose gives opponents a punish window.",
+        "damage": 10,
+        "startup": 12,
+        "duration": 52
+      },
+      {
+        "slot": "down-ground",
+        "name": "Eat It Dinner Rush",
+        "signature": "Eat It Dinner Rush references Weird Al's Eat It parody with an oversized cream dinner plate, red checkered napkin, polished fork, and a comically tall slice of meatloaf used as a staged close-range prop.",
+        "anticipation": "Weird Al flourishes the checkered napkin, sets the plate at waist height, and raises the fork over his shoulder. He performs two quick theatrical stabbing feints into the meatloaf, making the fork, plate rim, and napkin snap through distinct poses.",
+        "action": "He drives the fork down and sweeps the plate forward in two close-range native hitbox beats. The first beat is a tight fork-and-meatloaf strike; the second is a broad layered curved plate-rim wave that controls the space immediately in front of him. Crumbs and tiny red-check glyph scraps burst sideways, tumble away from the plate, and fade independently without homing or adding false impacts.",
+        "recovery": "The plate wobbles as he catches it against his stomach, then he wipes the fork with the napkin and ends in an exaggerated one-knee theatrical pose. The final plate arc expires early enough to leave at least 16 frames of visible recovery.",
+        "groundAirDifference": "On the ground he plants the plate low and the second sweep skims forward along the floor, making it a deliberate close-range space-control option. In the air he holds the plate high, brings the fork downward first, and the rim wave curves slightly beneath him for a compact landing check.",
+        "counterplay": "The two fork feints reveal the timing and the plate sweep has short reach compared with the neutral wave. The user is committed during the forward lean and kneeling recovery, while crumbs are visibly harmless decorative fragments.",
+        "damage": 15,
+        "startup": 27,
+        "duration": 104
+      },
+      {
+        "slot": "down-air",
+        "name": "Eat It Dinner Rush",
+        "signature": "Eat It Dinner Rush uses the same oversized cream plate, red checkered napkin, polished fork, and exaggerated meatloaf slice from the Eat It reference.",
+        "anticipation": "Weird Al tucks the plate beneath his torso, raises the fork above his head, and performs two small downward fork motions. The napkin flutters upward, framing the readable preparation pose.",
+        "action": "He plunges the fork downward for the first close hit, then rotates the plate through a short curved rim sweep beneath and beside him. Crumb and checkered-paper fragments peel off in downward and sideways paths, fall under gravity, and fade at different times without becoming projectiles.",
+        "recovery": "He pulls the fork free, hugs the plate to his chest, and turns into a seated-looking defensive descent pose with one knee forward. The rim sweep ends before landing and the remaining prop motion settles during a clear follow-through.",
+        "groundAirDifference": "The air version is a compact downward attack rather than a horizontal sweep: the fork hit occupies the centerline below him, followed by a short underbody arc. On the ground the plate sweep travels forward from a planted stance and covers more lateral space.",
+        "counterplay": "The overhead fork and tucked plate make the attack direction obvious. Its downward reach is narrow, the follow-up arc is short-lived, and the forced seated descent gives opponents a clear punish or landing-juggle opportunity.",
+        "damage": 13,
+        "startup": 25,
+        "duration": 92
+      }
+    ]
+  },
+  "briefHash": "6e348d6b514fb6900a35d2af3d35599bcde78081940983522edba4ea8257c484",
+  "provenance": {
+    "model": "gpt-5.6-luna",
+    "responseId": "resp_0dac75a2299aacaf016aa112a1be6887d18cb09e3f52500800",
+    "usage": {
+      "input_tokens": 897,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 2499,
+      "output_tokens_details": {
+        "reasoning_tokens": 512
+      },
+      "total_tokens": 3396
+    }
+  }
+}

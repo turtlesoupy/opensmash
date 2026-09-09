@@ -1,0 +1,107 @@
+{
+  "brief": {
+    "identity": "Abraham Lincoln — a tall, bearded president in a black suit and stovepipe hat, staged as a theatrical orator and frontier craftsman. The set uses the Gettysburg Address, handwritten parchment and quill, Lincoln’s distinctive hat, and frontier log splitting as explicit creative references.",
+    "palette": [
+      111,
+      203,
+      255
+    ],
+    "moves": [
+      {
+        "slot": "neutral-ground",
+        "name": "Gettysburg Address",
+        "signature": "Lincoln produces a rolled, visibly handwritten parchment and a black-feather quill, echoing the Gettysburg Address rather than a generic magic projectile.",
+        "anticipation": "He plants his feet in a formal speaking stance, raises the parchment with both hands, and taps the quill against its margin in three measured beats. Ink gathers in the quill tip while his hat and beard remain clearly silhouetted.",
+        "action": "On the final beat he unrolls the parchment toward the opponent and sweeps the quill forward. A native timed hitbox travels as a broad, layered curved wave from the written lines, with three successive wave fronts following the same forward trajectory. The parchment’s large visible letters briefly stretch along each wave, making the attack readable as spoken text made physical.",
+        "recovery": "The waves end at their fixed lifetime, while detached paper corners and small ink glyphs drift away from Lincoln on shallow arcs and independently fall under gravity, fading without targeting anything. He lowers the quill, gathers the sagging parchment against his chest, and settles into a readable follow-through pose.",
+        "groundAirDifference": "On the ground Lincoln uses a planted statesman stance and the wave travels horizontally at torso height. In the air he braces the parchment against one knee, angles the quill and curved waves slightly downward, and keeps his body drifting rather than hovering; the same timed beats and offensive identity remain intact.",
+        "counterplay": "The buildup, raised parchment, and three quill beats clearly telegraph the attack. Opponents can jump over the low-to-mid curved wave, punish the brief close-range setup, or move through the gaps between its layered fronts; falling paper and ink are decorative and never create extra hitboxes.",
+        "damage": 9,
+        "startup": 24,
+        "duration": 96
+      },
+      {
+        "slot": "neutral-air",
+        "name": "Gettysburg Address",
+        "signature": "Lincoln produces a rolled, visibly handwritten parchment and a black-feather quill, echoing the Gettysburg Address rather than a generic magic projectile.",
+        "anticipation": "In the air he tucks his knees, opens the parchment across his torso, and gives three audible-looking quill taps. The hat, beard, parchment roll, and quill form a strong silhouette before the attack begins.",
+        "action": "He snaps the parchment open and sweeps the quill forward. Three layered curved native hitbox waves leave the writing in rhythmic succession along a slightly downward-forward path, each using the same short lifetime and trajectory. Large letterforms stretch with the waves, while the parchment remains visibly in his hand.",
+        "recovery": "After the last wave, detached paper corners and ink glyphs peel away from the parchment, fall independently, and fade rather than seeking a target. Lincoln closes the parchment against his chest, extends one leg to stabilize his descent, and finishes in a controlled airborne reading pose.",
+        "groundAirDifference": "This aerial version angles the writing-wave path downward-forward and has Lincoln’s knees tucked before action, giving it intentional air-to-ground coverage. It does not stall his fall or gain a separate projectile behavior.",
+        "counterplay": "The open-parchment preparation and fixed downward-forward arc are readable. Opponents may pass above it, land behind Lincoln, or punish his committed quill sweep; only the timed waves hit.",
+        "damage": 9,
+        "startup": 24,
+        "duration": 96
+      },
+      {
+        "slot": "up-ground",
+        "name": "Hat and Union Lift",
+        "signature": "Lincoln removes his distinctive stovepipe hat and reveals a tightly folded parchment strip inside its crown, turning the recognizable hat into a staged rising recovery.",
+        "anticipation": "He crouches, grips the hat brim with both hands, and compresses his shoulders beneath it. The hat’s crown visibly opens in sections, showing its inner band, folded parchment, and a small quill tucked through the ribbon.",
+        "action": "Lincoln thrusts the hat overhead as a root launch lifts him sharply upward. The extended hat brim and shoulder line carry a compact native hitbox during the ascent, followed by a second short hitbox as he turns the hat through a shallow curved arc. The parchment strip snaps open behind him as a visual trail, not a projectile.",
+        "recovery": "At the peak he catches the hat, replaces it on his head, and folds his legs beneath his coat before descending. Small hat-ribbon threads, parchment curls, and ink flecks detach, drift outward, then fall and fade independently. The move ends before landing with Lincoln facing forward in a composed hat-settling pose.",
+        "groundAirDifference": "From the ground the crouch visibly loads the immediate vertical root launch and the first hat-brim hitbox starts close to Lincoln. In the air he launches immediately with a compact upward kick and a slightly shorter curved hat sweep, preserving the recovery function without requiring a ground crouch.",
+        "counterplay": "The crouch, overhead hat, and narrow ascent communicate the launch clearly. Opponents can move laterally away from the vertical line, challenge the startup from the side, or punish the landing after the short peak; the parchment and falling fragments never home or hit.",
+        "damage": 7,
+        "startup": 14,
+        "duration": 56
+      },
+      {
+        "slot": "up-air",
+        "name": "Hat and Union Lift",
+        "signature": "Lincoln removes his distinctive stovepipe hat and reveals a tightly folded parchment strip inside its crown, turning the recognizable hat into a staged rising recovery.",
+        "anticipation": "Lincoln immediately tucks his legs and pulls the hat down over his brow, exposing its inner band and the folded parchment hidden inside. His arms compress close to his torso so the recovery’s launch direction is unmistakable.",
+        "action": "He drives the hat overhead and receives an immediate root launch upward. A compact brim hitbox covers his upper body, then a second brief hitbox follows as he rotates the hat through a small curved arc above him. The parchment unfurls behind his rise as a finite visual ribbon.",
+        "recovery": "He catches the hat at the top, puts it back on, and extends one leg to control the descent. Detached ribbon fibers, paper curls, and ink flecks fall away on separate gravity trails and fade. He finishes before landing in a one-handed hat-bracing pose.",
+        "groundAirDifference": "The aerial version launches immediately with no ground crouch and uses a tighter, slightly forward-curving hat sweep so Lincoln can recover while airborne. It remains a vertical recovery rather than a free-floating attack.",
+        "counterplay": "The immediate upward motion, narrow vertical coverage, and overhead hat make the route readable. Opponents can drift beside the ascent, intercept the exposed side during the hat sweep, or punish the descent; decorative parchment cannot strike.",
+        "damage": 7,
+        "startup": 12,
+        "duration": 52
+      },
+      {
+        "slot": "down-ground",
+        "name": "Frontier Log Split",
+        "signature": "Lincoln stages frontier log splitting: a short split-wood billet, wedge, and broad-handled splitting maul are assembled visibly rather than presenting a generic axe slam.",
+        "anticipation": "He sets the billet in front of him, drives a metal wedge into its top with two measured taps, and raises the heavy maul behind his shoulder. The wooden grain, wedge, handle collar, and both gloved hands remain visible during the rhythmic buildup.",
+        "action": "He brings the maul down through the wedge in a decisive grounded strike. The impact emits a wide, layered curved shockwave along the floor, with a second lower wave a few frames later and a close native hitbox around the billet. The log opens along its grain in two large pieces, while the attack’s hit trajectory remains a single readable forward ground path.",
+        "recovery": "Lincoln holds the maul low through a long follow-through, then braces it against the split billet. Bark chips, wedge splinters, and small ink-like grain marks are independently thrown away, fall under gravity, and fade; they do not travel toward opponents or add false impacts.",
+        "groundAirDifference": "On the ground he places the billet just ahead of his boots, making the close hitbox and floor waves strong space control. In the air he carries the billet under one arm, drops it beneath him, and strikes downward-forward; the curved waves angle toward the landing zone instead of becoming a vertical free projectile.",
+        "counterplay": "The billet placement, repeated wedge taps, and raised maul provide clear warning. Opponents can retreat beyond the finite floor waves, jump over the low shockwave, or punish Lincoln while the maul is held back. The falling wood and grain marks are purely decorative.",
+        "damage": 12,
+        "startup": 28,
+        "duration": 108
+      },
+      {
+        "slot": "down-air",
+        "name": "Frontier Log Split",
+        "signature": "Lincoln stages frontier log splitting: a short split-wood billet, wedge, and broad-handled splitting maul are assembled visibly rather than presenting a generic axe slam.",
+        "anticipation": "Lincoln curls in midair around a small billet, visibly seats the wedge with two quick taps, and raises the maul over one shoulder. His hat stays on and the wood grain, wedge, and handle collar give the pose a clear silhouette.",
+        "action": "He drives the maul downward-forward through the wedge, producing a compact native hitbox at the billet followed by two layered curved waves aimed toward the space below him. The billet visibly parts along its grain at the same moment as the decisive strike; no fragment becomes a projectile.",
+        "recovery": "He keeps both hands on the maul and opens his legs to arrest the swing, then lets the split pieces drop away. Bark chips, wedge splinters, and tiny grain glyphs independently fall and fade on gravity trails while Lincoln finishes in a crouched, maul-braced landing pose.",
+        "groundAirDifference": "The aerial form is a deliberate downward space-control strike: its impact point is beneath and slightly ahead of Lincoln, and its waves are shorter and steeper than the grounded horizontal version. It does not grant hover or an additional jump.",
+        "counterplay": "The overhead maul and two setup taps reveal the timing, while the narrow downward-forward hitbox leaves lateral escape routes. Opponents can move beside Lincoln, punish the recovery after the strike, or avoid the finite wave layers; wood debris is non-threatening decoration.",
+        "damage": 12,
+        "startup": 26,
+        "duration": 96
+      }
+    ]
+  },
+  "briefHash": "59e7bae72a55e2c8b1ec4fcaa5b50bbc44d2bc8e17cf3c9c2eb41a7b76eabf83",
+  "provenance": {
+    "model": "gpt-5.6-luna",
+    "responseId": "resp_03ecbc0386acc61d016aa112fdb42487d193cd3992ee90720a",
+    "usage": {
+      "input_tokens": 878,
+      "input_tokens_details": {
+        "cache_write_tokens": 0,
+        "cached_tokens": 0
+      },
+      "output_tokens": 2504,
+      "output_tokens_details": {
+        "reasoning_tokens": 369
+      },
+      "total_tokens": 3382
+    }
+  }
+}
