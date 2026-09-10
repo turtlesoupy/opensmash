@@ -103,6 +103,13 @@ export default function MobileControls({ active, frameRef, preview = false }) {
     setInputLog((current) => [...current, transition].slice(-16));
   }, [sendKey]);
 
+  const releaseJoystick = useCallback(() => {
+    joystickPointerRef.current = null;
+    joystickCodesRef.current.forEach((code) => setCodePressed(code, false));
+    joystickCodesRef.current = new Set();
+    setJoystickPosition({ x: 0, y: 0 });
+  }, [setCodePressed]);
+
   const releaseAll = useCallback(() => {
     joystickPointerRef.current = null;
     heldCodesRef.current.forEach((code) => sendKey(code, false));
@@ -142,6 +149,30 @@ export default function MobileControls({ active, frameRef, preview = false }) {
     };
   }, [releaseAll, sendKey]);
 
+  useEffect(() => {
+    // Capture releases outside the control too, if pointer capture was lost.
+    const releasePointer = (event) => {
+      if (joystickPointerRef.current === event.pointerId) releaseJoystick();
+    };
+    // Touch events provide a fallback when the corresponding pointer release
+    // is missing. Only reset when all fingers are up, preserving multitouch.
+    const releaseWhenNoTouches = (event) => {
+      if (event.touches.length === 0) releaseJoystick();
+    };
+    window.addEventListener("pointerup", releasePointer, true);
+    window.addEventListener("pointercancel", releasePointer, true);
+    window.addEventListener("touchend", releaseWhenNoTouches, true);
+    window.addEventListener("touchcancel", releaseWhenNoTouches, true);
+    window.addEventListener("pagehide", releaseAll);
+    return () => {
+      window.removeEventListener("pointerup", releasePointer, true);
+      window.removeEventListener("pointercancel", releasePointer, true);
+      window.removeEventListener("touchend", releaseWhenNoTouches, true);
+      window.removeEventListener("touchcancel", releaseWhenNoTouches, true);
+      window.removeEventListener("pagehide", releaseAll);
+    };
+  }, [releaseJoystick, releaseAll]);
+
   function updateJoystick(clientX, clientY) {
     const rect = joystickRef.current?.getBoundingClientRect();
     if (!rect) return;
@@ -180,10 +211,7 @@ export default function MobileControls({ active, frameRef, preview = false }) {
   function endJoystick(event) {
     if (joystickPointerRef.current !== event.pointerId) return;
     event.preventDefault();
-    joystickPointerRef.current = null;
-    joystickCodesRef.current.forEach((code) => setCodePressed(code, false));
-    joystickCodesRef.current = new Set();
-    setJoystickPosition({ x: 0, y: 0 });
+    releaseJoystick();
   }
 
   function handleJoystickKey(event, pressed) {
@@ -260,11 +288,7 @@ export default function MobileControls({ active, frameRef, preview = false }) {
         aria-label={`Movement joystick, ${joystickDirection}`}
         aria-describedby="mobile-controls-help"
         data-direction={joystickDirection}
-        onBlur={() => {
-          joystickCodesRef.current.forEach((code) => setCodePressed(code, false));
-          joystickCodesRef.current = new Set();
-          setJoystickPosition({ x: 0, y: 0 });
-        }}
+        onBlur={releaseJoystick}
         onContextMenu={(event) => event.preventDefault()}
         onKeyDown={(event) => handleJoystickKey(event, true)}
         onKeyUp={(event) => handleJoystickKey(event, false)}
