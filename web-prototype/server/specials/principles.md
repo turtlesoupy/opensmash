@@ -1,4 +1,4 @@
-# Special-attack design principles — v4
+# Special-attack design principles — v6
 
 Describe what the player should recognize, feel, and understand. These principles
 apply to any character and do not prescribe a renderer or geometry format.
@@ -35,3 +35,9 @@ while making each individual move understandable and satisfying on its own.
    actions and options. Distribute character references thoughtfully; avoid
    repeating the same attack with a different direction or color. Each move
    should stand on its own when reviewed individually.
+9. **Give props and effects a logical, readable origin consistent with the action.**
+   Prefer visible hands, held objects, or clearly established emission points. Avoid unexplained
+   emergence from the crotch, between the legs, or beneath clothing unless that
+   placement is deliberate and essential to the character's action or humor.
+   This is a staging preference, not a restriction on low attacks, kicks, stomps,
+   ground effects, or intentional body comedy.
