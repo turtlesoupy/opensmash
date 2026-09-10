@@ -48,12 +48,15 @@ export default function FighterJobModal({ job, onClose, onDelete, onRetry, onSav
   const [retarget, setRetarget] = useState("mario");
   const [saving, setSaving] = useState(false);
   const [copyMessage, setCopyMessage] = useState("");
+  const [meleeUrl,setMeleeUrl]=useState("");
+  const [exportingSource,setExportingSource]=useState(false);
   const [downloadFormat, setDownloadFormat] = useState(null);
   const [downloadError, setDownloadError] = useState("");
   const downloadRef = useRef(null);
   useEffect(() => {
     setRetarget(job?.character?.base || "mario");
     setCopyMessage("");
+    setMeleeUrl("");
     setDownloadError("");
     setDownloadFormat(null);
     return () => downloadRef.current?.abort();
@@ -213,11 +216,24 @@ export default function FighterJobModal({ job, onClose, onDelete, onRetry, onSav
                       setCopyMessage("Select the URL above to copy it manually.");
                     }
                   }}>Copy URL</button>
+                  <button className="launch-flow-action" type="button" disabled={exportingSource} onClick={async()=>{
+                    setExportingSource(true);setDownloadError("");
+                    try {
+                      const response=await fetch(`/api/fighters/${job.id}/export-source`,{method:'POST'});
+                      const result=await response.json();if(!response.ok)throw Error(result.error||'Could not export character.');
+                      const url=new URL(result.url,window.location.origin).href;setMeleeUrl(url);
+                      try {await navigator.clipboard.writeText(url);setCopyMessage('Melee import URL copied.');}
+                      catch {setCopyMessage('Select the Melee URL below to copy it.');}
+                    }catch(error){setDownloadError(error.message);}
+                    finally{setExportingSource(false);}
+                  }}>{exportingSource?'Preparing Melee link…':'Copy Melee import URL'}</button>
                   <button className="launch-flow-action" type="button" disabled={!!downloadFormat || saving}
                     onClick={() => download("osb6")}>{downloadFormat === "osb6" ? "Downloading OSB6…" : "Download OSB6"}</button>
                   <button className="launch-flow-action" type="button" disabled={!!downloadFormat || saving}
                     onClick={() => download("obj")}>{downloadFormat === "obj" ? "Preparing OBJ…" : "Download OBJ"}</button>
                 </div>
+                <p>Copy a Melee import URL to reuse your character in Melee. Anyone with that link can download its generated mesh and game art.</p>
+                {meleeUrl && <input aria-label="Melee import URL" type="url" readOnly value={meleeUrl} onFocus={event=>event.target.select()}/>}
                 {downloadFormat && <p role="status">{downloadFormat === "obj" ? "Converting your character to OBJ…" : "Downloading your character…"}</p>}
                 {downloadError && <p role="alert">{downloadError}</p>}
                 {copyMessage && <p role="status">{copyMessage}</p>}

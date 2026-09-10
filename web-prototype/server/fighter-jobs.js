@@ -1,3 +1,4 @@
+import { prepareSourceExport, sourceManifest, SOURCE_FILES } from "./source-export.js";
 import { availableFighterTargets } from "../shared/fighter-targets.js";
 import Busboy from "busboy";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
@@ -1276,6 +1277,18 @@ export function createFighterJobs({
     isSlugPublic(slug) {
       const job = [...jobs.values()].find((candidate) => candidate.slug === slug);
       return Boolean(job && job.visibility !== "private");
+    },
+    async exportSource(id, ownerId) {
+      const job=jobs.get(id);
+      const result=await prepareSourceExport(job,ownerId,objectStore);
+      job.sourceExport=result;await saveJob(job);
+      return {url:`/engine/character-source/${result.capability}/manifest.json`};
+    },
+    sourceExport(capability, name) {
+      const job=[...jobs.values()].find(j=>j.status==='complete' && j.sourceExport?.capability===capability);
+      if(!job)return null;
+      if(name==='manifest.json')return {manifest:sourceManifest(job)};
+      return SOURCE_FILES.includes(name)?job.sourceExport.files[name]:null;
     },
     artifact(id, ownerId, name, variant = null) {
       const job = jobs.get(id);

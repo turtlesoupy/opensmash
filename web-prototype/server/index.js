@@ -1027,6 +1027,12 @@ async function handleRequest(req, res, vite) {
     }
   }
 
+  const sourceExportMatch=pathname.match(/^\/api\/fighters\/([a-f0-9-]+)\/export-source$/);
+  if(req.method==='POST' && sourceExportMatch) {
+    try {return json(res,200,await fighterJobs.exportSource(sourceExportMatch[1],user.uid));}
+    catch(error) {return json(res,error.status||400,{error:error.message||'Could not export fighter.'});}
+  }
+
   const fighterDeleteMatch = pathname.match(/^\/api\/fighters\/([a-f0-9-]+)$/);
   if (req.method === "DELETE" && fighterDeleteMatch) {
     try {
@@ -1141,6 +1147,20 @@ async function handleRequest(req, res, vite) {
   if (pathname === "/engine") {
     res.writeHead(302, { Location: "/engine/" });
     return res.end();
+  }
+
+  const sourceAsset=pathname.match(/^\/engine\/character-source\/([a-f0-9]{48})\/([a-z_.]+)$/);
+  if(sourceAsset && ['GET','HEAD'].includes(req.method)) {
+    const asset=fighterJobs.sourceExport(sourceAsset[1],sourceAsset[2]);
+    if(!asset)return json(res,404,{error:'Character import link is unavailable.'});
+    const headers={'Cache-Control':'private, no-store','Referrer-Policy':'no-referrer',...ENGINE_SECURITY_HEADERS};
+    if(asset.manifest)return json(res,200,asset.manifest,headers);
+    try {
+      const object=await objectStore.readStream(asset.key,{public:false});
+      res.writeHead(200,{...headers,'Content-Type':'application/octet-stream','Content-Length':object.size});
+      if(req.method==='HEAD'){object.stream.destroy();return res.end();}
+      object.stream.on('error',()=>res.destroy());return object.stream.pipe(res);
+    }catch{return json(res,404,{error:'Character source file is unavailable.'});}
   }
 
   if (pathname.startsWith("/engine/")) {
