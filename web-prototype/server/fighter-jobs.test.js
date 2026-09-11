@@ -14,6 +14,7 @@ import {
   uploaderToken,
 } from "./fighter-jobs.js";
 import { createTurnstileVerifier } from "./turnstile.js";
+import { createJobDatabase, prepareRetry } from "./job-database.js";
 
 // Keep the in-process queue from spawning the real pipeline during tests.
 process.env.FIGHTER_WORKER_DISABLED = "1";
@@ -38,14 +39,20 @@ function uploadRequest({ name = "Test Fighter", turnstileToken = null, headers =
   return request;
 }
 
-async function harness({ storedJobs = [], moderator = async () => ({ status: "approved" }), driver = "local", dispatch = async () => ({ executionName: "exec" }), turnstile = null, reservedSlugs = undefined, watch = () => null } = {}) {
+async function harness({ database = null, storedJobs = [], moderator = async () => ({ status: "approved" }), driver = "local", dispatch = async () => ({ executionName: "exec" }), turnstile = null, reservedSlugs = undefined, watch = () => null } = {}) {
   const appRoot = await mkdtemp(path.join(os.tmpdir(), "opensmash-jobs-test-"));
   await mkdir(path.join(appRoot, "data", "fighter-jobs"), { recursive: true });
   const saved = [];
-  const jobDatabase = {
+  const jobDatabase = database || {
     list: async () => storedJobs,
     insert: async () => {},
     save: async (job) => { saved.push(job); },
+    retry: async (id, ownerId, options) => {
+      const records = new Map([...storedJobs, ...saved].map((job) => [job.id, job]));
+      const job = prepareRetry(records.get(id), ownerId, [...records.values()], options);
+      saved.push(job);
+      return job;
+    },
     watch,
   };
   const objectStore = {
@@ -69,6 +76,32 @@ async function harness({ storedJobs = [], moderator = async () => ({ status: "ap
 }
 
 const minutesAgo = (minutes) => new Date(Date.now() - minutes * 60_000).toISOString();
+
+test("two API instances with stale caches cannot both dispatch owner retries", async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), "opensmash-retry-replicas-"));
+  const database = createJobDatabase({ jobsRoot: root });
+  await database.init();
+  const first = storedJob();
+  const second = storedJob({ id: "22222222-2222-2222-2222-222222222222", slug: "second" });
+  await database.insert(first);
+  await database.insert(second);
+  let dispatched = 0;
+  const options = { database, driver: "external", dispatch: async () => ({ executionName: `exec-${++dispatched}` }) };
+  const a = await harness(options);
+  const b = await harness(options);
+  try {
+    await a.jobs.init();
+    await b.jobs.init(); // no watch updates: both caches contain failed jobs
+    await a.jobs.retry(first.id, first.ownerId);
+    await assert.rejects(b.jobs.retry(second.id, second.ownerId), { status: 429 });
+    assert.equal(dispatched, 1);
+    assert.equal((await database.get(second.id)).status, "failed");
+  } finally {
+    await a.cleanup();
+    await b.cleanup();
+    await rm(root, { recursive: true, force: true });
+  }
+});
 
 function storedJob(overrides = {}) {
   return {
