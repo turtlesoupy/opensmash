@@ -18,12 +18,14 @@ This explains failures that persisted after restarting the API.
   job interrupted; refresh the cache when the database has moved forward.
 - Regression coverage includes reconnects, missed changes/deletions, shutdown,
   stale callbacks, backoff, newer completions, and deleted records.
-- All 271 server/shared tests passed.
+- `718aaa6`: keep API CPU allocated between requests for background watches
+  and reconciliation. Production previously used request-only CPU allocation.
+- All 271 server/shared tests passed; deployment shell syntax passed.
 
 API-only hotfix images were built on the exact deployed image, with SHA-256
-checks on the original files before replacement. Engine, frontend, environment,
-and worker deployment were preserved. Final API revision:
-`opensmash-web-00054-4md`, image tag `watch-recovery-v2-20260911`.
+checks on the original files before replacement. Engine, frontend, environment variables,
+and worker deployment were preserved. API CPU throttling was disabled. Final API revision:
+`opensmash-web-00055-x6p`, image tag `watch-recovery-v2-20260911`.
 Cloud Build: `bdc153ed-2886-4c83-be2e-0e018ba6f13f`.
 
 ## Data recovery
@@ -38,3 +40,10 @@ concurrent changes. Recovered revisions were advanced to 101.
 Deleted records and jobs without complete published output were not restored.
 Raw audit/recovery inputs and results were kept under `/tmp/smash-*` on the
 operator machine; they contain private job data and are not committed.
+
+## Verification
+
+All 60 bundle/UI GETs for the 30 restored fighters returned HTTP 200 after the
+final rollout. The reported Sonic and Shadow bundle GETs also returned 200,
+and `/healthz` reported healthy Firestore and object-store configuration.
+The final revision serves 100% of production traffic.
