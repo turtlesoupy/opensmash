@@ -203,12 +203,61 @@ export class FirestoreJobDatabase {
     await batch.commit();
   }
 
-  watch(listener) {
-    return this.collection.onSnapshot((snapshot) => {
-      for (const change of snapshot.docChanges()) {
-        listener(change.doc.data(), { removed: change.type === "removed" });
-      }
-    }, (error) => console.error("Firestore fighter job watch failed:", error));
+  watch(listener, { retryDelayMs = 1000, maxRetryDelayMs = 30_000 } = {}) {
+    let stopped = false;
+    let unsubscribe = null;
+    let retryTimer = null;
+    let delay = retryDelayMs;
+    let generation = 0;
+    const known = new Map();
+    const connect = () => {
+      if (stopped) return;
+      const currentGeneration = ++generation;
+      let firstSnapshot = true;
+      unsubscribe = this.collection.onSnapshot((snapshot) => {
+        if (stopped || currentGeneration !== generation) return;
+        delay = retryDelayMs;
+        // A new subscription does not report deletions that happened while
+        // disconnected. Reconcile its full first snapshot with the old one.
+        if (firstSnapshot) {
+          const present = new Set(snapshot.docs.map((doc) => doc.id));
+          for (const [id, job] of known) {
+            if (!present.has(id)) {
+              known.delete(id);
+              listener(job, { removed: true });
+            }
+          }
+          firstSnapshot = false;
+        }
+        for (const change of snapshot.docChanges()) {
+          const job = change.doc.data();
+          const removed = change.type === "removed";
+          if (removed) known.delete(change.doc.id);
+          else known.set(change.doc.id, job);
+          listener(job, { removed });
+        }
+      }, (error) => {
+        if (stopped || currentGeneration !== generation) return;
+        // Firestore's error callback is terminal: the SDK no longer retries.
+        ++generation;
+        console.error("Firestore fighter job watch failed; reconnecting:", error);
+        unsubscribe?.();
+        unsubscribe = null;
+        retryTimer = setTimeout(() => {
+          retryTimer = null;
+          connect();
+        }, delay);
+        retryTimer.unref?.();
+        delay = Math.min(delay * 2, maxRetryDelayMs);
+      });
+    };
+    connect();
+    return () => {
+      stopped = true;
+      ++generation;
+      clearTimeout(retryTimer);
+      unsubscribe?.();
+    };
   }
 
   async claim(id, executionId, leaseSeconds) {

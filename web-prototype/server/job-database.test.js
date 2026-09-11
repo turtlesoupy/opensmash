@@ -158,3 +158,41 @@ test("firestore insert counts site-wide usage with aggregations, not document re
   fake.docs.set("old", { id: "old", slug: "old", ownerId: "x", status: "complete", createdAt: iso(2 * 24 * 60 * 60 * 1000) });
   await database.insert({ id: "next", slug: "next", ownerId: "someone", status: "queued", createdAt: iso(0) }, { quota: { ...quota, maxGlobalDaily: 42 } });
 });
+
+test("Firestore watch reconnects after terminal errors and reconciles missed updates and deletions", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const database = new FirestoreJobDatabase({ collectionName: "jobs" });
+  const subscriptions = [];
+  database.collection = { onSnapshot(next, error) {
+    const subscription = { next, error, stopped: false };
+    subscriptions.push(subscription);
+    return () => { subscription.stopped = true; };
+  } };
+  const events = [];
+  const stop = database.watch((job, options) => events.push([job.id, job.revision, options.removed]));
+  const snapshot = (jobs) => {
+    const docs = jobs.map(job => ({ id: job.id, data: () => job }));
+    return { docs, docChanges: () => docs.map(doc => ({ type: "added", doc })) };
+  };
+  subscriptions[0].next(snapshot([{ id: "a", revision: 1 }, { id: "b", revision: 1 }]));
+  subscriptions[0].error(new Error("timeout"));
+  assert.equal(subscriptions[0].stopped, true);
+  t.mock.timers.tick(1000);
+  assert.equal(subscriptions.length, 2);
+  subscriptions[1].next(snapshot([{ id: "a", revision: 2 }, { id: "c", revision: 1 }]));
+  assert.deepEqual(events.slice(2), [["b", 1, true], ["a", 2, false], ["c", 1, false]]);
+  subscriptions[0].next(snapshot([{ id: "old", revision: 1 }]));
+  assert.equal(events.length, 5);
+  subscriptions[1].error(new Error("timeout"));
+  t.mock.timers.tick(1000);
+  assert.equal(subscriptions.length, 3);
+  subscriptions[2].error(new Error("timeout again"));
+  t.mock.timers.tick(1000);
+  assert.equal(subscriptions.length, 3);
+  t.mock.timers.tick(1000);
+  assert.equal(subscriptions.length, 4);
+  subscriptions[3].error(new Error("timeout"));
+  stop();
+  t.mock.timers.tick(30_000);
+  assert.equal(subscriptions.length, 4);
+});
