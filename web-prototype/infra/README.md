@@ -117,7 +117,9 @@ subsequent rotations maintain it. A deploy interrupted before
 `gcloud builds submit` has changed nothing that the next run does not redo.
 
 The API runs with 3 to 6 instances (2 vCPU, 2 GiB, 500 concurrent
-requests each, startup CPU boost). Everything that has to agree across
+requests each, startup CPU boost, continuously allocated CPU). The API
+needs CPU between requests for its Firestore subscription and reconciliation
+timer; request-only CPU allocation can leave idle replicas with stale rosters. Everything that has to agree across
 replicas lives in Firestore: job records and leases, the quota re-check inside
 the insert transaction, and ROM-handoff rooms (`handoffRooms`, with a TTL
 policy on `expireAt` that `deploy.sh` enables). The per-instance in-memory
