@@ -38,7 +38,7 @@ function uploadRequest({ name = "Test Fighter", turnstileToken = null, headers =
   return request;
 }
 
-async function harness({ storedJobs = [], moderator = async () => ({ status: "approved" }), driver = "local", dispatch = async () => ({ executionName: "exec" }), turnstile = null, reservedSlugs = undefined, watch = () => null } = {}) {
+async function harness({ storedJobs = [], moderator = async () => ({ status: "approved" }), driver = "local", dispatch = async () => ({ executionName: "exec" }), turnstile = null, reservedSlugs = undefined, watch = () => null, databaseOverrides = {} } = {}) {
   const appRoot = await mkdtemp(path.join(os.tmpdir(), "opensmash-jobs-test-"));
   await mkdir(path.join(appRoot, "data", "fighter-jobs"), { recursive: true });
   const saved = [];
@@ -47,6 +47,7 @@ async function harness({ storedJobs = [], moderator = async () => ({ status: "ap
     insert: async () => {},
     save: async (job) => { saved.push(job); },
     watch,
+    ...databaseOverrides,
   };
   const objectStore = {
     putFile: async (key) => ({ key, url: null }),
@@ -457,4 +458,25 @@ test("unfinished fighters cannot change target", async () => {
     await h.jobs.init();
     await assert.rejects(h.jobs.updateSettings(original.id, "owner-1", { retarget: "mario" }), { status: 409 });
   } finally { await h.cleanup(); }
+});
+
+
+test("stale reconciliation refreshes the cache without overwriting a completed fighter", async () => {
+  const stale = storedJob({ status: "queued", revision: 2, updatedAt: minutesAgo(10), createdAt: minutesAgo(10) });
+  const complete = { ...stale, status: "complete", revision: 38 };
+  const { jobs, cleanup } = await harness({ storedJobs: [stale], driver: "cloud-run", databaseOverrides: {
+    save: async (job, options) => {
+      assert.equal(options.expectedRevision, 2);
+      assert.equal(job.status, "failed");
+      const error = new Error("newer completion");
+      error.code = "STALE_JOB";
+      throw error;
+    },
+    get: async () => complete,
+  } });
+  try {
+    await jobs.init();
+    assert.equal(jobs.get(stale.id).status, "complete");
+    assert.equal(stale.status, "queued", "do not mutate the cached job before the transaction succeeds");
+  } finally { await cleanup(); }
 });

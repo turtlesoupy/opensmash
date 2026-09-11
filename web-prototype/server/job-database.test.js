@@ -196,3 +196,23 @@ test("Firestore watch reconnects after terminal errors and reconciles missed upd
   t.mock.timers.tick(30_000);
   assert.equal(subscriptions.length, 4);
 });
+
+test("Firestore reconciliation cannot overwrite a newer completion or recreate a deleted job", async () => {
+  const database = new FirestoreJobDatabase({ collectionName: "jobs" });
+  let stored = { id: "a", revision: 38, status: "complete" };
+  let writes = 0;
+  database.collection = {
+    doc: () => ({}),
+    firestore: { runTransaction: async (run) => run({
+      get: async () => ({ exists: Boolean(stored), data: () => stored }),
+      set: () => { writes++; },
+    }) },
+  };
+  await assert.rejects(database.save({ id: "a", revision: 3, status: "failed" }, { expectedRevision: 2 }), { code: "STALE_JOB" });
+  assert.equal(writes, 0);
+  await database.save({ id: "a", revision: 39 }, { expectedRevision: 38 });
+  assert.equal(writes, 1);
+  stored = null;
+  await assert.rejects(database.save({ id: "a", revision: 3 }, { expectedRevision: 2 }), { code: "STALE_JOB" });
+  assert.equal(writes, 1);
+});

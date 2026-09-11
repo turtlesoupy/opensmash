@@ -953,13 +953,27 @@ export function createFighterJobs({
           ? Date.parse(job.dispatch.dispatchedAt) + dispatchTimeout < now
           : Date.parse(job.updatedAt || job.createdAt) + queueTimeout < now);
       if (!leaseExpired && !neverClaimed) continue;
-      job.status = "failed";
-      job.stage = "interrupted";
-      job.stageLabel = "Generation worker was interrupted";
-      job.error = "The worker stopped reporting progress. Resume to continue from its last saved checkpoint.";
-      job.retry.label = "Resume generation";
-      job.lease = null;
-      await saveJob(job);
+      // The watch may lag or disconnect. Never overwrite a worker's newer
+      // heartbeat/completion with an expired lease from this replica's cache.
+      const interrupted = structuredClone(job);
+      interrupted.status = "failed";
+      interrupted.stage = "interrupted";
+      interrupted.stageLabel = "Generation worker was interrupted";
+      interrupted.error = "The worker stopped reporting progress. Resume to continue from its last saved checkpoint.";
+      interrupted.retry.label = "Resume generation";
+      interrupted.lease = null;
+      interrupted.revision = (job.revision || 0) + 1;
+      interrupted.updatedAt = new Date().toISOString();
+      try {
+        await jobDatabase.save(interrupted, { expectedRevision: job.revision || 0 });
+        jobs.set(job.id, interrupted);
+        events.emit(job.id, jobSnapshot(interrupted));
+      } catch (error) {
+        if (error.code !== "STALE_JOB") throw error;
+        const current = await jobDatabase.get(job.id);
+        if (current) jobs.set(job.id, current);
+        else jobs.delete(job.id);
+      }
     }
   }
 

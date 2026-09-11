@@ -16,6 +16,12 @@ function leaseLostError(id) {
   return error;
 }
 
+function staleJobError(id) {
+  const error = new Error(`Fighter job '${id}' changed during reconciliation.`);
+  error.code = "STALE_JOB";
+  return error;
+}
+
 // A job may be claimed when nobody is working on it. "running" and
 // "retrying" are refused outright even if the lease looks expired: the API's
 // reconciliation is the only path that turns a silent worker into a
@@ -86,10 +92,11 @@ class LocalJobDatabase {
     await this.write(job);
   }
 
-  async save(job, { executionId = null } = {}) {
-    if (executionId) {
+  async save(job, { executionId = null, expectedRevision = null } = {}) {
+    if (executionId || expectedRevision !== null) {
       const stored = await this.get(job.id);
-      if (stored?.lease?.executionId !== executionId) throw leaseLostError(job.id);
+      if (expectedRevision !== null && (!stored || (stored.revision || 0) !== expectedRevision)) throw staleJobError(job.id);
+      if (executionId && stored?.lease?.executionId !== executionId) throw leaseLostError(job.id);
     }
     await this.write(job);
   }
@@ -179,16 +186,17 @@ export class FirestoreJobDatabase {
     });
   }
 
-  async save(job, { executionId = null } = {}) {
+  async save(job, { executionId = null, expectedRevision = null } = {}) {
     const reference = this.collection.doc(job.id);
-    if (!executionId) {
+    if (!executionId && expectedRevision === null) {
       await reference.set(job);
       return;
     }
     await this.collection.firestore.runTransaction(async (transaction) => {
       const document = await transaction.get(reference);
       const stored = document.exists ? document.data() : null;
-      if (stored?.lease?.executionId !== executionId) throw leaseLostError(job.id);
+      if (expectedRevision !== null && (!stored || (stored.revision || 0) !== expectedRevision)) throw staleJobError(job.id);
+      if (executionId && stored?.lease?.executionId !== executionId) throw leaseLostError(job.id);
       transaction.set(reference, job);
     });
   }
