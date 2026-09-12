@@ -2148,6 +2148,9 @@ function updateTargetFromEmbeddedGame(event) {
 }
 
 function updateCursorFromPageEvent(event) {
+  // Touch controls do not drive the desktop glove. Avoid its raycast, style
+  // updates and hit testing while a finger is dragging the mobile joystick.
+  if (event.pointerType === 'touch' || event.sourceCapabilities?.firesTouchEvents) return;
   if (!updateTargetFromEvent(event)) return;
   if (event.type === 'pointerout' || event.type === 'mouseout') {
     // No relatedTarget means the pointer left the window (or moved onto the

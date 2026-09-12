@@ -31,6 +31,34 @@ export function joystickCodesForVector(x, y, radius, {
   return codes;
 }
 
+// A radial dead zone with a continuous ramp to the N64's full stick range.
+// Screen Y points down; the controller's positive Y points up.
+export function joystickAxesForVector(x, y, radius, { deadZone = 0.28 } = {}) {
+  if (![x, y, radius].every(Number.isFinite) || radius <= 0) return { x: 0, y: 0 };
+  const nx = x / radius, ny = y / radius;
+  const distance = Math.hypot(nx, ny);
+  const dead = Math.max(0, Math.min(0.99, deadZone));
+  if (distance <= dead) return { x: 0, y: 0 };
+  const strength = (Math.min(1, distance) - dead) / (1 - dead);
+  return {
+    x: Math.round(nx / distance * strength * 80) || 0,
+    y: Math.round(-ny / distance * strength * 80) || 0,
+  };
+}
+
+// Null releases the touch override so ordinary keyboard input works again.
+// The shell copies these numbers; no engine callbacks are retained by the page.
+export function dispatchGameStick(frame, axes) {
+  try {
+    const ports = frame?.contentWindow?.controllerPorts;
+    if (typeof ports?.setVirtualStick !== "function") return false;
+    ports.setVirtualStick(axes);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function dispatchGameKey(frame, code, pressed) {
   try {
     const frameWindow = frame?.contentWindow;

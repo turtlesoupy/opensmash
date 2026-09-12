@@ -182,6 +182,11 @@
     background-image: var(--retro-fire-texture);
     background-size: 100% 100%;
   }
+  .replica-cell[data-kind="fighter"] {
+    /* The grid explicitly sizes each tile. Keep off-screen portraits and
+       captions out of layout/paint work when touch controls move above it. */
+    content-visibility: auto;
+  }
   .replica-portrait-layer {
     z-index: 0;
     object-fit: fill;

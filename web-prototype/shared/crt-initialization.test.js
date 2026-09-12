@@ -18,10 +18,13 @@ function viewport() {
   };
   const canvas = { style: {}, dataset: {}, width: 300, height: 150,
     getContext() { counts.contexts++; return gl; } };
-  const window = {};
+  const events = {};
+  let modeChanged, gameRunning = false;
+  const window = { addEventListener(name, callback) { events[name] = callback; } };
   vm.runInNewContext(source, {
+    MutationObserver: class { constructor(callback) { modeChanged = callback; } observe() {} },
     window, document: { getElementById: id => id === 'crt-viewport-canvas' ? canvas : null,
-      body: { classList: { contains: () => false } } },
+      body: { classList: { contains: () => gameRunning } } },
     location: { search: '?crt=off' }, URLSearchParams,
     localStorage: { getItem: () => null, setItem() {}, removeItem() {} },
     matchMedia: () => ({ matches: false }), innerWidth: 800, innerHeight: 600,
@@ -33,7 +36,8 @@ function viewport() {
       return new Promise((resolve, reject) => { complete = resolve; fail = reject; });
     },
   });
-  return { api: window.__crtViewport, canvas, counts, frames,
+  return { api: window.__crtViewport, canvas, counts, frames, events,
+    setGameRunning(value) { gameRunning = value; modeChanged(); },
     complete: () => complete({}), fail: () => fail(new Error('test shader failure')) };
 }
 
@@ -75,4 +79,27 @@ test('compilation failure preserves a usable page with the CRT hidden', async ()
   api.enabled = false;
   api.enabled = true;
   assert.equal(counts.compilations, 1, 'must not start a failure/retry loop');
+});
+
+
+test('gameplay freezes CRT without polling and mode/resize/settings wake it', async () => {
+  const { api, canvas, counts, frames, complete, setGameRunning, events } = viewport();
+  const draw = (time) => {
+    const callbacks = [...frames.values()]; frames.clear();
+    callbacks.forEach(callback => callback(time));
+  };
+  api.enabled = true; complete(); await flush();
+  setGameRunning(true); draw(100);
+  assert.equal(counts.draws, 1);
+  assert.equal(canvas.style.backdropFilter, 'none');
+  assert.equal(frames.size, 0, 'a frozen image must not poll every display frame');
+  events.resize(); draw(200);
+  assert.equal(counts.draws, 2);
+  assert.equal(frames.size, 0);
+  api.intensity = 0.4; draw(300);
+  assert.equal(counts.draws, 3);
+  assert.equal(frames.size, 0);
+  setGameRunning(false); draw(400);
+  assert.notEqual(canvas.style.backdropFilter, 'none');
+  assert.equal(frames.size, 1, 'menu animation resumes after the game closes');
 });

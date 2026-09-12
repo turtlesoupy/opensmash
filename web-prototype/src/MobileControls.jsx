@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { dispatchGameKey, joystickCodesForVector } from "../shared/mobile-input.js";
+import { dispatchGameKey, dispatchGameStick, joystickAxesForVector, joystickCodesForVector } from "../shared/mobile-input.js";
 
 function directionLabel(codes) {
   const vertical = codes.has("KeyW") ? "up" : codes.has("KeyS") ? "down" : "";
@@ -75,11 +75,29 @@ export default function MobileControls({ active, frameRef, preview = false }) {
   const joystickCodesRef = useRef(new Set());
   const joystickPointerRef = useRef(null);
   const joystickRef = useRef(null);
+  const joystickKnobRef = useRef(null);
+  const joystickRectRef = useRef(null);
+  const joystickAnimationRef = useRef(null);
+  const joystickPositionRef = useRef({ x: 0, y: 0 });
+  const joystickAxesRef = useRef({ x: 0, y: 0 });
   const pulseTimersRef = useRef(new Set());
   const [heldCodes, setHeldCodes] = useState(() => new Set());
   const [inputLog, setInputLog] = useState([]);
-  const [joystickPosition, setJoystickPosition] = useState({ x: 0, y: 0 });
   const [lastInput, setLastInput] = useState("none");
+
+  // Pointer input is immediate; its decoration only needs one update per
+  // display frame. Do not rerender the control deck for every drag coordinate.
+  const setJoystickPosition = useCallback((position) => {
+    joystickPositionRef.current = position;
+    if (joystickAnimationRef.current !== null) return;
+    joystickAnimationRef.current = window.requestAnimationFrame(() => {
+      joystickAnimationRef.current = null;
+      const { x, y } = joystickPositionRef.current;
+      if (joystickKnobRef.current) {
+        joystickKnobRef.current.style.transform = `translate(${x}px, ${y}px)`;
+      }
+    });
+  }, []);
 
   const sendKey = useCallback(
     (code, pressed) => dispatchGameKey(frameRef.current, code, pressed),
@@ -105,20 +123,37 @@ export default function MobileControls({ active, frameRef, preview = false }) {
 
   const releaseJoystick = useCallback(() => {
     joystickPointerRef.current = null;
+    joystickRectRef.current = null;
+    joystickAxesRef.current = { x: 0, y: 0 };
     joystickCodesRef.current.forEach((code) => setCodePressed(code, false));
     joystickCodesRef.current = new Set();
+    dispatchGameStick(frameRef.current, null);
     setJoystickPosition({ x: 0, y: 0 });
-  }, [setCodePressed]);
+  }, [frameRef, setCodePressed, setJoystickPosition]);
 
   const releaseAll = useCallback(() => {
     joystickPointerRef.current = null;
+    joystickRectRef.current = null;
+    joystickAxesRef.current = { x: 0, y: 0 };
     heldCodesRef.current.forEach((code) => sendKey(code, false));
     heldCodesRef.current = new Set();
     joystickCodesRef.current = new Set();
     setHeldCodes(new Set());
     setJoystickPosition({ x: 0, y: 0 });
     setLastInput("released");
-  }, [sendKey]);
+    dispatchGameStick(frameRef.current, null);
+  }, [frameRef, sendKey, setJoystickPosition]);
+
+  useEffect(() => {
+    const invalidateRect = () => { joystickRectRef.current = null; };
+    window.addEventListener("resize", invalidateRect);
+    window.addEventListener("scroll", invalidateRect, { passive: true });
+    return () => {
+      window.removeEventListener("resize", invalidateRect);
+      window.removeEventListener("scroll", invalidateRect);
+      window.cancelAnimationFrame(joystickAnimationRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (!active) releaseAll();
@@ -127,6 +162,7 @@ export default function MobileControls({ active, frameRef, preview = false }) {
   useEffect(() => {
     const frame = frameRef.current;
     const replayHeldKeys = () => {
+      if (joystickPointerRef.current !== null) dispatchGameStick(frameRef.current, joystickAxesRef.current);
       heldCodesRef.current.forEach((code) => sendKey(code, true));
     };
     frame?.addEventListener("load", replayHeldKeys);
@@ -146,8 +182,9 @@ export default function MobileControls({ active, frameRef, preview = false }) {
       heldCodesRef.current.forEach((code) => sendKey(code, false));
       heldCodesRef.current = new Set();
       joystickCodesRef.current = new Set();
+      dispatchGameStick(frameRef.current, null);
     };
-  }, [releaseAll, sendKey]);
+  }, [frameRef, releaseAll, sendKey]);
 
   useEffect(() => {
     // Capture releases outside the control too, if pointer capture was lost.
@@ -174,8 +211,9 @@ export default function MobileControls({ active, frameRef, preview = false }) {
   }, [releaseJoystick, releaseAll]);
 
   function updateJoystick(clientX, clientY) {
-    const rect = joystickRef.current?.getBoundingClientRect();
+    const rect = joystickRectRef.current ?? joystickRef.current?.getBoundingClientRect();
     if (!rect) return;
+    joystickRectRef.current = rect;
     const radius = Math.max(1, Math.min(rect.width, rect.height) * 0.34);
     const rawX = clientX - (rect.left + rect.width / 2);
     const rawY = clientY - (rect.top + rect.height / 2);
@@ -183,6 +221,11 @@ export default function MobileControls({ active, frameRef, preview = false }) {
     const scale = distance > radius ? radius / distance : 1;
     const x = rawX * scale;
     const y = rawY * scale;
+    joystickAxesRef.current = joystickAxesForVector(x, y, radius);
+    dispatchGameStick(frameRef.current, joystickAxesRef.current);
+    // Keep key transitions for accessibility state and older engine shells.
+    // The current shell uses the analog override for axes, plus these keys
+    // for buttons; it never adds the digital directions to the analog values.
     const nextCodes = joystickCodesForVector(x, y, radius);
     joystickCodesRef.current.forEach((code) => {
       if (!nextCodes.has(code)) setCodePressed(code, false);
@@ -198,6 +241,7 @@ export default function MobileControls({ active, frameRef, preview = false }) {
     if (joystickPointerRef.current !== null || (event.pointerType === "mouse" && event.button !== 0)) return;
     event.preventDefault();
     joystickPointerRef.current = event.pointerId;
+    joystickRectRef.current = null;
     event.currentTarget.setPointerCapture?.(event.pointerId);
     updateJoystick(event.clientX, event.clientY);
   }
@@ -300,9 +344,9 @@ export default function MobileControls({ active, frameRef, preview = false }) {
       >
         <span className="mobile-joystick-ring" aria-hidden="true" />
         <span
+          ref={joystickKnobRef}
           className="mobile-joystick-knob"
           aria-hidden="true"
-          style={{ transform: `translate(${joystickPosition.x}px, ${joystickPosition.y}px)` }}
         />
         <span className="visually-hidden">Movement stick</span>
       </button>

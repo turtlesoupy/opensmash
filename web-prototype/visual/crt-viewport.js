@@ -375,10 +375,7 @@ if (!canvas) {
     // Update compositor state before the still-image early return so a
     // running game never retains the menu's full-screen backdrop filter.
     applyCompositeFilter(focusedGame);
-    if (stillImage && renderedStill && matchesViewport) {
-      animationFrame = requestAnimationFrame(render);
-      return;
-    }
+    if (stillImage && renderedStill && matchesViewport) return;
     if (!stillImage && milliseconds - lastDrawAt < FRAME_INTERVAL_MS) {
       animationFrame = requestAnimationFrame(render);
       return;
@@ -404,7 +401,7 @@ if (!canvas) {
       reducedMotion || focusedGame ? 0 : settings.motionSpeed,
     );
     gl.drawArrays(gl.TRIANGLES, 0, 6);
-    animationFrame = requestAnimationFrame(render);
+    if (!stillImage) animationFrame = requestAnimationFrame(render);
   }
 
   function setEnabled(enabled) {
@@ -484,6 +481,21 @@ if (!canvas) {
     get enabled() { return settings.enabled; },
     set enabled(value) { applySettings({ enabled: value }); },
   };
+
+  // A still overlay does not need a display-rate polling loop. Wake it only
+  // when its dimensions or game mode change; settings already call setEnabled.
+  function invalidateStillImage() {
+    renderedStill = false;
+    setEnabled(settings.enabled);
+  }
+  window.addEventListener('resize', invalidateStillImage);
+  let observedGameRunning = document.body.classList.contains('is-game-running');
+  new MutationObserver(() => {
+    const running = document.body.classList.contains('is-game-running');
+    if (running === observedGameRunning) return;
+    observedGameRunning = running;
+    invalidateStillImage();
+  }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
   // The animation loop owns drawing-buffer resizes. Resizing it directly in
   // the DOM resize event clears WebGL before the focused-game frame can be
