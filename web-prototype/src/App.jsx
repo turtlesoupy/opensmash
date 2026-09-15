@@ -1580,7 +1580,6 @@ export default function App() {
     Object.assign(visualBridgeRef.current, {
       characters,
       fighterJobs,
-      showEngineControls: isMelee ? ()=>setAdvancedOpen(true) : undefined,
       handlesGameSetup: isMelee||nativeSsb64,
       experience: isMelee ? 'melee' : 'ssb64',
       switchExperience,

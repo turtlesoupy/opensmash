@@ -1857,3 +1857,9 @@
   }
   button,
   .flame-bridge-action { font-family: "Kanit", sans-serif !important; }
+
+/* Melee's C-stick has keyboard bindings too; extra face buttons share the
+   existing tutorial callout presentation and spring motion. */
+.controller-callout[hidden] { display: none !important; }
+.controller-callouts.is-melee [data-control-callout="c-buttons"],
+.controller-callouts.is-melee [data-control-line="c-buttons"] { opacity: 1; visibility: inherit; }

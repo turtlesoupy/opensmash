@@ -1,3 +1,5 @@
+import {loadMeleeKeycapLayout, meleeRequiredControls, meleeControlForEvent, meleeControlLabels, meleePadControls, meleeCalloutLayout} from '../../engines/melee/launcher/controller-tutorial.ts';
+import gameCubeControllerUrl from '../../engines/melee/launcher/assets/fun-gamecube-controller.glb?url';
 import * as THREE from 'three';
 import {discDockPose,DISC_DOCK_MS,DISC_SEATED_MS} from '../../engines/melee/launcher/disc-motion.js';
 import {createDisc,createGameCube,GAMECUBE_LID_OPEN} from '../../engines/melee/launcher/disc-hardware.js';
@@ -91,6 +93,7 @@ const CONSOLE_DOCK_FRONT_PITCH = 0.18;
 const REQUIRED_CONTROL_KEYS = CONTROL_KEYS;
 let keyboardLabels = null;
 let keyboardLabelsLoad = null;
+let meleeKeyboardLabelsLoad = null;
 // Gamepad (standard layout) -> the same control ids the keyboard tutorial
 // uses, so a pad player lights up the very same callouts: A, B, LT=Z,
 // LB=L, RB/RT=R, left stick = W A S D.
@@ -169,6 +172,7 @@ let flowTimer = 0;
 let releaseLaunchFlowScrollLock = null;
 let scrollToPageTopAfterUnlock = false;
 let controllerTutorialCompletedThisSession = false;
+let meleeTutorialCompletedThisSession = false;
 let controlCheckComplete = false;
 let controlExitPending = false;
 let controlsPreviewMode = false;
@@ -243,18 +247,22 @@ function usesMobileControls() {
 }
 
 function hasCompletedControllerTutorial() {
+  if (usesDisc()) { try { return meleeTutorialCompletedThisSession || localStorage.getItem('opensmash.melee-controls-complete.v1') === 'complete'; } catch { return meleeTutorialCompletedThisSession; } }
   if (controllerTutorialCompletedThisSession) return true;
   try { return readControllerTutorialCompletion(localStorage); }
   catch { return false; }
 }
 
 function rememberCompletedControllerTutorial() {
+  if (usesDisc()) { meleeTutorialCompletedThisSession=true; try { localStorage.setItem('opensmash.melee-controls-complete.v1','complete'); } catch {} return; }
   controllerTutorialCompletedThisSession = true;
   try { saveControllerTutorialCompletion(localStorage); }
   catch { /* Completion still applies to this launch if storage is unavailable. */ }
 }
 
 function resetControllerTutorial() {
+  meleeTutorialCompletedThisSession=false;
+  try { localStorage.removeItem('opensmash.melee-controls-complete.v1'); } catch {}
   controllerTutorialCompletedThisSession = false;
   try { clearControllerTutorialCompletion(localStorage); }
   catch { /* The in-memory reset still applies to this tab. */ }
@@ -285,12 +293,28 @@ function padControlLabels() {
 function applyControlLabels() {
   const pad = hasGamepad();
   controllerCallouts?.classList.toggle('has-gamepad', pad);
-  const labels = pad ? padControlLabels() : keyboardLabels;
+  controllerCallouts?.classList.toggle('is-melee', usesDisc());
+  controllerCallouts?.querySelectorAll('[data-control-callout], [data-control-line]').forEach(el => {
+    const id=el.dataset.controlCallout || el.dataset.controlLine;
+    el.hidden=usesDisc() ? !Object.hasOwn(meleeCalloutLayout,id) : ['x','y','start'].includes(id);
+    if(el.tagName.toLowerCase()==='g')el.style.display=el.hidden?'none':'';
+  });
+  if (usesDisc() && !pad && !meleeKeyboardLabelsLoad) {
+    meleeKeyboardLabelsLoad = loadMeleeKeycapLayout().then(applyControlLabels);
+  }
+  const labels = usesDisc() ? meleeControlLabels() : (pad ? padControlLabels() : keyboardLabels);
   controlKeycaps.forEach(keycap => {
     if (keycap.dataset.keyLabel === undefined) keycap.dataset.keyLabel = keycap.textContent;
     keycap.textContent = labels?.[keycap.dataset.controlKey] ?? keycap.dataset.keyLabel;
   });
-  if (!pad && !keyboardLabelsLoad) {
+  controllerCallouts?.querySelectorAll('[data-control-callout]').forEach(callout => {
+    if (!callout.dataset.originalLabel) callout.dataset.originalLabel=callout.getAttribute('aria-label') || '';
+    const id=callout.dataset.controlCallout;
+    const names={stick:'Move',a:'A: attack / confirm',b:'B: special / back',x:'X: jump',y:'Y: jump',z:'Z: grab','left-bumper':'L: shield','right-bumper':'R: shield',start:'Start / pause','c-buttons':'C-stick: smash attacks'};
+    const keys=[...callout.querySelectorAll('[data-control-key]')].map(key=>key.textContent).join(' ');
+    callout.setAttribute('aria-label', usesDisc() ? `${keys}: ${names[id] || id}` : callout.dataset.originalLabel);
+  });
+  if (!usesDisc() && !pad && !keyboardLabelsLoad) {
     keyboardLabelsLoad = keycapLabels().then(result => {
       keyboardLabels = result;
       applyControlLabels();
@@ -298,7 +322,7 @@ function applyControlLabels() {
   }
   // "or Ctrl" style hints only make sense for the keyboard.
   controllerCallouts?.querySelectorAll('[data-control-alt]').forEach(hint => {
-    hint.textContent = pad ? '' : (CONTROL_ALT_LABELS[hint.dataset.controlAlt] ?? '');
+    hint.textContent = (pad || usesDisc()) ? '' : (CONTROL_ALT_LABELS[hint.dataset.controlAlt] ?? '');
   });
 }
 
@@ -530,6 +554,7 @@ let discPromise = null;
 let gameCubePromise = null;
 const usesDisc = () => APP_BRIDGE?.experience === 'melee' && !createUploadMode;
 let controllerPromise = null;
+let gameCubeControllerPromise = null;
 let flowPostReady = null;
 let flowRenderTarget = null;
 let flowPostScene = null;
@@ -878,6 +903,7 @@ function preloadFlowModels() {
   consolePromise ||= gltfLoader
     .loadAsync(consoleModelUrl)
     .then(prepareConsole).then(prepareFlowShaders);
+  gameCubeControllerPromise ||= gltfLoader.loadAsync(gameCubeControllerUrl).then(prepareController).then(prepareFlowShaders);
   controllerPromise ||= gltfLoader
     .loadAsync(controllerModelUrl)
     .then(prepareController).then(prepareFlowShaders);
@@ -921,7 +947,7 @@ function ensureFlowRenderer() {
   flowPostReady = compileSceneAsync(renderer, flowPostScene, flowPostCamera, flowPostScene);
   preloadFlowModels();
   // Some models may not be selected until much later; observe failures now.
-  for (const pending of [cartridgePromise, consolePromise, controllerPromise]) {
+  for (const pending of [cartridgePromise, consolePromise, controllerPromise, discPromise, gameCubePromise, gameCubeControllerPromise]) {
     pending.catch(error => console.error('Could not prepare launch graphics', error));
   }
 }
@@ -970,7 +996,7 @@ function updateControllerCallouts() {
   controllerCallouts.classList.toggle('is-z-reveal', zRevealAmount > 0.34);
   controllerCalloutLines.setAttribute('viewBox', `0 0 ${width} ${height}`);
 
-  for (const [control, layout] of Object.entries(controllerCalloutLayout)) {
+  for (const [control, layout] of Object.entries(usesDisc() ? meleeCalloutLayout : controllerCalloutLayout)) {
     let anchorPoint = layout.anchor;
     let labelPoint = layout.label;
     let backAmount = 0;
@@ -1061,13 +1087,13 @@ function controllerIdleEntryResidual(offset, velocity, acceleration, idleVelocit
 function pressControllerControl(key, repeated) {
   if (repeated || heldControlKeys.has(key)) return;
   heldControlKeys.add(key);
-  const torque = CONTROLLER_KEY_TORQUE[key];
+  const torque = CONTROLLER_KEY_TORQUE[key] || (usesDisc() ? CONTROLLER_KEY_TORQUE.j : null);
   if (!torque || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   controllerTiltVelocity.x += torque[0] * 3.4;
   controllerTiltVelocity.y += torque[1] * 3.4;
   controllerTiltVelocity.z += torque[2] * 3.4;
   controllerDropVelocity -= 0.085;
-  if (key === 'l') {
+  if (key === 'l' && !usesDisc()) {
     controllerZRevealUntil = performance.now() + CONTROLLER_Z_REVEAL_MS;
     controllerFlipVelocity = Math.max(controllerFlipVelocity, 1.25);
   }
@@ -1080,7 +1106,7 @@ function updateControllerPhysics(now, dt, homeY, homeScale, reducedMotion) {
   controllerTiltTarget.set(0, 0, 0);
   if (!reducedMotion) {
     for (const key of heldControlKeys) {
-      const torque = CONTROLLER_KEY_TORQUE[key];
+      const torque = CONTROLLER_KEY_TORQUE[key] || (usesDisc() ? CONTROLLER_KEY_TORQUE.j : null);
       if (!torque) continue;
       controllerTiltTarget.x += torque[0];
       controllerTiltTarget.y += torque[1];
@@ -1106,7 +1132,7 @@ function updateControllerPhysics(now, dt, homeY, homeScale, reducedMotion) {
   ) * dt;
   controllerDrop += controllerDropVelocity * dt;
 
-  const flipTarget = !reducedMotion &&
+  const flipTarget = !usesDisc() && !reducedMotion &&
       (heldControlKeys.has('l') || now < controllerZRevealUntil)
     ? Math.PI
     : 0;
@@ -2002,7 +2028,7 @@ async function showFlowModel(kind, phase = 'enter') {
   const sequence = flowSequence;
   let model;
   try {
-    model = await (kind === 'cartridge' ? (usesDisc() ? discPromise : cartridgePromise) : controllerPromise);
+    model = await (kind === 'cartridge' ? (usesDisc() ? discPromise : cartridgePromise) : (usesDisc() ? gameCubeControllerPromise : controllerPromise));
   } catch (error) {
     if (sequence === flowSequence && requestedModelKind === kind && !overlay?.hidden) {
       APP_BRIDGE?.reportError?.(error);
@@ -2328,7 +2354,8 @@ function skipControlCheck() {
   hideControlSkip();
   controlCheckComplete = true;
   // A skipped tutorial stays skipped for this visit; it returns next time.
-  controllerTutorialCompletedThisSession = true;
+  if (usesDisc()) meleeTutorialCompletedThisSession = true;
+  else controllerTutorialCompletedThisSession = true;
   controlExitPending = false;
   clearTimeout(flowTimer);
   continueToGame();
@@ -2356,7 +2383,7 @@ function resetControlCheck() {
 function registerControlKey(event) {
   if (!overlay || overlay.hidden || overlay.dataset.step !== 'controller' ||
       controlCheckComplete || isControlChord(event)) return false;
-  const key = controlForEvent(event);
+  const key = usesDisc() ? meleeControlForEvent(event) : controlForEvent(event);
   if (!key) return false;
   event.preventDefault();
   return registerControlInput(key, event.repeat);
@@ -2374,6 +2401,7 @@ const padHeldControls = new Set();
 let padPollHandle = 0;
 
 function padControlsNow() {
+  if (usesDisc()) return meleePadControls();
   const active = new Set();
   for (const pad of connectedGamepads()) {
     pad.buttons.forEach((button, index) => {
@@ -2430,7 +2458,7 @@ function registerControlInput(key, repeated) {
   if (firstPress) playLaunchSound(LAUNCH_SOUNDS.controllerPunch);
   const keycap = controlKeycaps.find(item => item.dataset.controlKey === key);
   keycap?.classList.add('is-complete', 'is-pressed');
-  if (REQUIRED_CONTROL_KEYS.every(control => completedControlKeys.has(control))) {
+  if ((usesDisc() ? meleeRequiredControls : REQUIRED_CONTROL_KEYS).every(control => completedControlKeys.has(control))) {
     if (controlsPreviewMode) {
       controlPrompt?.classList.add('is-complete');
       if (controlPrompt) {
@@ -2452,7 +2480,6 @@ function registerControlInput(key, repeated) {
 }
 
 function showControlsPreview() {
-  if(APP_BRIDGE?.showEngineControls){APP_BRIDGE.showEngineControls();return;}
   if (!overlay || !overlay.hidden) return;
   lockLaunchFlowScroll();
   preloadLaunchSounds();
@@ -2624,7 +2651,7 @@ function transitionToController() {
   overlay.dataset.step = 'transition';
   beginConsoleDockTransition(() => {
     if (sequence !== flowSequence || overlay.hidden) return;
-    if (usesDisc()) {
+    if (usesDisc() && usesMobileControls()) {
       const fighter = pendingFighter;
       closeLaunchFlow();
       launch(fighter);
@@ -2741,6 +2768,7 @@ function continueToGame() {
 function requestLaunch(fighter) {
   if (APP_BRIDGE?.experience === 'melee') {
     if (!hasVerifiedRom()) showLaunchFlow(fighter);
+    else if (requiresControllerTutorial()) showRequiredControls(fighter);
     else launch(fighter);
     return;
   }
@@ -2865,7 +2893,7 @@ window.addEventListener('keydown', event => {
   }
 });
 window.addEventListener('keyup', event => {
-  releaseControlKey(controlForEvent(event) ?? event.key.toLowerCase());
+  releaseControlKey((usesDisc() ? meleeControlForEvent(event) : controlForEvent(event)) ?? event.key.toLowerCase());
 });
 window.addEventListener('gamepadconnected', () => {
   if (overlay && !overlay.hidden && overlay.dataset.step === 'controller') applyControlLabels();
