@@ -1,5 +1,5 @@
 """Private bucket-backed files. Local directories remain a disposable hot cache."""
-import hashlib,io,json,tarfile
+import gzip,hashlib,io,json,tarfile
 from pathlib import Path,PurePosixPath
 
 class Store:
@@ -27,13 +27,21 @@ class Store:
 
 def pack(root,paths):
     stream=io.BytesIO();root=Path(root)
+    # Objects are content-addressed, so the bytes must be reproducible: a fixed
+    # gzip header time and normalized tar metadata (owner, mode, mtime) keep an
+    # unchanged input at the same key instead of re-uploading it every publish.
+    def normalize(info):
+        info.uid=info.gid=0;info.uname=info.gname='';info.mtime=0
+        info.mode=0o755 if info.isdir() or info.mode&0o111 else 0o644
+        return info
     # Level 1 preserves the coarse bundle while avoiding costly maximum compression.
-    with tarfile.open(fileobj=stream,mode='w:gz',compresslevel=1) as archive:
-        for relative in paths:
-            path=root/relative
-            files=sorted(path.rglob('*')) if path.is_dir() else [path]
-            for item in files:
-                if item.is_file() and not item.is_symlink():archive.add(item,arcname=item.relative_to(root).as_posix(),recursive=False)
+    with gzip.GzipFile(fileobj=stream,mode='wb',compresslevel=1,mtime=0) as compressed:
+        with tarfile.open(fileobj=compressed,mode='w',format=tarfile.PAX_FORMAT) as archive:
+            for relative in paths:
+                path=root/relative
+                files=sorted(path.rglob('*')) if path.is_dir() else [path]
+                for item in files:
+                    if item.is_file() and not item.is_symlink():archive.add(item,arcname=item.relative_to(root).as_posix(),recursive=False,filter=normalize)
     return stream.getvalue()
 
 def unpack(raw,destination):
