@@ -347,3 +347,28 @@ a renderer kill. Evidence is local in `/tmp/opensmash-mobile-test/`:
 This is a stability fix, not a 60 FPS result. Thirteen warm combat windows
 measured 37.32–42.81 FPS after the initial 32.42 FPS interval. One later window
 reported 256 audio-underrun samples. Sustained mobile 60 FPS remains unmet.
+
+
+### Preserve synchronous file calls when enabling GPU suspension
+
+Asyncify also changes Emscripten's WASI `fd_sync`: it starts an asynchronous
+mount synchronization. Concurrent native file calls proxied to the filesystem
+worker can then enter Asyncify while another call is unwinding and abort startup
+with `invalid state: 1`. The earlier successful endurance run did not expose
+this timing-dependent startup failure.
+
+`synchronous-filesystem.js` preserves the runtime's previous synchronous
+`fd_sync` behavior, including backend fsync and file-descriptor errors. IDBFS
+`autoPersist` remains enabled. The real Wasm pthread regression test reproduces
+the abort without this override and passes concurrent writes, read-back, invalid
+descriptors, GPU callback processing and joined shutdown with it. The linker
+also tracks both JavaScript bootstrap files as dependencies.
+
+On the Saga, a temporary file was written, found in IndexedDB, deleted, and
+confirmed absent from IndexedDB without an explicit `FS.syncfs` call. A runtime
+containing this fix survived another eight-minute two-player match with stable
+GPU memory near 475 MB. That build also tested batched GPU clock checks; its
+roughly 36–39 FPS warm windows did not demonstrate a performance improvement,
+so clock batching was not adopted. Local evidence: `autopersist-repeat.log`,
+`fsync-before-fix.log`, and `gpu-yield-batched-sync-repeat-gpu.jsonl` under
+`/tmp/opensmash-mobile-test/`. Sustained mobile 60 FPS remains unmet.
