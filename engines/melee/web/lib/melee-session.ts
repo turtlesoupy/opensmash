@@ -1,3 +1,4 @@
+import {cacheDisc,restoreCachedDisc,removeCachedDisc} from './disc-cache.ts';
 import {unlockAudio} from './audio.ts';
 import {MeleeFrameWorker} from './melee-frame-worker.ts';
 import {meleePath} from './paths.ts';
@@ -7,9 +8,13 @@ let standby:Session|undefined;
 const currentSession=():Session|undefined=>standby;
 let localDisc:File|undefined;
 const verifiedDiscs=new WeakSet<File>();
-type DiscSetup={state:string;ready:boolean;message:string};
+type DiscSetup={state:string;ready:boolean;message:string;storageMessage?:string};
 let discSetup:DiscSetup={state:'missing',ready:false,message:'Choose your Melee disc.'};
 const discListeners=new Set<(status:DiscSetup)=>void>();
+let discRevision=0,restoreStarted=false;
+let cacheAbort:AbortController|undefined;
+let restoring:Promise<void>|undefined;
+export const localDiscReady=()=>discSetup.ready;
 let consumers=0;
 let suspendTimer:ReturnType<typeof setTimeout>|undefined;
 /** Effect replay must not discard a disc that is already warming. */
@@ -31,15 +36,38 @@ export function subscribeLocalDisc(listener:(status:DiscSetup)=>void){
 }
 export function suspendMelee(){
  standby?.cancel();standby?.worker.terminate();standby=undefined;
+ if(discSetup.state==='checking'&&localDisc){
+  ++discRevision;cacheAbort?.abort();localDisc=undefined;restoreStarted=false;
+  updateDisc({state:'missing',ready:false,message:'Disc setup cancelled. Choose your disc to continue.'});
+ }
 }
-export function clearLocalDisc(){
+export async function clearLocalDisc(){
+ ++discRevision;restoreStarted=true;cacheAbort?.abort();
  localDisc=undefined;
  suspendMelee();
  updateDisc({state:'missing',ready:false,message:'Choose your Melee disc.'});
+ restoreStarted=true;
+ await removeCachedDisc();
 }
 // The old upload/extraction path is a loopback-only comparison tool.
 export const usesLocalDisc=()=>!(['localhost','127.0.0.1','[::1]'].includes(location.hostname)&&new URLSearchParams(location.search).get('disc')==='server');
-export async function selectLocalDisc(file:File){
+export function restoreLocalDisc():Promise<void>{
+ if(restoreStarted||localDisc||!usesLocalDisc())return restoring||Promise.resolve();
+ restoring=restoreDiscFromStorage();return restoring;
+}
+async function restoreDiscFromStorage(){
+ restoreStarted=true;const revision=discRevision;
+ updateDisc({state:'checking',ready:false,message:'Looking for your saved disc…'});
+ try{
+  const file=await restoreCachedDisc();
+  if(revision!==discRevision)return;
+  if(file)await selectLocalDisc(file,true);
+  else updateDisc({state:'missing',ready:false,message:'Choose your Melee disc.'});
+ }catch(e){if(revision===discRevision)updateDisc({state:'error',ready:false,message:`Could not restore your disc. Choose it again. ${(e as Error).message}`});}
+}
+export async function selectLocalDisc(file:File,restored=false){
+ const revision=++discRevision;restoreStarted=true;cacheAbort?.abort();
+ const controller=new AbortController();cacheAbort=controller;
  // Opening the audio device can block on some hosts. Do it during disc setup,
  // before gameplay, and reuse the context when the match connects its ring.
  void unlockAudio().catch(()=>{});
@@ -55,7 +83,20 @@ export async function selectLocalDisc(file:File){
   };
   session.worker.addEventListener('message',listener);
   await session.verified;
-  if(currentSession()===session)updateDisc({state:'ready',ready:true,message:'Ready to play.'});
+  let storageMessage='Saved disc restored from this device.';
+  if(currentSession()===session&&!restored){
+   // Finish the disk copy before enabling play, keeping I/O out of the match.
+   session.worker.removeEventListener('message',listener);
+   let lastPercent=-1;
+   try{storageMessage=await cacheDisc(file,controller.signal,fraction=>{
+    const percent=Math.floor(fraction*100);
+    if(revision===discRevision&&percent!==lastPercent){lastPercent=percent;updateDisc({state:'checking',ready:false,message:`Saving disc on this device… ${percent}%`});}
+   });}catch(e){
+    if(controller.signal.aborted)return;
+    storageMessage=`Playing without a saved copy. ${(e as Error).name==='QuotaExceededError'?'Not enough browser storage.':(e as Error).message} Choose the disc again next visit.`;
+   }
+  }
+  if(revision===discRevision&&currentSession()===session)updateDisc({state:'ready',ready:true,message:'Ready to play.',storageMessage});
  }catch(error){
   if(localDisc===file&&currentSession()===session){
    standby=undefined;localDisc=undefined;session?.worker.terminate();
@@ -85,7 +126,7 @@ export function warmMelee(){
   if(data.type==='ready-for-selection'){session.readyAt=Date.now();resolve();}
   if(data.type==='disc-verified'&&disc){verifiedDiscs.add(disc);verify();}
   if(data.type==='error')fail(Error(data.message));
-  if(data.type==='frame'&&!worker.onmessage)data.bitmap.close();
+  if(data.type==='frame'&&!worker.onmessage)data.bitmap?.close();
  });
  worker.addEventListener('error',e=>fail(Error(e.message||'The engine could not start.')));
  const query=new URLSearchParams(location.search);

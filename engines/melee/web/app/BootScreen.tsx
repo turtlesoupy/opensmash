@@ -1,8 +1,8 @@
 import {useEffect,useRef,useState} from 'react';
 import {extractDiscZip} from '@/lib/disc-archive';
 import {desktop} from '@/lib/desktop';
-import {subscribeLocalDisc,selectLocalDisc,clearLocalDisc,usesLocalDisc} from '@/lib/melee-session';
-type Setup={state:string;ready:boolean;message:string;progress?:number};
+import {restoreLocalDisc,subscribeLocalDisc,selectLocalDisc,clearLocalDisc,usesLocalDisc} from '@/lib/melee-session';
+type Setup={state:string;ready:boolean;message:string;storageMessage?:string;progress?:number};
 export default function BootScreen({onReady,showReadyPrompt=false,onCleared}:{onReady:(ready:boolean)=>void;showReadyPrompt?:boolean;onCleared?:()=>void}) {
  const [setup,setSetup]=useState<Setup>({state:'checking',ready:false,message:'Checking local game setup…'});
  const [error,setError]=useState(''),[connectionError,setConnectionError]=useState(''),[transfer,setTransfer]=useState<number|null>(null);
@@ -13,6 +13,7 @@ export default function BootScreen({onReady,showReadyPrompt=false,onCleared}:{on
  const input=useRef<HTMLInputElement>(null),request=useRef<XMLHttpRequest|null>(null),ready=useRef(onReady);ready.current=onReady;
  useEffect(()=>{
   if(!desktop()&&usesLocalDisc()){
+   void restoreLocalDisc();
    return subscribeLocalDisc(status=>{setSetup(status);if(status.state!=='error')setError('');ready.current(status.ready);});
   }
   const controller=new AbortController();let timer:ReturnType<typeof setTimeout>;
@@ -60,7 +61,7 @@ export default function BootScreen({onReady,showReadyPrompt=false,onCleared}:{on
  async function clearDisc(){
   setClearing(true);setError('');
   try{
-   if(!desktop()&&usesLocalDisc())clearLocalDisc();
+   if(!desktop()&&usesLocalDisc())await clearLocalDisc();
    else{
     const response=await fetch('/api/setup/clear',{method:'POST'});
     const result=await response.json();
@@ -89,7 +90,8 @@ export default function BootScreen({onReady,showReadyPrompt=false,onCleared}:{on
    {onCleared&&setup.ready&&<button className="boot-action" disabled={busy} onClick={()=>void clearDisc()}>{clearing?'Clearing…':'Clear disc'}</button>}
    {onCleared&&setup.ready&&<small>Clear disc returns to setup. Your original disc file stays on this computer.</small>}
    {transfer!==null&&<button className="retro-site-link" onClick={()=>request.current?.abort()}>Cancel transfer</button>}
-   <small>{!desktop()&&usesLocalDisc()?'Your disc is read directly by this browser and is never uploaded. Select it again after refreshing the page.':'Your disc stays on this computer. Choose your Melee USA 1.02 disc once to get started.'}</small>
+   {setup.storageMessage&&<small role="status">{setup.storageMessage}</small>}
+   <small>{!desktop()&&usesLocalDisc()?'Your disc is never uploaded. A local copy is saved in this browser for future visits. Clearing site data removes the saved copy.':'Your disc stays on this computer. Choose your Melee USA 1.02 disc once to get started.'}</small>
   </div>
  </section>;
 }

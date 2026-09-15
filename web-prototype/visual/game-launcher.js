@@ -2765,9 +2765,13 @@ function continueToGame() {
   });
 }
 
-function requestLaunch(fighter) {
+let restoreLaunchSequence=0;
+async function requestLaunch(fighter) {
+  const sequence=++restoreLaunchSequence;
   if (APP_BRIDGE?.experience === 'melee') {
-    if (!hasVerifiedRom()) showLaunchFlow(fighter);
+    const ready=hasVerifiedRom()||await APP_BRIDGE?.restoreDisc?.();
+    if(sequence!==restoreLaunchSequence||APP_BRIDGE?.experience!=='melee')return;
+    if (!ready) showLaunchFlow(fighter);
     else if (requiresControllerTutorial()) showRequiredControls(fighter);
     else launch(fighter);
     return;

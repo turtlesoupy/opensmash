@@ -1,5 +1,5 @@
 import {loadSettings as loadMeleeSettings} from '../../engines/melee/web/lib/launch';
-import {selectLocalDisc,subscribeLocalDisc} from '../../engines/melee/web/lib/melee-session';
+import {restoreLocalDisc,localDiscReady,selectLocalDisc,subscribeLocalDisc} from '../../engines/melee/web/lib/melee-session';
 import {desktop as meleeDesktop} from '../../engines/melee/web/lib/desktop';
 import {pollService as pollMeleeService} from '../../engines/melee/web/lib/service-poll';
 import {selectionPorts as meleeSelectionPorts} from '../../engines/melee/launcher/launch-plan.mjs';
@@ -347,8 +347,9 @@ export default function App() {
   const [meleeDiscReady,setMeleeDiscReady] = useState(false);
   useEffect(() => {
     if (meleeDesktop()) return pollMeleeService('/melee/api/setup',s=>setMeleeDiscReady(s.ready),()=>setMeleeDiscReady(false));
+    if(isMelee)void restoreLocalDisc();
     return subscribeLocalDisc(s=>setMeleeDiscReady(s.ready));
-  }, []);
+  }, [isMelee]);
   async function validateMeleeDisc(file, onStatus) {
     if (!meleeDesktop()) {
       const unsubscribe = subscribeLocalDisc(status => onStatus?.(status.message));
@@ -1605,6 +1606,7 @@ export default function App() {
           .filter((entry) => entry?.kind === "keyboard" || entry?.kind === "gamepad").length;
       },
       isAuthorized() { return isMelee ? meleeDiscReady : authorized; },
+      async restoreDisc() { if(meleeDesktop())return meleeDiscReady;await restoreLocalDisc();return localDiscReady(); },
       launch: launchVisualAction,
       cancelCreateRom() { setCreateStage(null); },
       navigate(pathname) {

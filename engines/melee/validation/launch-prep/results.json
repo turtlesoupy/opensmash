@@ -1,0 +1,87 @@
+{
+  "passed": true,
+  "cacheSize": 1459978240,
+  "reloadRestore": true,
+  "browserRestartRestore": true,
+  "clearDisc": true,
+  "noUploads": true,
+  "smallViewportHitTargets": [
+    {
+      "label": "L: Shield",
+      "x": 10,
+      "y": 310,
+      "w": 58,
+      "h": 44
+    },
+    {
+      "label": "Start: Pause",
+      "x": 89.3359375,
+      "y": 310,
+      "w": 62,
+      "h": 44
+    },
+    {
+      "label": "Z: Grab",
+      "x": 172.6640625,
+      "y": 310,
+      "w": 58,
+      "h": 44
+    },
+    {
+      "label": "R: Shield",
+      "x": 252,
+      "y": 310,
+      "w": 58,
+      "h": 44
+    },
+    {
+      "label": "D-pad up: taunt",
+      "x": 138,
+      "y": 376,
+      "w": 44,
+      "h": 44
+    },
+    {
+      "label": "Control stick: move",
+      "x": 12,
+      "y": 378,
+      "w": 112,
+      "h": 112
+    },
+    {
+      "label": "C-stick: smash attacks",
+      "x": 125,
+      "y": 484,
+      "w": 70,
+      "h": 70
+    },
+    {
+      "label": "Y: Jump",
+      "x": 194,
+      "y": 385,
+      "w": 48,
+      "h": 48
+    },
+    {
+      "label": "X: Jump",
+      "x": 262,
+      "y": 374,
+      "w": 48,
+      "h": 48
+    },
+    {
+      "label": "B: Special",
+      "x": 180,
+      "y": 433,
+      "w": 48,
+      "h": 48
+    },
+    {
+      "label": "A: Attack",
+      "x": 248,
+      "y": 429,
+      "w": 62,
+      "h": 62
+    }
+  ]
+}
