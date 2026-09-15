@@ -59,6 +59,11 @@ def publish(workspace,browser,characters,store,slugs=None,melee_pc=None):
                     if name=='frame-worker.mjs':continue
                     raise ValueError(f'Missing Melee PC browser runtime file {source/name}; build the pinned fork with tools/build_upstream.py')
                 shutil.copy2(source/name,target/'upstream'/folder/name)
+        # The direct-C audio consumer (Sonic time-stretch) is built by tools/build_upstream.py
+        # next to this repository and is required by the upstream engine's audio path.
+        audio=ROOT/'build/direct-c/melee-audio.wasm'
+        if not audio.is_file():raise ValueError(f'Missing {audio}; run tools/build_upstream.py')
+        (target/'direct-c').mkdir(parents=True,exist_ok=True);shutil.copy2(audio,target/'direct-c/melee-audio.wasm')
         manifest['upstream']={'repository':pin['repository'],'revision':pin['revision']}
         manifest['browser']=upload(pack(root,['build/hosted-browser']))
     catalog=json.loads((ROOT/'web/public/catalog.json').read_text())

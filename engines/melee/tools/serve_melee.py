@@ -218,7 +218,10 @@ class Handler(BaseHTTPRequestHandler):
                 return self.file(descendant(upstream_root(name), name))
             if route.startswith('/engine/direct-c/'):
                 name=route[len('/engine/direct-c/'):]
-                root=ROOT/'build/direct-c' if name.startswith('melee-') else ROOT/'runtime/direct-c/web'
+                if name.startswith('melee-'):
+                    # Built artifacts: a developer build, else the hosted browser pack.
+                    root=ROOT/'build/direct-c' if (ROOT/'build/direct-c'/name).is_file() else BUILD/'direct-c'
+                else:root=ROOT/'runtime/direct-c/web'
                 return self.file(descendant(root,name))
             if route.startswith('/engine/'):
                 name = route[len('/engine/'):]
