@@ -316,3 +316,34 @@ but its machine-code emitter cannot execute in WebAssembly. The browser retains
 static recompilation. Increasing region size or compiler inlining is not equivalent
 to porting that JIT. Further browser CPU optimization is required before claiming
 native four-player performance parity.
+
+
+## Solana Saga browser endurance (September 15)
+
+The synchronous GPU worker must periodically return to its browser event loop.
+Chromium posts transferred ImageBitmap resource-release callbacks back to the
+originating worker. Consuming each bitmap on the page does not reclaim those
+resources while that worker remains inside its native loop. A four-player run
+reached 8.6 GB of GPU allocations and Android killed the foreground renderer;
+a separate two-player run reproduced rapid allocation growth. Calling gl.finish
+did not resolve it.
+
+Browser patch 0008 yields the GPU worker every 50 ms. Asyncify follows direct
+call paths and explicitly includes the outer dynCall_ii pthread entry. SDL's
+automatic Asyncify delays remain disabled to preserve synchronous CPU behavior.
+`python3 tools/validate_browser_gpu_event_loop.py` checks real Wasm pthread
+callbacks, argument preservation, SDL configuration and joined shutdown using
+the production linker flags and bootstrap.
+
+An eight-minute USB Saga test in Chrome 152 used build `85ae9537d5186762`,
+Donald Trump/Falco versus original Fox, Final Destination, two CPU players and
+20 stocks. GPU allocation stayed approximately 400–500 MB through the end,
+with the full platform, both fighters and HUD visible. The run survived without
+a renderer kill. Evidence is local in `/tmp/opensmash-mobile-test/`:
+`gpu-yield-auto-gpu.jsonl`, `gpu-yield-auto-result.json` and
+`gpu-yield-auto-combat.png`; trace session
+`e8cb5ec0-94c3-4b66-a7ad-e78b6fa1baea`.
+
+This is a stability fix, not a 60 FPS result. Thirteen warm combat windows
+measured 37.32–42.81 FPS after the initial 32.42 FPS interval. One later window
+reported 256 audio-underrun samples. Sustained mobile 60 FPS remains unmet.

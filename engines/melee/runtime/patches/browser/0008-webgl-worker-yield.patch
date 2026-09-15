@@ -1,0 +1,29 @@
+--- a/vendor/dolphin/Source/Core/VideoCommon/Fifo.cpp
++++ b/vendor/dolphin/Source/Core/VideoCommon/Fifo.cpp
+@@ -2,6 +2,9 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ 
+ #include "VideoCommon/Fifo.h"
++#ifdef __EMSCRIPTEN__
++#include <emscripten.h>
++#endif
+ 
+ #include <atomic>
+ #include <cstring>
+@@ -292,6 +295,16 @@
+         if (m_gpu_mainloop.IsIdleButAwake() && (++idle_polls & 63u) != 0)
+           return;
+         idle_polls = 0;
++#ifdef __EMSCRIPTEN__
++        // ImageBitmap release callbacks run on the browser worker event loop.
++        // Return to that event loop periodically so exported frames can be reclaimed.
++        static double browser_last_yield = 0;
++        const double browser_now = emscripten_get_now();
++        if (browser_now-browser_last_yield >= 50) {
++          emscripten_sleep(0);
++          browser_last_yield = emscripten_get_now();
++        }
++#endif
+         // Run events from the CPU thread.
+         AsyncRequests::GetInstance()->PullEvents();
+ 

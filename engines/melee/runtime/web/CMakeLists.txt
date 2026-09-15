@@ -98,6 +98,10 @@ target_link_options(opensmash-web PRIVATE
   -pthread -sPROXY_TO_PTHREAD=1 -sPTHREAD_POOL_SIZE=8
   -sINITIAL_MEMORY=536870912 -sMAXIMUM_MEMORY=2147483648 -sALLOW_MEMORY_GROWTH=1
   -sSTACK_SIZE=2097152 -sDEFAULT_PTHREAD_STACK_SIZE=2097152
+  # The GPU worker must yield to reclaim transferred ImageBitmap resources.
+  # Infer direct suspension paths; dynCall_ii is the outer pthread entry wrapper.
+  -sASYNCIFY=1 -sASYNCIFY_IGNORE_INDIRECT=1 "-sASYNCIFY_ADD=['dynCall_ii']"
+  -sASYNCIFY_STACK_SIZE=16384
   -sUSE_WEBGL2=1 -sFULL_ES3=1 -sGL_ENABLE_GET_PROC_ADDRESS=1
   -sOFFSCREEN_FRAMEBUFFER=1 -sOFFSCREENCANVAS_SUPPORT=1 "-sOFFSCREENCANVASES_TO_PTHREAD=#canvas"
   -sFORCE_FILESYSTEM=1 -lworkerfs.js -lnodefs.js -lidbfs.js
