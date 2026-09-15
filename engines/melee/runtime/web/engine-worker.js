@@ -89,6 +89,20 @@ self.onmessage = async ({data}) => {
     const {inspectDisc, ISO_SHA256} = await import('./disc.mjs');
     const {mountSizedFile, mountSystemBundle, costumeSlot, COSTUME_SLOTS} = await import('./local-files.mjs');
     report('status', {message: 'Loading Melee…'});
+    // Native hashing and disc reads can run while the browser compiles Wasm.
+    // The mount below still waits for every byte to be authenticated.
+    const discInspection = data.localGame ? null : (async () => {
+      if (!data.discVerified) {
+        const {verifyDisc} = await import('./verify-disc.mjs');
+        const verifyStarted = performance.now();
+        await verifyDisc(data.iso, bytes => report('status', {message: `Checking your game… ${Math.floor(bytes / data.iso.size * 100)}%`}));
+        report('disc-verification-performance', {durationMs: performance.now() - verifyStarted, bytes: data.iso.size, method: 'native-sha256-chunks'});
+      }
+      return inspectDisc(data.iso);
+    })();
+    // Preserve a rejected verification until the mount awaits it, even if
+    // compilation takes longer. No unhandled rejection may escape meanwhile.
+    void discInspection?.catch(() => {});
     const runtimeUrl=path=>new URL(path+'?v='+(build.cacheId||build.id),self.location.href).href;
     importScripts(runtimeUrl('./opensmash-web.js'));
     phase = 'loading WebAssembly and threads';
@@ -138,6 +152,8 @@ self.onmessage = async ({data}) => {
     phase = 'mounting game files';
     report('status', {message: 'Preparing game files…'});
     const {FS, WORKERFS} = engine;
+    const {installDiscReadCache} = await import('./disc-read-cache.mjs');
+    const discReadCache = installDiscReadCache(WORKERFS);
     if (data.localGame) {
       const response = await fetch(apiPrefix+'/api/game');
       if (!response.ok) throw Error('The local game is unavailable.');
@@ -178,12 +194,7 @@ self.onmessage = async ({data}) => {
     } else {
     FS.mkdir('/disc');
     FS.mount(WORKERFS, {blobs: [{name: 'game.iso', data: data.iso}]}, '/disc');
-    report('status', {message: 'Checking your game…'});
-    if(!data.discVerified){
-      const hash = engine.ccall('opensmash_hash_file', 'string', ['string'], ['/disc/game.iso']);
-      if (hash !== ISO_SHA256) throw Error('This image does not match the known USA 1.02 Melee disc hash.');
-    }
-    const {blobs} = await inspectDisc(data.iso);
+    const {blobs} = await discInspection;
     report('disc-verified',{});
     if (data.costume) {
       if (!/^Pl[A-Za-z0-9]+\.dat$/.test(data.costume.filename)) throw Error('Invalid costume filename.');
@@ -360,7 +371,7 @@ self.onmessage = async ({data}) => {
             samples:rows.length,entries:[...entries.values()].sort((a,b)=>b.netNs-a.netNs).slice(0,100)});
         }
         const ordered = [...samples].sort((a,b) => a-b), total = samples.reduce((a,b) => a+b,0);
-        report('performance', {combatFrames:engine._opensmash_combat_frames?.() || 0,audioPeak,audioBlocks,audioUnderrunSamples:audioIndices?Atomics.load(audioIndices,2):0,frames: samples.length, fps: total ? samples.length*1000/total : 0,
+        report('performance', {discReads:discReadCache.stats,combatFrames:engine._opensmash_combat_frames?.() || 0,audioPeak,audioBlocks,audioUnderrunSamples:audioIndices?Atomics.load(audioIndices,2):0,frames: samples.length, fps: total ? samples.length*1000/total : 0,
           p95: ordered[Math.floor(ordered.length*.95)] || 0, p99: ordered[Math.floor(ordered.length*.99)] || 0,
           over33ms: samples.filter(n=>n>33.34).length, durationMs: now-batchStart,
           phases: FS.analyzePath('/tmp/frame-phases.csv').exists ? FS.readFile('/tmp/frame-phases.csv',{encoding:'utf8'}).split('\n').slice(-65).join('\n') : ''});
