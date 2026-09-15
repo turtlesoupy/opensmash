@@ -21,6 +21,7 @@ const iso=path.resolve(process.argv[2]);const url=process.env.MELEE_TEST_URL||'h
  await page.locator('.boot-disc [role="status"]').filter({hasText:/^Ready to play\.$/}).waitFor({state:'attached',timeout:180000});
  console.log('Full ISO cache, reload and browser restart passed without uploading');
  await page.getByRole('button',{name:/^Play as Alan Turing, .* moveset$/}).click();await page.locator('.fps').filter({hasText:/FPS/}).waitFor({timeout:180000});await page.locator('.melee-touch-deck').scrollIntoViewIfNeeded();
+ assert.equal(await page.locator('.touch-y,.touch-r').count(),0,'one jump and one shield button');
  const frame=page.frames().find(f=>f.url().includes('/engine/upstream/runtime.html'));assert(frame);
  await frame.evaluate(()=>{window.capturedPads=[];const original=window.postMessage;window.postMessage=function(message,...rest){if(message?.type==='pad')window.capturedPads.push(message.values);return original.call(this,message,...rest);};});
  await page.evaluate(()=>{window.pointerLog=[];for(const t of ['pointerdown','pointerup','pointercancel','lostpointercapture'])document.addEventListener(t,e=>window.pointerLog.push([t,e.pointerId,e.target.getAttribute('aria-label')]),true);});
@@ -35,7 +36,7 @@ const iso=path.resolve(process.argv[2]);const url=process.env.MELEE_TEST_URL||'h
  await client.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[{id:2,...a}]});points.delete(2);await page.waitForTimeout(100);pad=await latest();console.log('release',pad,await page.evaluate(()=>window.pointerLog));assert.equal(pad[1]&0x100,0);assert((pad[2]&255)>210);assert((pad[2]>>>24)>210);
  points.clear();await event('touchCancel');pad=await latest();assert.equal(pad[1],0);assert.equal(pad[2],0x80808080);
  points.set(1,a);await event('touchStart');await page.evaluate(()=>window.dispatchEvent(new Event('blur')));await page.waitForTimeout(100);assert.equal((await latest())[1],0);points.clear();await event('touchCancel');
- for(const [selector,bit,trigger]of[['.touch-b',0x200,0],['.touch-x',0x400,0],['.touch-y',0x800,0],['.touch-z',0x10,0],['.touch-l',0x40,255],['.touch-r',0x20,65280],['.touch-taunt',0x8,0],['.touch-start',0x1000,0]]){
+ for(const [selector,bit,trigger]of[['.touch-b',0x200,0],['.touch-x',0x400,0],['.touch-z',0x10,0],['.touch-l',0x40,255],['.touch-taunt',0x8,0],['.touch-start',0x1000,0]]){
   points.set(1,await center(selector));await event('touchStart');pad=await latest();assert(pad[1]&bit,selector);assert.equal(pad[3],trigger);points.clear();await event('touchEnd');assert.equal((await latest())[1],0);
  }
  console.log('All buttons, taunt, analog shields, release/cancel passed');

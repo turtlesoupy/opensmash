@@ -6,7 +6,7 @@
  .game-panel:has(.melee-touch-deck) .game-help {display:none;}
  .game-panel:has(.melee-touch-deck) .sound-game,.game-panel:has(.melee-touch-deck) .confirm-game {bottom:292px;}
  .melee-touch-deck {display:block;position:absolute;bottom:0;left:0;right:0;height:calc(284px + env(safe-area-inset-bottom));padding-bottom:env(safe-area-inset-bottom);box-sizing:border-box;background:linear-gradient(#242126,#100f12);border-top:2px solid #675047;z-index:5;user-select:none;-webkit-user-select:none;touch-action:none;-webkit-touch-callout:none;}
- .melee-touch-deck button {position:absolute;min-width:44px;min-height:44px;margin:0;padding:0;color:#fff9e9;border:1px solid #bcb5af;font-family:inherit;font-weight:800;touch-action:none;-webkit-tap-highlight-color:transparent;text-shadow:0 2px 1px #0009;}
+ .melee-touch-deck button {pointer-events:auto;position:absolute;min-width:44px;min-height:44px;margin:0;padding:0;color:#fff9e9;border:1px solid #bcb5af;font-family:inherit;font-weight:800;touch-action:none;-webkit-tap-highlight-color:transparent;text-shadow:0 2px 1px #0009;}
  .melee-touch-button {display:grid;place-content:center;gap:1px;border-radius:50%;background:#60646c;box-shadow:inset 0 2px 1px #fff5,inset 0 -4px 2px #0005,0 4px 12px #0006;}
  .melee-touch-button span {font-size:19px;line-height:1.1;}
  .melee-touch-button small,.melee-touch-stick small {display:block;font-size:9px;line-height:1.2;text-transform:uppercase;}
@@ -22,13 +22,12 @@
  .melee-touch-stick>span {position:absolute;top:100%;left:0;right:0;margin-top:4px;font-size:12px;line-height:14px;pointer-events:none;}
  .touch-taunt {left:calc(50% - 22px);top:74px;width:44px;height:44px;}
  .touch-main {left:max(12px,env(safe-area-inset-left));top:76px;}
- .melee-touch-stick.touch-c {width:70px;height:70px;left:calc(50% - 35px);top:182px;background-color:#756321;}
+ .melee-touch-stick.touch-c {width:70px;height:70px;right:max(10px,env(safe-area-inset-right));top:188px;background-color:#756321;}
  .touch-c i {width:34px;height:34px;left:calc(50% - 17px);top:calc(50% - 17px);background:radial-gradient(circle at 38% 32%,#ffe17d,#bb861b 70%);border-color:#f7d77c;}
- .melee-touch-actions {position:absolute;right:max(10px,env(safe-area-inset-right));top:65px;width:144px;height:142px;}
- .melee-touch-actions .touch-a {width:62px;height:62px;right:0;top:62px;background:#168c68;border-color:#8bd9b3;}
+ .melee-touch-actions {pointer-events:none;position:absolute;right:max(10px,env(safe-area-inset-right));top:65px;width:144px;height:142px;}
+ .melee-touch-actions .touch-a {width:62px;height:62px;right:0;top:54px;background:#168c68;border-color:#8bd9b3;}
  .melee-touch-actions .touch-b {width:48px;height:48px;left:14px;top:66px;background:#bb3936;border-color:#ffaba5;}
- .melee-touch-actions .touch-x {width:48px;height:48px;right:0;top:7px;}
- .melee-touch-actions .touch-y {width:48px;height:48px;left:28px;top:18px;}
+ .melee-touch-actions .touch-x {width:48px;height:48px;right:0;top:0;}
 }
 @media (pointer:coarse) and (orientation:landscape) {
  .arena-shell:has(.melee-touch-deck) {--arena-content-width:100vw;}
@@ -38,11 +37,10 @@
  .melee-touch-deck button {pointer-events:auto;}
  .touch-taunt {left:72px;top:auto;bottom:8px;}
  .touch-main {top:auto;bottom:60px;}
- .melee-touch-stick.touch-c {left:auto;right:max(85px,env(safe-area-inset-right));top:auto;bottom:34px;width:72px;height:72px;}
+ .melee-touch-stick.touch-c {left:auto;right:max(14px,env(safe-area-inset-right));top:auto;bottom:48px;width:72px;height:72px;}
  .melee-touch-actions {top:auto;bottom:118px;}
  .melee-touch-shoulders {top:8px;}
  .melee-touch-shoulders .touch-start {position:absolute;left:70px;}
- .melee-touch-shoulders .touch-z {position:absolute;right:70px;}
  .game-panel:has(.melee-touch-deck) header {left:160px;right:170px;}
  .game-panel:has(.melee-touch-deck) .sound-game {left:165px;}
  .game-panel:has(.melee-touch-deck) .confirm-game {right:175px;}

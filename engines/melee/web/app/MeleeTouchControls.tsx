@@ -1,7 +1,7 @@
 import './MeleeTouchControls.css';
 import {useEffect,useRef,type MutableRefObject,type PointerEvent} from 'react';
 import {neutralTouchPad,stickVector,type TouchPad} from '../lib/touch-pad';
-const actions=[['L','Shield',0x40],['Start','Pause',0x1000],['Z','Grab',0x10],['R','Shield',0x20],['Y','Jump',0x800],['X','Jump',0x400],['B','Special',0x200],['A','Attack',0x100]] as const;
+const actions=[['L','Shield',0x40],['Start','Pause',0x1000],['Z','Grab',0x10],['X','Jump',0x400],['B','Special',0x200],['A','Attack',0x100]] as const;
 export default function MeleeTouchControls({pad}:{pad:MutableRefObject<TouchPad>}){
  const deck=useRef<HTMLDivElement>(null);
  const pointers=useRef(new Map<number,{kind:string;button?:number;element:HTMLElement}>());
@@ -41,10 +41,10 @@ export default function MeleeTouchControls({pad}:{pad:MutableRefObject<TouchPad>
   },onPointerMove:move,onPointerUp:(e:PointerEvent<HTMLElement>)=>release(e.pointerId),onPointerCancel:(e:PointerEvent<HTMLElement>)=>release(e.pointerId),onLostPointerCapture:(e:PointerEvent<HTMLElement>)=>release(e.pointerId)
  });
  return <div ref={deck} className="melee-touch-deck" aria-label="Melee touch controller" onContextMenu={e=>e.preventDefault()}>
-  <div className="melee-touch-shoulders">{actions.slice(0,4).map(([label,help,bit])=><button key={label} className={`melee-touch-button touch-${label.toLowerCase()}`} aria-label={`${label}: ${help}`} aria-pressed="false" {...handlers(label,bit)}><span>{label}</span><small>{help}</small></button>)}</div>
+  <div className="melee-touch-shoulders">{actions.slice(0,3).map(([label,help,bit])=><button key={label} className={`melee-touch-button touch-${label.toLowerCase()}`} aria-label={`${label}: ${help}`} aria-pressed="false" {...handlers(label,bit)}><span>{label}</span><small>{help}</small></button>)}</div>
   <button className="melee-touch-button touch-taunt" aria-label="D-pad up: taunt" aria-pressed="false" {...handlers('taunt',0x8)}><span>D↑</span><small>Taunt</small></button>
   <button className="melee-touch-stick touch-main" aria-label="Control stick: move" aria-pressed="false" {...handlers('main')}><i/><span>Move</span></button>
-  <button className="melee-touch-stick touch-c" aria-label="C-stick: smash attacks" aria-pressed="false" {...handlers('c')}><i/><span>C-stick<small>Smash</small></span></button>
-  <div className="melee-touch-actions">{actions.slice(4).map(([label,help,bit])=><button key={label} className={`melee-touch-button touch-${label.toLowerCase()}`} aria-label={`${label}: ${help}`} aria-pressed="false" {...handlers(label,bit)}><span>{label}</span><small>{help}</small></button>)}</div>
+  <button className="melee-touch-stick touch-c" aria-label="C-stick: smash attacks" aria-pressed="false" {...handlers('c')}><i/><span>C-stick</span></button>
+  <div className="melee-touch-actions">{actions.slice(3).map(([label,help,bit])=><button key={label} className={`melee-touch-button touch-${label.toLowerCase()}`} aria-label={`${label}: ${help}`} aria-pressed="false" {...handlers(label,bit)}><span>{label}</span><small>{help}</small></button>)}</div>
  </div>;
 }

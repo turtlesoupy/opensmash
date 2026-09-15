@@ -5,8 +5,8 @@
 - Verified Melee ISO/GCM files stream into origin-private browser storage. Refreshing or restarting the browser restores and verifies the saved file automatically. No ISO upload or server-side disc persistence is involved.
 - The standalone launcher, shared smash.fun launch gate, and Melee settings use the same disc session. Clicking a fighter during restoration waits for the existing restore operation.
 - A completed file replaces the saved copy atomically. Quota failure and cancellation preserve the previous copy; abandoned staging files are reclaimed. Unsupported storage falls back to playing from the selected file. Clear/Forget Disc deletes this cache without touching the original file or memory-card saves.
-- Melee touch controls provide analog movement, a labeled yellow C-stick, green A, red B, X/Y jump, Z grab, L/R shields (including trigger values), Start, and D-pad-up taunt. Multiple pointers retain independent ownership; release, cancellation, focus loss, and orientation changes reset input.
-- Portrait uses a control deck below the game; landscape places controls beside the game. CSS and components are Melee-only. N64 continues to use its existing colored controller.
+- Melee touch controls provide analog movement, a labeled yellow C-stick, green A, red B, one X jump button, Z grab, one L shield button (including its trigger value), Start, and D-pad-up taunt. Multiple pointers retain independent ownership; release, cancellation, focus loss, and orientation changes reset input.
+- Portrait uses a control deck below the game; landscape places controls beside the game. The C-stick sits directly below A near the right edge in both layouts. CSS and components are Melee-only. N64 continues to use its existing colored controller.
 
 ## Focused validation
 
