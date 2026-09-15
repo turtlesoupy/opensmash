@@ -25,7 +25,7 @@ function ControllerCallouts() {
   return (
     <div id="controller-callouts" className="controller-callouts" aria-label="Keyboard controls">
       <svg id="controller-callout-lines" className="controller-callout-lines" aria-hidden="true">
-        {['stick', 'dpad', 'a', 'b', 'c-buttons', 'z', 'left-bumper', 'right-bumper'].map((control) => (
+        {['stick', 'dpad', 'a', 'b', 'c-buttons', 'z', 'left-bumper', 'right-bumper', 'x', 'y', 'start'].map((control) => (
           <g data-control-line={control} key={control}><line /><circle r="3" /></g>
         ))}
       </svg>
@@ -50,6 +50,9 @@ function ControllerCallouts() {
         </div>
       ))}
       {[
+        ['x', 'x', 'X: jump', ''],
+        ['y', 'y', 'Y: jump', ''],
+        ['start', 'start', 'Start / pause', ''],
         ['a', 'j', 'J or Ctrl: A button', 'or Ctrl'],
         ['b', 'k', 'K or Alt: B button', 'or Alt'],
         ['z', 'l', 'L or Shift: Z button', 'or Shift'],
@@ -71,12 +74,13 @@ export function LaunchFlow() {
 
   useEffect(() => () => window.clearTimeout(copyToastTimerRef.current), []);
 
-  async function copyRomFilename() {
+  async function copyRomFilename(event) {
+    const filename = event.currentTarget.querySelector("code").textContent;
     try {
-      await navigator.clipboard.writeText(ROM_FILENAME);
+      await navigator.clipboard.writeText(filename);
     } catch {
       const fallback = document.createElement("textarea");
-      fallback.value = ROM_FILENAME;
+      fallback.value = filename;
       fallback.setAttribute("readonly", "");
       fallback.style.position = "fixed";
       fallback.style.opacity = "0";
@@ -234,6 +238,7 @@ export default function RetroHome({
   authorized,
   developmentMode,
   engine,
+  engineContent,
   engineRef,
   gameFrameRef,
   gamepadCount = 0,
@@ -282,7 +287,7 @@ export default function RetroHome({
   const [mobileLayout, setMobileLayout] = useState(() => (
     mobileControlsRequested() || window.matchMedia(MOBILE_CONTROLS_MEDIA).matches
   ));
-  const mobileControlsVisible = mobileLayout && Boolean(engine);
+  const mobileControlsVisible = mobileLayout && Boolean(engine) && !engineContent;
   const hasResetRomAction = developmentMode && authorized;
   const keepSingleTouchActionVisible = mobileLayout && !hasResetRomAction;
 
@@ -636,6 +641,9 @@ export default function RetroHome({
               <iframe
                 ref={introVideoRef}
                 id="intro-video"
+                // Melee needs cross-origin isolation for WASM threads. Load the
+                // public trailer without credentials so COEP can embed YouTube.
+                credentialless=""
                 className="intro-video"
                 src={TRAILER_EMBED_URL}
                 title="smash.fun Introduction"
@@ -650,7 +658,8 @@ export default function RetroHome({
                 }}
               />
               <canvas className="intro-video-rule-layer" aria-hidden="true" />
-              <iframe ref={engineRef} id="intro-game-frame" className="intro-game-frame" src={engine?.src || "about:blank"} title={engine ? "Smash.fun game engine" : "Smash.fun game"} allow="autoplay; gamepad; fullscreen" />
+              {engineContent && <div className="melee-surface">{engineContent}</div>}
+              <iframe ref={engineRef} id="intro-game-frame" className="intro-game-frame" src={engineContent?"about:blank":engine?.src || "about:blank"} title={engine ? "Smash.fun game engine" : "Smash.fun game"} allow="autoplay; gamepad; fullscreen" />
               {engine && <button
                 className="game-fullscreen-control"
                 type="button"
@@ -698,6 +707,7 @@ export default function RetroHome({
             />
           </div>
         </section>
+        <div id="game-switch-row" className="is-game-switch" role="group" aria-label="Choose game" />
         <div className="arena-surface"><div id="replica-grid" className="replica-grid" role="grid" aria-label="Search, create, and character roster" />{!ready && <p className="retro-roster-loading">Loading fighters…</p>}<p id="fighter-empty-state" className="fighter-empty-state" role="status" aria-live="polite" hidden /><p id="fighter-pick-prompt" className="fighter-pick-prompt" role="status" aria-live="polite" hidden /></div>
         <span id="replica-metrics" hidden>Building 200-cell grid…</span>
       </main>

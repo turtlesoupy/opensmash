@@ -1,0 +1,22 @@
+--- a/tools/moderngekko_run.cpp
++++ b/tools/moderngekko_run.cpp
+@@ -400,11 +400,18 @@
+   std::cout << "audio backend: " << created.runtime->GetConfig().audio.backend
+             << '\n';
+ 
++#ifdef _WIN32
++  const auto* stop_path = _wgetenv(L"OPENSMASH_STOP_FILE");
++#else
++  const auto* stop_path = std::getenv("OPENSMASH_STOP_FILE");
++#endif
++  const std::filesystem::path stop_file = stop_path ? stop_path : std::filesystem::path{};
+   std::signal(SIGINT, HandleStopSignal);
+   std::signal(SIGTERM, HandleStopSignal);
+   std::jthread signal_watcher([&](std::stop_token stop_token) {
+     while (!stop_token.stop_requested()) {
+-      if (s_stop_requested) {
++      std::error_code stop_error;
++      if (s_stop_requested || (!stop_file.empty() && std::filesystem::exists(stop_file, stop_error))) {
+         s_stop_requested = 0;
+         created.runtime->RequestStop();
+         return;

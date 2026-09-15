@@ -1,0 +1,62 @@
+--- a/src/runtime/game.cpp
++++ b/src/runtime/game.cpp
+@@ -8,6 +8,7 @@
+ #include <iomanip>
+ #include <sstream>
+ #include <vector>
++#include <future>
+ #ifdef _WIN32
+ #include <windows.h>
+ #include <bcrypt.h>
+@@ -157,9 +158,11 @@
+   while (!ec && iterator != end)
+   {
+     if (iterator->is_regular_file(ec) && !ec) {
+-      // relative() canonicalizes through the filesystem on Windows. Compute
+-      // it once, not twice per sort comparison across thousands of assets.
+-      const auto relative = std::filesystem::relative(iterator->path(), root, ec).generic_string();
++      // The iterator already supplies paths beneath root. Ordinary files need
++      // no filesystem canonicalization; retain the original symlink behavior.
++      const auto relative = (iterator->is_symlink(ec) ?
++          std::filesystem::relative(iterator->path(), root, ec) :
++          iterator->path().lexically_relative(root)).generic_string();
+       if (ec)
+         return std::nullopt;
+       files.push_back({iterator->path(), relative});
+@@ -171,12 +174,31 @@
+   std::ranges::sort(files, [&](const auto& left, const auto& right) {
+     return left.relative < right.relative;
+   });
++  struct Digest { std::uintmax_t size = 0; std::optional<std::string> hash; };
++  std::vector<Digest> digests(files.size());
++  // Read independent files concurrently, then assemble the same sorted manifest.
++  // Every byte is still hashed on every inspection; no cached trust is introduced.
++#ifdef _WIN32
++  const std::size_t workers = std::min<std::size_t>(4, files.size());
++#else
++  const std::size_t workers = std::min<std::size_t>(1, files.size());
++#endif
++  std::vector<std::future<void>> tasks;
++  for (std::size_t worker = 0; worker < workers; ++worker)
++    tasks.push_back(std::async(std::launch::async, [&, worker] {
++      for (std::size_t i = worker; i < files.size(); i += workers) {
++        std::error_code error;
++        digests[i].size = std::filesystem::file_size(files[i].path, error);
++        if (!error) digests[i].hash = HashFileSha256(files[i].path);
++      }
++    }));
++  for (auto& task : tasks) task.get();
+   std::vector<std::uint8_t> manifest;
+-  for (const auto& [path, relative] : files)
+-  {
+-    const auto size = std::filesystem::file_size(path, ec);
+-    const auto hash = HashFileSha256(path);
+-    if (ec || !hash)
++  for (std::size_t i = 0; i < files.size(); ++i)
++  {
++    const auto& relative = files[i].relative;
++    const auto& [size, hash] = digests[i];
++    if (!hash)
+       return std::nullopt;
+     const auto append_u64 = [&](std::uint64_t value) {
+       for (int shift = 56; shift >= 0; shift -= 8)

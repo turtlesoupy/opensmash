@@ -1,0 +1,1177 @@
+{
+  "version": 1,
+  "modes": [
+    {
+      "id": 0,
+      "key": "free-for-all",
+      "label": "Free-for-All"
+    },
+    {
+      "id": 1,
+      "key": "vs-menu",
+      "label": "VS Menu"
+    },
+    {
+      "id": 2,
+      "key": "vs-character-select",
+      "label": "VS Character Select"
+    },
+    {
+      "id": 3,
+      "key": "one-player-character-select",
+      "label": "Classic Character Select"
+    },
+    {
+      "id": 4,
+      "key": "full-boot",
+      "label": "Original Title / All Modes"
+    }
+  ],
+  "stages": [
+    {
+      "id": -1,
+      "label": "Random"
+    },
+    {
+      "id": 2,
+      "label": "Fountain of Dreams"
+    },
+    {
+      "id": 3,
+      "label": "Pok\u00e9mon Stadium"
+    },
+    {
+      "id": 4,
+      "label": "Peach\u2019s Castle"
+    },
+    {
+      "id": 5,
+      "label": "Kongo Jungle"
+    },
+    {
+      "id": 6,
+      "label": "Brinstar"
+    },
+    {
+      "id": 7,
+      "label": "Corneria"
+    },
+    {
+      "id": 8,
+      "label": "Yoshi\u2019s Story"
+    },
+    {
+      "id": 9,
+      "label": "Onett"
+    },
+    {
+      "id": 10,
+      "label": "Mute City"
+    },
+    {
+      "id": 11,
+      "label": "Rainbow Cruise"
+    },
+    {
+      "id": 12,
+      "label": "Jungle Japes"
+    },
+    {
+      "id": 13,
+      "label": "Great Bay"
+    },
+    {
+      "id": 14,
+      "label": "Hyrule Temple"
+    },
+    {
+      "id": 15,
+      "label": "Brinstar Depths"
+    },
+    {
+      "id": 16,
+      "label": "Yoshi\u2019s Island"
+    },
+    {
+      "id": 17,
+      "label": "Green Greens"
+    },
+    {
+      "id": 18,
+      "label": "Fourside"
+    },
+    {
+      "id": 19,
+      "label": "Mushroom Kingdom"
+    },
+    {
+      "id": 20,
+      "label": "Mushroom Kingdom II"
+    },
+    {
+      "id": 22,
+      "label": "Venom"
+    },
+    {
+      "id": 23,
+      "label": "Pok\u00e9 Floats"
+    },
+    {
+      "id": 24,
+      "label": "Big Blue"
+    },
+    {
+      "id": 25,
+      "label": "Icicle Mountain"
+    },
+    {
+      "id": 27,
+      "label": "Flat Zone"
+    },
+    {
+      "id": 28,
+      "label": "Dream Land"
+    },
+    {
+      "id": 29,
+      "label": "Yoshi\u2019s Island 64"
+    },
+    {
+      "id": 30,
+      "label": "Kongo Jungle 64"
+    },
+    {
+      "id": 31,
+      "label": "Battlefield"
+    },
+    {
+      "id": 32,
+      "label": "Final Destination"
+    }
+  ],
+  "fighters": [
+    {
+      "id": 0,
+      "label": "Captain Falcon"
+    },
+    {
+      "id": 1,
+      "label": "Donkey Kong"
+    },
+    {
+      "id": 2,
+      "label": "Fox"
+    },
+    {
+      "id": 3,
+      "label": "Mr. Game & Watch"
+    },
+    {
+      "id": 4,
+      "label": "Kirby"
+    },
+    {
+      "id": 5,
+      "label": "Bowser"
+    },
+    {
+      "id": 6,
+      "label": "Link"
+    },
+    {
+      "id": 7,
+      "label": "Luigi"
+    },
+    {
+      "id": 8,
+      "label": "Mario"
+    },
+    {
+      "id": 9,
+      "label": "Marth"
+    },
+    {
+      "id": 10,
+      "label": "Mewtwo"
+    },
+    {
+      "id": 11,
+      "label": "Ness"
+    },
+    {
+      "id": 12,
+      "label": "Peach"
+    },
+    {
+      "id": 13,
+      "label": "Pikachu"
+    },
+    {
+      "id": 14,
+      "label": "Ice Climbers"
+    },
+    {
+      "id": 15,
+      "label": "Jigglypuff"
+    },
+    {
+      "id": 16,
+      "label": "Samus"
+    },
+    {
+      "id": 17,
+      "label": "Yoshi"
+    },
+    {
+      "id": 18,
+      "label": "Zelda"
+    },
+    {
+      "id": 19,
+      "label": "Sheik"
+    },
+    {
+      "id": 20,
+      "label": "Falco"
+    },
+    {
+      "id": 21,
+      "label": "Young Link"
+    },
+    {
+      "id": 22,
+      "label": "Dr. Mario"
+    },
+    {
+      "id": 23,
+      "label": "Roy"
+    },
+    {
+      "id": 24,
+      "label": "Pichu"
+    },
+    {
+      "id": 25,
+      "label": "Ganondorf"
+    }
+  ],
+  "defaults": {
+    "mode": 0,
+    "stage": -1,
+    "level": 5,
+    "stocks": 4,
+    "minutes": 8,
+    "ports": [
+      {
+        "device": "keyboard",
+        "character": "selected"
+      },
+      {
+        "device": "cpu",
+        "character": "random:vanilla"
+      },
+      {
+        "device": "cpu",
+        "character": "random"
+      },
+      {
+        "device": "cpu",
+        "character": "random"
+      }
+    ]
+  },
+  "costumes": {
+    "8": [
+      {
+        "filename": "PlMrNr.dat",
+        "symbol": "PlyMario5K_Share_joint",
+        "materialSymbol": "PlyMario5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlMrYe.dat",
+        "symbol": "PlyMario5KYe_Share_joint",
+        "materialSymbol": "PlyMario5KYe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlMrBk.dat",
+        "symbol": "PlyMario5KBk_Share_joint",
+        "materialSymbol": "PlyMario5KBk_Share_matanim_joint"
+      },
+      {
+        "filename": "PlMrBu.dat",
+        "symbol": "PlyMario5KBu_Share_joint",
+        "materialSymbol": "PlyMario5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlMrGr.dat",
+        "symbol": "PlyMario5KGr_Share_joint",
+        "materialSymbol": "PlyMario5KGr_Share_matanim_joint"
+      }
+    ],
+    "2": [
+      {
+        "filename": "PlFxNr.dat",
+        "symbol": "PlyFox5K_Share_joint",
+        "materialSymbol": "PlyFox5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlFxOr.dat",
+        "symbol": "PlyFox5KOr_Share_joint",
+        "materialSymbol": "PlyFox5KOr_Share_matanim_joint"
+      },
+      {
+        "filename": "PlFxLa.dat",
+        "symbol": "PlyFox5KLa_Share_joint",
+        "materialSymbol": "PlyFox5KLa_Share_matanim_joint"
+      },
+      {
+        "filename": "PlFxGr.dat",
+        "symbol": "PlyFox5KGr_Share_joint",
+        "materialSymbol": "PlyFox5KGr_Share_matanim_joint"
+      }
+    ],
+    "0": [
+      {
+        "filename": "PlCaNr.dat",
+        "symbol": "PlyCaptain5K_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlCaGy.dat",
+        "symbol": "PlyCaptain5KGy_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlCaRe.dat",
+        "symbol": "PlyCaptain5KRe_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlCaWh.dat",
+        "symbol": "PlyCaptain5KWh_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlCaGr.dat",
+        "symbol": "PlyCaptain5KGr_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlCaBu.dat",
+        "symbol": "PlyCaptain5KBu_Share_joint",
+        "materialSymbol": "NULL"
+      }
+    ],
+    "1": [
+      {
+        "filename": "PlDkNr.dat",
+        "symbol": "PlyDonkey5K_Share_joint",
+        "materialSymbol": "PlyDonkey5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlDkBk.dat",
+        "symbol": "PlyDonkey5KBk_Share_joint",
+        "materialSymbol": "PlyDonkey5KBk_Share_matanim_joint"
+      },
+      {
+        "filename": "PlDkRe.dat",
+        "symbol": "PlyDonkey5KRe_Share_joint",
+        "materialSymbol": "PlyDonkey5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlDkBu.dat",
+        "symbol": "PlyDonkey5KBu_Share_joint",
+        "materialSymbol": "PlyDonkey5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlDkGr.dat",
+        "symbol": "PlyDonkey5KGr_Share_joint",
+        "materialSymbol": "PlyDonkey5KGr_Share_matanim_joint"
+      }
+    ],
+    "4": [
+      {
+        "filename": "PlKbNr.dat",
+        "symbol": "PlyKirby5K_Share_joint",
+        "materialSymbol": "PlyKirby5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlKbYe.dat",
+        "symbol": "PlyKirby5KYe_Share_joint",
+        "materialSymbol": "PlyKirby5KYe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlKbBu.dat",
+        "symbol": "PlyKirby5KBu_Share_joint",
+        "materialSymbol": "PlyKirby5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlKbRe.dat",
+        "symbol": "PlyKirby5KRe_Share_joint",
+        "materialSymbol": "PlyKirby5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlKbGr.dat",
+        "symbol": "PlyKirby5KGr_Share_joint",
+        "materialSymbol": "PlyKirby5KGr_Share_matanim_joint"
+      },
+      {
+        "filename": "PlKbWh.dat",
+        "symbol": "PlyKirby5KWh_Share_joint",
+        "materialSymbol": "PlyKirby5KWh_Share_matanim_joint"
+      }
+    ],
+    "5": [
+      {
+        "filename": "PlKpNr.dat",
+        "symbol": "PlyKoopa5K_Share_joint",
+        "materialSymbol": "PlyKoopa5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlKpRe.dat",
+        "symbol": "PlyKoopa5KRe_Share_joint",
+        "materialSymbol": "PlyKoopa5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlKpBu.dat",
+        "symbol": "PlyKoopa5KBu_Share_joint",
+        "materialSymbol": "PlyKoopa5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlKpBk.dat",
+        "symbol": "PlyKoopa5KBk_Share_joint",
+        "materialSymbol": "PlyKoopa5KBk_Share_matanim_joint"
+      }
+    ],
+    "6": [
+      {
+        "filename": "PlLkNr.dat",
+        "symbol": "PlyLink5K_Share_joint",
+        "materialSymbol": "PlyLink5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlLkRe.dat",
+        "symbol": "PlyLink5KRe_Share_joint",
+        "materialSymbol": "PlyLink5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlLkBu.dat",
+        "symbol": "PlyLink5KBu_Share_joint",
+        "materialSymbol": "PlyLink5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlLkBk.dat",
+        "symbol": "PlyLink5KBk_Share_joint",
+        "materialSymbol": "PlyLink5KBk_Share_matanim_joint"
+      },
+      {
+        "filename": "PlLkWh.dat",
+        "symbol": "PlyLink5KWh_Share_joint",
+        "materialSymbol": "PlyLink5KWh_Share_matanim_joint"
+      }
+    ],
+    "19": [
+      {
+        "filename": "PlSkNr.dat",
+        "symbol": "PlySeak5K_Share_joint",
+        "materialSymbol": "PlySeak5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlSkRe.dat",
+        "symbol": "PlySeak5KRe_Share_joint",
+        "materialSymbol": "PlySeak5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlSkBu.dat",
+        "symbol": "PlySeak5KBu_Share_joint",
+        "materialSymbol": "PlySeak5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlSkGr.dat",
+        "symbol": "PlySeak5KGr_Share_joint",
+        "materialSymbol": "PlySeak5KGr_Share_matanim_joint"
+      },
+      {
+        "filename": "PlSkWh.dat",
+        "symbol": "PlySeak5KWh_Share_joint",
+        "materialSymbol": "PlySeak5KWh_Share_matanim_joint"
+      }
+    ],
+    "11": [
+      {
+        "filename": "PlNsNr.dat",
+        "symbol": "PlyNess5K_Share_joint",
+        "materialSymbol": "PlyNess5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlNsYe.dat",
+        "symbol": "PlyNess5KYe_Share_joint",
+        "materialSymbol": "PlyNess5KYe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlNsBu.dat",
+        "symbol": "PlyNess5KBu_Share_joint",
+        "materialSymbol": "PlyNess5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlNsGr.dat",
+        "symbol": "PlyNess5KGr_Share_joint",
+        "materialSymbol": "PlyNess5KGr_Share_matanim_joint"
+      }
+    ],
+    "12": [
+      {
+        "filename": "PlPeNr.dat",
+        "symbol": "PlyPeach5K_Share_joint",
+        "materialSymbol": "PlyPeach5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPeYe.dat",
+        "symbol": "PlyPeach5KYe_Share_joint",
+        "materialSymbol": "PlyPeach5KYe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPeWh.dat",
+        "symbol": "PlyPeach5KWh_Share_joint",
+        "materialSymbol": "PlyPeach5KWh_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPeBu.dat",
+        "symbol": "PlyPeach5KBu_Share_joint",
+        "materialSymbol": "PlyPeach5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPeGr.dat",
+        "symbol": "PlyPeach5KGr_Share_joint",
+        "materialSymbol": "PlyPeach5KGr_Share_matanim_joint"
+      }
+    ],
+    "14": [
+      {
+        "filename": "PlPpNr.dat",
+        "symbol": "PlyPopo5K_Share_joint",
+        "materialSymbol": "PlyPopo5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPpGr.dat",
+        "symbol": "PlyPopo5KGr_Share_joint",
+        "materialSymbol": "PlyPopo5KGr_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPpOr.dat",
+        "symbol": "PlyPopo5KOr_Share_joint",
+        "materialSymbol": "PlyPopo5KOr_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPpRe.dat",
+        "symbol": "PlyPopo5KRe_Share_joint",
+        "materialSymbol": "PlyPopo5KRe_Share_matanim_joint"
+      }
+    ],
+    "13": [
+      {
+        "filename": "PlPkNr.dat",
+        "symbol": "PlyPikachu5K_Share_joint",
+        "materialSymbol": "PlyPikachu5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPkRe.dat",
+        "symbol": "PlyPikachu5KRe_Share_joint",
+        "materialSymbol": "PlyPikachu5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPkBu.dat",
+        "symbol": "PlyPikachu5KBu_Share_joint",
+        "materialSymbol": "PlyPikachu5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPkGr.dat",
+        "symbol": "PlyPikachu5KGr_Share_joint",
+        "materialSymbol": "PlyPikachu5KGr_Share_matanim_joint"
+      }
+    ],
+    "16": [
+      {
+        "filename": "PlSsNr.dat",
+        "symbol": "PlySamus5K_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlSsPi.dat",
+        "symbol": "PlySamus5KPi_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlSsBk.dat",
+        "symbol": "PlySamus5KBk_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlSsGr.dat",
+        "symbol": "PlySamus5KGr_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlSsLa.dat",
+        "symbol": "PlySamus5KLa_Share_joint",
+        "materialSymbol": "NULL"
+      }
+    ],
+    "17": [
+      {
+        "filename": "PlYsNr.dat",
+        "symbol": "PlyYoshi5K_Share_joint",
+        "materialSymbol": "PlyYoshi5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlYsRe.dat",
+        "symbol": "PlyYoshi5KRe_Share_joint",
+        "materialSymbol": "PlyYoshi5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlYsBu.dat",
+        "symbol": "PlyYoshi5KBu_Share_joint",
+        "materialSymbol": "PlyYoshi5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlYsYe.dat",
+        "symbol": "PlyYoshi5KYe_Share_joint",
+        "materialSymbol": "PlyYoshi5KYe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlYsPi.dat",
+        "symbol": "PlyYoshi5KPi_Share_joint",
+        "materialSymbol": "PlyYoshi5KPi_Share_matanim_joint"
+      },
+      {
+        "filename": "PlYsAq.dat",
+        "symbol": "PlyYoshi5KAq_Share_joint",
+        "materialSymbol": "PlyYoshi5KAq_Share_matanim_joint"
+      }
+    ],
+    "15": [
+      {
+        "filename": "PlPrNr.dat",
+        "symbol": "PlyPurin5K_Share_joint",
+        "materialSymbol": "PlyPurin5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPrRe.dat",
+        "symbol": "PlyPurin5KRe_Share_joint",
+        "materialSymbol": "PlyPurin5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPrBu.dat",
+        "symbol": "PlyPurin5KBu_Share_joint",
+        "materialSymbol": "PlyPurin5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPrGr.dat",
+        "symbol": "PlyPurin5KGr_Share_joint",
+        "materialSymbol": "PlyPurin5KGr_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPrYe.dat",
+        "symbol": "PlyPurin5KYe_Share_joint",
+        "materialSymbol": "PlyPurin5KYe_Share_matanim_joint"
+      }
+    ],
+    "10": [
+      {
+        "filename": "PlMtNr.dat",
+        "symbol": "PlyMewtwo5K_Share_joint",
+        "materialSymbol": "PlyMewtwo5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlMtRe.dat",
+        "symbol": "PlyMewtwo5KRe_Share_joint",
+        "materialSymbol": "PlyMewtwo5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlMtBu.dat",
+        "symbol": "PlyMewtwo5KBu_Share_joint",
+        "materialSymbol": "PlyMewtwo5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlMtGr.dat",
+        "symbol": "PlyMewtwo5KGr_Share_joint",
+        "materialSymbol": "PlyMewtwo5KGr_Share_matanim_joint"
+      }
+    ],
+    "7": [
+      {
+        "filename": "PlLgNr.dat",
+        "symbol": "PlyLuigi5K_Share_joint",
+        "materialSymbol": "PlyLuigi5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlLgWh.dat",
+        "symbol": "PlyLuigi5KWh_Share_joint",
+        "materialSymbol": "PlyLuigi5KWh_Share_matanim_joint"
+      },
+      {
+        "filename": "PlLgAq.dat",
+        "symbol": "PlyLuigi5KAq_Share_joint",
+        "materialSymbol": "PlyLuigi5KAq_Share_matanim_joint"
+      },
+      {
+        "filename": "PlLgPi.dat",
+        "symbol": "PlyLuigi5KPi_Share_joint",
+        "materialSymbol": "PlyLuigi5KPi_Share_matanim_joint"
+      }
+    ],
+    "9": [
+      {
+        "filename": "PlMsNr.dat",
+        "symbol": "PlyMars5K_Share_joint",
+        "materialSymbol": "PlyMars5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlMsRe.dat",
+        "symbol": "PlyMars5KRe_Share_joint",
+        "materialSymbol": "PlyMars5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlMsGr.dat",
+        "symbol": "PlyMars5KGr_Share_joint",
+        "materialSymbol": "PlyMars5KGr_Share_matanim_joint"
+      },
+      {
+        "filename": "PlMsBk.dat",
+        "symbol": "PlyMars5KBk_Share_joint",
+        "materialSymbol": "PlyMars5KBk_Share_matanim_joint"
+      },
+      {
+        "filename": "PlMsWh.dat",
+        "symbol": "PlyMars5KWh_Share_joint",
+        "materialSymbol": "PlyMars5KWh_Share_matanim_joint"
+      }
+    ],
+    "18": [
+      {
+        "filename": "PlZdNr.dat",
+        "symbol": "PlyZelda5K_Share_joint",
+        "materialSymbol": "PlyZelda5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlZdRe.dat",
+        "symbol": "PlyZelda5KRe_Share_joint",
+        "materialSymbol": "PlyZelda5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlZdBu.dat",
+        "symbol": "PlyZelda5KBu_Share_joint",
+        "materialSymbol": "PlyZelda5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlZdGr.dat",
+        "symbol": "PlyZelda5KGr_Share_joint",
+        "materialSymbol": "PlyZelda5KGr_Share_matanim_joint"
+      },
+      {
+        "filename": "PlZdWh.dat",
+        "symbol": "PlyZelda5KWh_Share_joint",
+        "materialSymbol": "PlyZelda5KWh_Share_matanim_joint"
+      }
+    ],
+    "21": [
+      {
+        "filename": "PlClNr.dat",
+        "symbol": "PlyClink5K_Share_joint",
+        "materialSymbol": "PlyClink5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlClRe.dat",
+        "symbol": "PlyClink5KRe_Share_joint",
+        "materialSymbol": "PlyClink5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlClBu.dat",
+        "symbol": "PlyClink5KBu_Share_joint",
+        "materialSymbol": "PlyClink5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlClWh.dat",
+        "symbol": "PlyClink5KWh_Share_joint",
+        "materialSymbol": "PlyClink5KWh_Share_matanim_joint"
+      },
+      {
+        "filename": "PlClBk.dat",
+        "symbol": "PlyClink5KBk_Share_joint",
+        "materialSymbol": "PlyClink5KBk_Share_matanim_joint"
+      }
+    ],
+    "22": [
+      {
+        "filename": "PlDrNr.dat",
+        "symbol": "PlyDrmario5K_Share_joint",
+        "materialSymbol": "PlyDrmario5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlDrRe.dat",
+        "symbol": "PlyDrmario5KRe_Share_joint",
+        "materialSymbol": "PlyDrmario5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlDrBu.dat",
+        "symbol": "PlyDrmario5KBu_Share_joint",
+        "materialSymbol": "PlyDrmario5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlDrGr.dat",
+        "symbol": "PlyDrmario5KGr_Share_joint",
+        "materialSymbol": "PlyDrmario5KGr_Share_matanim_joint"
+      },
+      {
+        "filename": "PlDrBk.dat",
+        "symbol": "PlyDrmario5KBk_Share_joint",
+        "materialSymbol": "PlyDrmario5KBk_Share_matanim_joint"
+      }
+    ],
+    "20": [
+      {
+        "filename": "PlFcNr.dat",
+        "symbol": "PlyFalco5K_Share_joint",
+        "materialSymbol": "PlyFalco5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlFcRe.dat",
+        "symbol": "PlyFalco5KRe_Share_joint",
+        "materialSymbol": "PlyFalco5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlFcBu.dat",
+        "symbol": "PlyFalco5KBu_Share_joint",
+        "materialSymbol": "PlyFalco5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlFcGr.dat",
+        "symbol": "PlyFalco5KGr_Share_joint",
+        "materialSymbol": "PlyFalco5KGr_Share_matanim_joint"
+      }
+    ],
+    "24": [
+      {
+        "filename": "PlPcNr.dat",
+        "symbol": "PlyPichu5K_Share_joint",
+        "materialSymbol": "PlyPichu5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPcRe.dat",
+        "symbol": "PlyPichu5KRe_Share_joint",
+        "materialSymbol": "PlyPichu5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPcBu.dat",
+        "symbol": "PlyPichu5KBu_Share_joint",
+        "materialSymbol": "PlyPichu5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPcGr.dat",
+        "symbol": "PlyPichu5KGr_Share_joint",
+        "materialSymbol": "PlyPichu5KGr_Share_matanim_joint"
+      }
+    ],
+    "3": [
+      {
+        "filename": "PlGwNr.dat",
+        "symbol": "PlyGamewatch5K_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlGwNr.dat",
+        "symbol": "PlyGamewatch5K_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlGwNr.dat",
+        "symbol": "PlyGamewatch5K_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlGwNr.dat",
+        "symbol": "PlyGamewatch5K_Share_joint",
+        "materialSymbol": "NULL"
+      }
+    ],
+    "25": [
+      {
+        "filename": "PlGnNr.dat",
+        "symbol": "PlyGanon5K_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlGnRe.dat",
+        "symbol": "PlyGanon5KRe_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlGnBu.dat",
+        "symbol": "PlyGanon5KBu_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlGnGr.dat",
+        "symbol": "PlyGanon5KGr_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlGnLa.dat",
+        "symbol": "PlyGanon5KLa_Share_joint",
+        "materialSymbol": "NULL"
+      }
+    ],
+    "23": [
+      {
+        "filename": "PlFeNr.dat",
+        "symbol": "PlyEmblem5K_Share_joint",
+        "materialSymbol": "PlyEmblem5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlFeRe.dat",
+        "symbol": "PlyEmblem5KRe_Share_joint",
+        "materialSymbol": "PlyEmblem5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlFeBu.dat",
+        "symbol": "PlyEmblem5KBu_Share_joint",
+        "materialSymbol": "PlyEmblem5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlFeGr.dat",
+        "symbol": "PlyEmblem5KGr_Share_joint",
+        "materialSymbol": "PlyEmblem5KGr_Share_matanim_joint"
+      },
+      {
+        "filename": "PlFeYe.dat",
+        "symbol": "PlyEmblem5KYe_Share_joint",
+        "materialSymbol": "PlyEmblem5KYe_Share_matanim_joint"
+      }
+    ]
+  },
+  "targets": [
+    {
+      "slug": "mario",
+      "fighter": 8,
+      "label": "Mario"
+    },
+    {
+      "slug": "fox",
+      "fighter": 2,
+      "label": "Fox"
+    },
+    {
+      "slug": "captain-falcon",
+      "fighter": 0,
+      "label": "Captain Falcon"
+    },
+    {
+      "slug": "donkey-kong",
+      "fighter": 1,
+      "label": "Donkey Kong"
+    },
+    {
+      "slug": "kirby",
+      "fighter": 4,
+      "label": "Kirby"
+    },
+    {
+      "slug": "bowser",
+      "fighter": 5,
+      "label": "Bowser"
+    },
+    {
+      "slug": "link",
+      "fighter": 6,
+      "label": "Link"
+    },
+    {
+      "slug": "sheik",
+      "fighter": 19,
+      "label": "Sheik"
+    },
+    {
+      "slug": "ness",
+      "fighter": 11,
+      "label": "Ness"
+    },
+    {
+      "slug": "peach",
+      "fighter": 12,
+      "label": "Peach"
+    },
+    {
+      "slug": "popo",
+      "fighter": 14,
+      "label": "Ice Climbers"
+    },
+    {
+      "slug": "pikachu",
+      "fighter": 13,
+      "label": "Pikachu"
+    },
+    {
+      "slug": "samus",
+      "fighter": 16,
+      "label": "Samus"
+    },
+    {
+      "slug": "yoshi",
+      "fighter": 17,
+      "label": "Yoshi"
+    },
+    {
+      "slug": "jigglypuff",
+      "fighter": 15,
+      "label": "Jigglypuff"
+    },
+    {
+      "slug": "mewtwo",
+      "fighter": 10,
+      "label": "Mewtwo"
+    },
+    {
+      "slug": "luigi",
+      "fighter": 7,
+      "label": "Luigi"
+    },
+    {
+      "slug": "marth",
+      "fighter": 9,
+      "label": "Marth"
+    },
+    {
+      "slug": "zelda",
+      "fighter": 18,
+      "label": "Zelda"
+    },
+    {
+      "slug": "young-link",
+      "fighter": 21,
+      "label": "Young Link"
+    },
+    {
+      "slug": "dr-mario",
+      "fighter": 22,
+      "label": "Dr. Mario"
+    },
+    {
+      "slug": "falco",
+      "fighter": 20,
+      "label": "Falco"
+    },
+    {
+      "slug": "pichu",
+      "fighter": 24,
+      "label": "Pichu"
+    },
+    {
+      "slug": "game-watch",
+      "fighter": 3,
+      "label": "Mr. Game & Watch"
+    },
+    {
+      "slug": "ganondorf",
+      "fighter": 25,
+      "label": "Ganondorf"
+    },
+    {
+      "slug": "roy",
+      "fighter": 23,
+      "label": "Roy"
+    }
+  ],
+  "companions": {
+    "popo": {
+      "slug": "nana",
+      "code": "Nn",
+      "fighter": 14,
+      "costumes": [
+        {
+          "filename": "PlNnNr.dat",
+          "symbol": "PlyNana5K_Share_joint",
+          "materialSymbol": "PlyNana5K_Share_matanim_joint"
+        },
+        {
+          "filename": "PlNnYe.dat",
+          "symbol": "PlyNana5KYe_Share_joint",
+          "materialSymbol": "PlyNana5KYe_Share_matanim_joint"
+        },
+        {
+          "filename": "PlNnAq.dat",
+          "symbol": "PlyNana5KAq_Share_joint",
+          "materialSymbol": "PlyNana5KAq_Share_matanim_joint"
+        },
+        {
+          "filename": "PlNnWh.dat",
+          "symbol": "PlyNana5KWh_Share_joint",
+          "materialSymbol": "PlyNana5KWh_Share_matanim_joint"
+        }
+      ]
+    },
+    "zelda": {
+      "slug": "sheik",
+      "code": "Sk",
+      "fighter": 19,
+      "costumes": [
+        {
+          "filename": "PlSkNr.dat",
+          "symbol": "PlySeak5K_Share_joint",
+          "materialSymbol": "PlySeak5K_Share_matanim_joint"
+        },
+        {
+          "filename": "PlSkRe.dat",
+          "symbol": "PlySeak5KRe_Share_joint",
+          "materialSymbol": "PlySeak5KRe_Share_matanim_joint"
+        },
+        {
+          "filename": "PlSkBu.dat",
+          "symbol": "PlySeak5KBu_Share_joint",
+          "materialSymbol": "PlySeak5KBu_Share_matanim_joint"
+        },
+        {
+          "filename": "PlSkGr.dat",
+          "symbol": "PlySeak5KGr_Share_joint",
+          "materialSymbol": "PlySeak5KGr_Share_matanim_joint"
+        },
+        {
+          "filename": "PlSkWh.dat",
+          "symbol": "PlySeak5KWh_Share_joint",
+          "materialSymbol": "PlySeak5KWh_Share_matanim_joint"
+        }
+      ]
+    },
+    "sheik": {
+      "slug": "zelda",
+      "code": "Zd",
+      "fighter": 18,
+      "costumes": [
+        {
+          "filename": "PlZdNr.dat",
+          "symbol": "PlyZelda5K_Share_joint",
+          "materialSymbol": "PlyZelda5K_Share_matanim_joint"
+        },
+        {
+          "filename": "PlZdRe.dat",
+          "symbol": "PlyZelda5KRe_Share_joint",
+          "materialSymbol": "PlyZelda5KRe_Share_matanim_joint"
+        },
+        {
+          "filename": "PlZdBu.dat",
+          "symbol": "PlyZelda5KBu_Share_joint",
+          "materialSymbol": "PlyZelda5KBu_Share_matanim_joint"
+        },
+        {
+          "filename": "PlZdGr.dat",
+          "symbol": "PlyZelda5KGr_Share_joint",
+          "materialSymbol": "PlyZelda5KGr_Share_matanim_joint"
+        },
+        {
+          "filename": "PlZdWh.dat",
+          "symbol": "PlyZelda5KWh_Share_joint",
+          "materialSymbol": "PlyZelda5KWh_Share_matanim_joint"
+        }
+      ]
+    }
+  }
+}

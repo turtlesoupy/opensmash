@@ -156,7 +156,9 @@ export default function AuthGate({
     const auth = firebaseAuth(config.firebase);
     const provider = oauthProvider(providerName);
     try {
-      if (prefersRedirect()) {
+      // Isolated pages sever cross-origin popup references. The existing
+      // redirect flow preserves sign-in without depending on window.opener.
+      if (window.crossOriginIsolated || prefersRedirect()) {
         await signInWithRedirect(auth, provider);
         return; // the page navigates away; getRedirectResult picks it up on return
       }

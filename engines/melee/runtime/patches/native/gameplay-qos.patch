@@ -1,0 +1,29 @@
+--- a/vendor/dolphin/Source/Core/Core/Core.cpp
++++ b/vendor/dolphin/Source/Core/Core/Core.cpp
+@@ -12,6 +12,11 @@
+ #include <queue>
+ #include <utility>
+ #include <variant>
++#if defined(__APPLE__)
++#include <pthread.h>
++#include <cstdlib>
++#include <cstdio>
++#endif
+ 
+ #include <fmt/chrono.h>
+ #include <fmt/format.h>
+@@ -291,6 +296,14 @@
+     Common::SetCurrentThreadName("CPU thread");
+   else
+     Common::SetCurrentThreadName("CPU-GPU thread");
++#if defined(__APPLE__)
++  // A floating gameplay panel need not make its app foreground. Give the
++  // frame-critical worker an explicit interactive scheduling class.
++  if (std::getenv("OPENSMASH_FIXED_WINDOW")) {
++    const int result=pthread_set_qos_class_self_np(QOS_CLASS_USER_INTERACTIVE,0);
++    std::fprintf(stderr,"[opensmash] gameplay qos=user-interactive result=%d\n",result);
++  }
++#endif
+ 
+   // This needs to be delayed until after the video backend is ready.
+   DolphinAnalytics::Instance().ReportGameStart();

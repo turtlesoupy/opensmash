@@ -2089,3 +2089,21 @@ body.retro-home.show-native-cursor * {
 .trailer-setup .og-combobox-search { display: flex; }
 .trailer-setup .og-combobox-search input { font-size: 14px; }
 .trailer-setup .og-combobox-options small { font-size: 11px; }
+
+.native-engine-status {display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;padding:24px;gap:16px;text-align:center;color:white;background:#111}
+
+/* Native and WASM adapters share the same game surface, including before a lazy engine loads. */
+.melee-surface { position:absolute; inset:0; z-index:8; overflow:auto; background:#111; color:#fff; }
+.native-engine-status { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100%; gap:16px; padding:24px; text-align:center; }
+.native-engine-status button { background:#333; color:#fff; padding:10px 16px; border:1px solid #888; }
+.ssb64-native-game { position:relative; min-height:100%; background:#000; }
+.ssb64-native-game canvas { display:block; width:100%; height:auto; aspect-ratio:4/3; object-fit:contain; outline-offset:-3px; }
+.ssb64-native-toolbar { position:absolute; top:0; right:0; z-index:2; display:flex; gap:8px; padding:8px; opacity:0; }
+.ssb64-native-toolbar:hover,.ssb64-native-toolbar:focus-within { opacity:1; }
+.ssb64-native-toolbar button { background:#222e; color:white; border:1px solid #888; padding:8px; }
+.ssb64-native-message { position:absolute; inset:0; display:grid; place-content:center; pointer-events:none; background:#000a; padding:24px; text-align:center; }
+body.is-native-fullscreen .intro-video-frame:has(.ssb64-native-game) { contain:none; overflow:visible; }
+body.is-native-fullscreen .intro-video-stage:has(.ssb64-native-game) { position:relative; z-index:100; }
+.is-native-fullscreen .melee-surface:has(.ssb64-native-game) { position:fixed; inset:0; z-index:100; overflow:hidden; }
+.is-native-fullscreen .ssb64-native-game { height:100%; }
+.is-native-fullscreen .ssb64-native-game canvas { height:100%; width:100%; object-fit:contain; }

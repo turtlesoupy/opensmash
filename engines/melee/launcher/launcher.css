@@ -1,0 +1,35 @@
+.melee-setup { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100%; padding:24px; gap:16px; text-align:center; }
+.melee-setup input { display:block; margin:12px auto; max-width:100%; }
+.melee-surface .game-overlay { position:relative; padding:0; background:#111; }
+.melee-surface .game-panel { width:100%; max-width:none; }
+.melee-surface .game-panel header { display:flex; justify-content:space-between; align-items:center; padding:8px; }
+.melee-surface .game-screen { position:relative; }
+.melee-surface canvas { display:block; max-width:100%; width:100%; height:auto; }
+.melee-surface .game-message { padding:16px; }
+.melee-surface .game-help { font-size:12px; padding:8px; }
+.melee-surface .touch-controls { display:flex; flex-wrap:wrap; gap:8px; }
+.melee-settings { padding:16px; overflow:auto; max-height:65vh; }
+.melee-settings label { display:flex; flex-direction:column; gap:6px; margin:12px 0; }
+.melee-settings select,.melee-settings input { color:#111; background:#fff; padding:8px; }
+.melee-settings fieldset { border:1px solid #777; padding:12px; margin:12px 0; }
+.experience-selector { position:fixed; top:12px; left:12px; z-index:50; background:#151515; color:#fff; padding:8px 12px; border:1px solid #777; border-radius:8px; }
+.experience-selector select { color:inherit; background:inherit; margin-left:8px; }
+
+/* The live upstream surface needs a bounded viewport in the shared launcher. */
+.melee-surface:has(.game-panel) {overflow:hidden;}
+.melee-surface .game-overlay,.melee-surface .game-panel {position:absolute;inset:0;height:100%;}
+.melee-surface .game-panel .game-screen {position:absolute;inset:0;}
+.melee-surface .game-panel header {position:absolute;top:0;left:0;right:0;z-index:6;background:#1119;}
+.melee-surface .game-panel header h2,.melee-surface .game-panel header p {margin:0;font-size:12px;}
+.melee-surface .game-panel canvas {height:100%;object-fit:contain;}
+.melee-surface .game-help {display:none;}
+.melee-surface .game-message {position:absolute;inset:0;display:grid;place-content:center;margin:0;background:#000b;z-index:3;}
+.melee-surface .sound-game,.melee-surface .confirm-game {position:absolute;bottom:8px;z-index:4;}
+.melee-surface .sound-game {left:8px;}.melee-surface .confirm-game {right:8px;}
+@media (pointer:coarse) and (orientation:portrait) {
+ .melee-surface .game-panel .game-screen {bottom:calc(284px + env(safe-area-inset-bottom));}
+}
+@media (pointer:coarse) and (orientation:landscape) {
+ .melee-surface .game-panel .game-screen {left:160px;right:170px;}
+ .melee-surface .game-panel header {left:160px;right:170px;}
+}

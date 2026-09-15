@@ -1,0 +1,207 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1025,6 +1025,16 @@
+ 
+ # Shared OpenSmash custom-mesh renderer; enabled only by its native builder.
+ if(OPENSMASH_NATIVE_SOURCE)
++    target_include_directories(inputcommon PRIVATE "${OPENSMASH_NATIVE_SOURCE}/native")
++    if(TARGET videovulkan)
++        target_include_directories(videovulkan PRIVATE "${OPENSMASH_NATIVE_SOURCE}/native")
++    endif()
++    if(APPLE)
++        target_include_directories(videometal PRIVATE "${OPENSMASH_NATIVE_SOURCE}/native")
++        target_link_libraries(videometal PRIVATE "-framework IOSurface")
++    endif()
++endif()
++if(OPENSMASH_NATIVE_SOURCE)
+     target_sources(moderngekko PRIVATE
+         "${OPENSMASH_NATIVE_SOURCE}/native/skin_bridge.cpp"
+         "${OPENSMASH_NATIVE_SOURCE}/web/skin_runtime.cpp")
+--- a/src/runtime/dolphin_runtime.cpp
++++ b/src/runtime/dolphin_runtime.cpp
+@@ -467,7 +467,7 @@
+   }
+   Config::SetBase(Config::MAIN_FULLSCREEN, impl->config.fullscreen);
+ 
+-  if (impl->config.headless)
++  if (impl->config.headless || std::getenv("OPENSMASH_FRAME_FILE"))
+     impl->platform = Platform::CreateHeadlessPlatform();
+ #ifdef MODERNGEKKO_HAVE_IOS
+   else
+--- a/vendor/dolphin/Source/Core/DolphinNoGUI/PlatformMacos.mm
++++ b/vendor/dolphin/Source/Core/DolphinNoGUI/PlatformMacos.mm
+@@ -230,7 +230,8 @@
+   m_app_delegate = [[AppDelegate alloc] initWithPlatform:this];
+   [NSApp setDelegate:m_app_delegate];
+ 
+-  [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
++  const bool embedded = std::getenv("OPENSMASH_SURFACE_SERVICE") != nullptr;
++  [NSApp setActivationPolicy:embedded ? NSApplicationActivationPolicyProhibited : NSApplicationActivationPolicyRegular];
+   s_application_platform = this;
+   [NSApplication.sharedApplication finishLaunching];
+ 
+@@ -298,9 +299,11 @@
+     [m_window toggleFullScreen:m_window];
+   }
+ 
+-  [m_window makeKeyAndOrderFront:NSApp];
+-  [m_window makeMainWindow];
+-  [NSApp activateIgnoringOtherApps:YES];
++  if (!embedded) {
++    [m_window makeKeyAndOrderFront:NSApp];
++    [m_window makeMainWindow];
++    [NSApp activateIgnoringOtherApps:YES];
++  }
+   [m_window setTitle:@"Dolphin-emu-nogui"];
+ 
+   SetupMenu();
+--- a/vendor/dolphin/Source/Core/InputCommon/ControllerInterface/ControllerInterface.cpp
++++ b/vendor/dolphin/Source/Core/InputCommon/ControllerInterface/ControllerInterface.cpp
+@@ -4,6 +4,7 @@
+ #include "InputCommon/ControllerInterface/ControllerInterface.h"
+ 
+ #include <algorithm>
++#include "OpenSmashKeyboard.h"
+ 
+ #include "Common/Assert.h"
+ #include "Common/Logging/Log.h"
+@@ -160,6 +161,7 @@
+   for (auto& backend : m_input_backends)
+     backend->PopulateDevices();
+ 
++  if (OpenSmashInput::Enabled()) AddDevice(std::make_shared<OpenSmashInput::Keyboard>());
+   WiimoteReal::PopulateDevices();
+ 
+   if (m_populating_devices_counter.fetch_sub(1) == 1)
+--- a/vendor/dolphin/Source/Core/VideoBackends/Metal/MTLGfx.h
++++ b/vendor/dolphin/Source/Core/VideoBackends/Metal/MTLGfx.h
+@@ -2,6 +2,7 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ 
+ #pragma once
++#include "OpenSmashFrame.h"
+ 
+ #include <Metal/Metal.h>
+ #include <QuartzCore/QuartzCore.h>
+@@ -75,6 +76,7 @@
+   SurfaceInfo GetSurfaceInfo() const override;
+ 
+ private:
++  OpenSmashFrame::Output m_embedded_output;
+   MRCOwned<CAMetalLayer*> m_layer;
+   MRCOwned<id<CAMetalDrawable>> m_drawable;
+   std::unique_ptr<Texture> m_bb_texture;
+--- a/vendor/dolphin/Source/Core/VideoBackends/Metal/MTLGfx.mm
++++ b/vendor/dolphin/Source/Core/VideoBackends/Metal/MTLGfx.mm
+@@ -18,6 +18,7 @@
+ #include "VideoCommon/Present.h"
+ #include "VideoCommon/VideoBackendBase.h"
+ 
++#include "OpenSmashSurface.h"
+ #include <cstdio>
+ #include <fstream>
+ 
+@@ -41,7 +42,7 @@
+ 
+ bool Metal::Gfx::IsHeadless() const
+ {
+-  return m_layer == nullptr;
++  return m_layer == nullptr && !OpenSmashFrame::Enabled();
+ }
+ 
+ // MARK: Texture Creation
+@@ -469,10 +470,18 @@
+ {
+   @autoreleasepool
+   {
++    if (OpenSmashFrame::Enabled()) return m_embedded_output.Bind(*this,clear_color);
+     const TimePoint bind_start = Clock::now();
+     CheckForSurfaceChange();
+     CheckForSurfaceResize();
+     const TimePoint surface_end = Clock::now();
++    if (OpenSmashSurface::Enabled()) {
++      id<MTLTexture> texture=OpenSmashSurface::Acquire(g_device);
++      if (!texture) return false;
++      m_backbuffer->UpdateBackbufferTexture(texture);
++      SetAndClearFramebuffer(m_backbuffer.get(), clear_color);
++      return true;
++    }
+     m_drawable = MRCRetain([m_layer nextDrawable]);
+     const TimePoint drawable_end = Clock::now();
+     m_backbuffer->UpdateBackbufferTexture([m_drawable texture]);
+@@ -491,6 +500,13 @@
+   @autoreleasepool
+   {
+     g_state_tracker->EndRenderPass();
++    if (OpenSmashFrame::Enabled()) { m_embedded_output.Present(); return; }
++    if (OpenSmashSurface::Enabled()) {
++      OpenSmashSurface::Present(g_state_tracker->GetRenderCmdBuf());
++      m_backbuffer->UpdateBackbufferTexture(nullptr);
++      g_state_tracker->FlushEncoders();
++      return;
++    }
+     if (m_drawable)
+     {
+       // PresentDrawable refuses to allow Dolphin to present faster than the display's refresh rate
+@@ -544,6 +560,8 @@
+ 
+ SurfaceInfo Metal::Gfx::GetSurfaceInfo() const
+ {
++  if (OpenSmashFrame::Enabled()) return {960,720,1.0f,AbstractTextureFormat::RGBA8};
++  if (OpenSmashSurface::Enabled()) return {960, 720, 1.0f, AbstractTextureFormat::BGRA8};
+   if (!m_layer)  // Headless
+     return {};
+ 
+--- a/vendor/dolphin/Source/Core/VideoBackends/Vulkan/VKGfx.cpp
++++ b/vendor/dolphin/Source/Core/VideoBackends/Vulkan/VKGfx.cpp
+@@ -44,7 +44,7 @@
+ 
+ bool VKGfx::IsHeadless() const
+ {
+-  return m_swap_chain == nullptr;
++  return m_swap_chain == nullptr && !OpenSmashFrame::Enabled();
+ }
+ 
+ std::unique_ptr<AbstractTexture> VKGfx::CreateTexture(const TextureConfig& config,
+@@ -219,6 +219,7 @@
+ 
+ bool VKGfx::BindBackbuffer(const ClearColor& clear_color)
+ {
++  if (OpenSmashFrame::Enabled()) return m_embedded_output.Bind(*this,clear_color);
+   StateTracker::GetInstance()->EndRenderPass();
+ 
+   g_command_buffer_mgr->WaitForWorkerThreadIdle();
+@@ -308,6 +309,7 @@
+ 
+ void VKGfx::PresentBackbuffer()
+ {
++  if (OpenSmashFrame::Enabled()) { m_embedded_output.Present(); return; }
+   // End drawing to backbuffer
+   StateTracker::GetInstance()->EndRenderPass();
+ 
+@@ -617,6 +619,7 @@
+ 
+ SurfaceInfo VKGfx::GetSurfaceInfo() const
+ {
++  if (OpenSmashFrame::Enabled()) return {960,720,1.0f,AbstractTextureFormat::RGBA8};
+   return {m_swap_chain ? m_swap_chain->GetWidth() : 1u,
+           m_swap_chain ? m_swap_chain->GetHeight() : 0u, m_backbuffer_scale,
+           m_swap_chain ? m_swap_chain->GetTextureFormat() : AbstractTextureFormat::Undefined};
+--- a/vendor/dolphin/Source/Core/VideoBackends/Vulkan/VKGfx.h
++++ b/vendor/dolphin/Source/Core/VideoBackends/Vulkan/VKGfx.h
+@@ -2,6 +2,7 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ 
+ #pragma once
++#include "OpenSmashFrame.h"
+ 
+ #include <array>
+ #include <memory>
+@@ -88,6 +89,7 @@
+   void ExecuteCommandBuffer(bool execute_off_thread, bool wait_for_completion = false);
+ 
+ private:
++  OpenSmashFrame::Output m_embedded_output;
+   void CheckForSurfaceChange();
+   void CheckForSurfaceResize();
+ 

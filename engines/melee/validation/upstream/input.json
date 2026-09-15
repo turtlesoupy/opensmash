@@ -1,0 +1,11 @@
+{
+  "checks": [
+    {
+      "type": "input-validation",
+      "keyboardStick": true,
+      "keyboardAttack": true,
+      "release": true
+    }
+  ],
+  "errors": []
+}

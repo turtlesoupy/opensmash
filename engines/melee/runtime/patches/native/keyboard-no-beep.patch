@@ -1,0 +1,13 @@
+--- a/vendor/dolphin/Source/Core/DolphinNoGUI/PlatformMacos.mm
++++ b/vendor/dolphin/Source/Core/DolphinNoGUI/PlatformMacos.mm
+@@ -27,6 +27,10 @@
+ @implementation OpenSmashPanel
+ - (BOOL)canBecomeKeyWindow { return YES; }
+ - (BOOL)canBecomeMainWindow { return YES; }
++// Quartz already reads game keys independently. Consume unhandled key presses
++// here so AppKit does not send them to the default audible-alert responder.
++// Menu key equivalents (including Command-Q) are processed before keyDown.
++- (void)keyDown:(NSEvent*)event { (void)event; }
+ @end
+ 
+ static Platform* s_application_platform = nullptr;

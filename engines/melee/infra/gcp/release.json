@@ -1,0 +1,13 @@
+{
+  "buildMode": "local",
+  "project": "fun-opensmash-builds",
+  "region": "us-central1",
+  "zone": "us-central1-a",
+  "bucket": "fun-opensmash-builds-artifacts",
+  "runtime": "desktop-runtime-v5",
+  "characters": "desktop-characters-v1",
+  "inputs": "desktop-inputs-v3",
+  "workerServiceAccount": "release-worker@fun-opensmash-builds.iam.gserviceaccount.com",
+  "machineType": "c3-standard-44",
+  "maxRunSeconds": 7200
+}

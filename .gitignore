@@ -1,5 +1,5 @@
 BattleShip/
-opensmash/
+/opensmash/
 .DS_Store
 .env
 web-prototype/visual/assets/generated/

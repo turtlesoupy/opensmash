@@ -7,6 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { gzip as gzipCallback } from "node:zlib";
+import { createEmbeddedMeleeHandler } from "../../engines/melee/server/embedded.mjs";
 import { createFighterJobs } from "./fighter-jobs.js";
 import { createTurnstileVerifier } from "./turnstile.js";
 import { HandoffError, createHandoffRoomsFromEnv } from "./handoff-rooms.js";
@@ -31,6 +32,7 @@ import { bakedRosterEntries } from "../shared/baked-roster.js";
 import { ROMS_BY_SHA1, UNSUPPORTED_ROMS_BY_SHA1 } from "../shared/rom-catalog.js";
 import { ACTIVE_JOB_STATUSES } from "./job-protocol.js";
 
+const handleMelee = createEmbeddedMeleeHandler();
 const APP_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const {
   pipelineProjectRoot: PIPELINE_PROJECT_ROOT,
@@ -40,6 +42,8 @@ const {
 const DIST_ROOT = path.join(APP_ROOT, "dist");
 const APP_SHELL_PATHS = new Set([
   "/",
+  "/melee",
+  "/melee/",
   "/create",
   "/create/",
   "/trailer",
@@ -798,6 +802,11 @@ async function serveAppShell(req, res) {
 async function handleRequest(req, res, vite) {
   const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
   const { pathname } = url;
+  // Both experiences share one document when switching. Public cross-origin
+  // images/audio may load without credentials; WASM retains SharedArrayBuffer.
+  res.setHeader('Cross-Origin-Opener-Policy','same-origin');
+  res.setHeader('Cross-Origin-Embedder-Policy','credentialless');
+
   // Firebase's hosted sign-in helper, served from our origin (see auth.js).
   // It carries no cookies either way and is never edge-cached.
   if (isAuthHandlerPath(pathname)) {
@@ -806,7 +815,7 @@ async function handleRequest(req, res, vite) {
   }
   const romSession = readSession(req);
   let user = await authService.readUser(req, {
-    checkRevoked: ["POST", "PATCH", "DELETE"].includes(req.method) && pathname.startsWith("/api/fighters"),
+    checkRevoked: ["POST", "PATCH", "DELETE"].includes(req.method) && (pathname.startsWith("/api/fighters") || pathname.startsWith("/api/melee/source/") || pathname.startsWith("/melee/api/")),
   });
   if (!authService.enabled && romSession) {
     user = {
@@ -816,6 +825,9 @@ async function handleRequest(req, res, vite) {
       provider: "local",
     };
   }
+
+  if(pathname.startsWith('/melee/')&&['POST','PATCH','DELETE'].includes(req.method)&&!mutationOriginAllowed(req))return json(res,403,{error:'Request origin is not allowed'});
+  if(handleMelee(req,res,{user}))return;
 
   if (
     req.method === "GET" &&
@@ -1025,6 +1037,12 @@ async function handleRequest(req, res, vite) {
     } catch (error) {
       return json(res, error.status || 400, { error: error.message || "Could not save fighter settings." });
     }
+  }
+
+  const meleeSourceMatch=pathname.match(/^\/api\/melee\/source\/([a-zA-Z0-9_-]{1,63})$/);
+  if(req.method==='POST'&&meleeSourceMatch){
+    try{return json(res,200,await fighterJobs.exportPlayableSource(meleeSourceMatch[1],user?.uid));}
+    catch(error){return json(res,error.status||400,{error:error.message||'Could not prepare this fighter for Melee.'});}
   }
 
   const sourceExportMatch=pathname.match(/^\/api\/fighters\/([a-f0-9-]+)\/export-source$/);

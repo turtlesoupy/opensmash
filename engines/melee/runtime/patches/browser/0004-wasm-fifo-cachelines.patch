@@ -1,0 +1,31 @@
+--- a/vendor/dolphin/Source/Core/VideoCommon/CommandProcessor.h
++++ b/vendor/dolphin/Source/Core/VideoCommon/CommandProcessor.h
+@@ -31,13 +31,15 @@
+   std::atomic<u32> CPEnd = 0;
+   u32 CPHiWatermark = 0;
+   u32 CPLoWatermark = 0;
+-  std::atomic<u32> CPReadWriteDistance = 0;
+-  std::atomic<u32> CPWritePointer = 0;
+-  std::atomic<u32> CPReadPointer = 0;
++  // Separate the shared queue counter, CPU/GPU pointers and status writes.
++  // Browser atomics otherwise contend on the same cache line while polling.
++  alignas(128) std::atomic<u32> CPReadWriteDistance = 0;
++  alignas(128) std::atomic<u32> CPWritePointer = 0;
++  alignas(128) std::atomic<u32> CPReadPointer = 0;
+   std::atomic<u32> CPBreakpoint = 0;
+   std::atomic<u32> SafeCPReadPointer = 0;
+ 
+-  std::atomic<u32> bFF_GPLinkEnable = 0;
++  alignas(128) std::atomic<u32> bFF_GPLinkEnable = 0;
+   std::atomic<u32> bFF_GPReadEnable = 0;
+   std::atomic<u32> bFF_BPEnable = 0;
+   std::atomic<u32> bFF_BPInt = 0;
+@@ -46,7 +48,7 @@
+   std::atomic<u32> bFF_LoWatermarkInt = 0;
+   std::atomic<u32> bFF_HiWatermarkInt = 0;
+ 
+-  std::atomic<u32> bFF_LoWatermark = 0;
++  alignas(128) std::atomic<u32> bFF_LoWatermark = 0;
+   std::atomic<u32> bFF_HiWatermark = 0;
+ 
+   void Init();

@@ -1,0 +1,826 @@
+[
+  {
+    "slug": "mario",
+    "code": "Mr",
+    "fighter": 8,
+    "costumes": [
+      {
+        "filename": "PlMrNr.dat",
+        "symbol": "PlyMario5K_Share_joint",
+        "materialSymbol": "PlyMario5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlMrYe.dat",
+        "symbol": "PlyMario5KYe_Share_joint",
+        "materialSymbol": "PlyMario5KYe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlMrBk.dat",
+        "symbol": "PlyMario5KBk_Share_joint",
+        "materialSymbol": "PlyMario5KBk_Share_matanim_joint"
+      },
+      {
+        "filename": "PlMrBu.dat",
+        "symbol": "PlyMario5KBu_Share_joint",
+        "materialSymbol": "PlyMario5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlMrGr.dat",
+        "symbol": "PlyMario5KGr_Share_joint",
+        "materialSymbol": "PlyMario5KGr_Share_matanim_joint"
+      }
+    ]
+  },
+  {
+    "slug": "fox",
+    "code": "Fx",
+    "fighter": 2,
+    "costumes": [
+      {
+        "filename": "PlFxNr.dat",
+        "symbol": "PlyFox5K_Share_joint",
+        "materialSymbol": "PlyFox5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlFxOr.dat",
+        "symbol": "PlyFox5KOr_Share_joint",
+        "materialSymbol": "PlyFox5KOr_Share_matanim_joint"
+      },
+      {
+        "filename": "PlFxLa.dat",
+        "symbol": "PlyFox5KLa_Share_joint",
+        "materialSymbol": "PlyFox5KLa_Share_matanim_joint"
+      },
+      {
+        "filename": "PlFxGr.dat",
+        "symbol": "PlyFox5KGr_Share_joint",
+        "materialSymbol": "PlyFox5KGr_Share_matanim_joint"
+      }
+    ]
+  },
+  {
+    "slug": "captain-falcon",
+    "code": "Ca",
+    "fighter": 0,
+    "costumes": [
+      {
+        "filename": "PlCaNr.dat",
+        "symbol": "PlyCaptain5K_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlCaGy.dat",
+        "symbol": "PlyCaptain5KGy_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlCaRe.dat",
+        "symbol": "PlyCaptain5KRe_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlCaWh.dat",
+        "symbol": "PlyCaptain5KWh_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlCaGr.dat",
+        "symbol": "PlyCaptain5KGr_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlCaBu.dat",
+        "symbol": "PlyCaptain5KBu_Share_joint",
+        "materialSymbol": "NULL"
+      }
+    ]
+  },
+  {
+    "slug": "donkey-kong",
+    "code": "Dk",
+    "fighter": 1,
+    "costumes": [
+      {
+        "filename": "PlDkNr.dat",
+        "symbol": "PlyDonkey5K_Share_joint",
+        "materialSymbol": "PlyDonkey5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlDkBk.dat",
+        "symbol": "PlyDonkey5KBk_Share_joint",
+        "materialSymbol": "PlyDonkey5KBk_Share_matanim_joint"
+      },
+      {
+        "filename": "PlDkRe.dat",
+        "symbol": "PlyDonkey5KRe_Share_joint",
+        "materialSymbol": "PlyDonkey5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlDkBu.dat",
+        "symbol": "PlyDonkey5KBu_Share_joint",
+        "materialSymbol": "PlyDonkey5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlDkGr.dat",
+        "symbol": "PlyDonkey5KGr_Share_joint",
+        "materialSymbol": "PlyDonkey5KGr_Share_matanim_joint"
+      }
+    ]
+  },
+  {
+    "slug": "kirby",
+    "code": "Kb",
+    "fighter": 4,
+    "costumes": [
+      {
+        "filename": "PlKbNr.dat",
+        "symbol": "PlyKirby5K_Share_joint",
+        "materialSymbol": "PlyKirby5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlKbYe.dat",
+        "symbol": "PlyKirby5KYe_Share_joint",
+        "materialSymbol": "PlyKirby5KYe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlKbBu.dat",
+        "symbol": "PlyKirby5KBu_Share_joint",
+        "materialSymbol": "PlyKirby5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlKbRe.dat",
+        "symbol": "PlyKirby5KRe_Share_joint",
+        "materialSymbol": "PlyKirby5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlKbGr.dat",
+        "symbol": "PlyKirby5KGr_Share_joint",
+        "materialSymbol": "PlyKirby5KGr_Share_matanim_joint"
+      },
+      {
+        "filename": "PlKbWh.dat",
+        "symbol": "PlyKirby5KWh_Share_joint",
+        "materialSymbol": "PlyKirby5KWh_Share_matanim_joint"
+      }
+    ]
+  },
+  {
+    "slug": "bowser",
+    "code": "Kp",
+    "fighter": 5,
+    "costumes": [
+      {
+        "filename": "PlKpNr.dat",
+        "symbol": "PlyKoopa5K_Share_joint",
+        "materialSymbol": "PlyKoopa5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlKpRe.dat",
+        "symbol": "PlyKoopa5KRe_Share_joint",
+        "materialSymbol": "PlyKoopa5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlKpBu.dat",
+        "symbol": "PlyKoopa5KBu_Share_joint",
+        "materialSymbol": "PlyKoopa5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlKpBk.dat",
+        "symbol": "PlyKoopa5KBk_Share_joint",
+        "materialSymbol": "PlyKoopa5KBk_Share_matanim_joint"
+      }
+    ]
+  },
+  {
+    "slug": "link",
+    "code": "Lk",
+    "fighter": 6,
+    "costumes": [
+      {
+        "filename": "PlLkNr.dat",
+        "symbol": "PlyLink5K_Share_joint",
+        "materialSymbol": "PlyLink5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlLkRe.dat",
+        "symbol": "PlyLink5KRe_Share_joint",
+        "materialSymbol": "PlyLink5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlLkBu.dat",
+        "symbol": "PlyLink5KBu_Share_joint",
+        "materialSymbol": "PlyLink5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlLkBk.dat",
+        "symbol": "PlyLink5KBk_Share_joint",
+        "materialSymbol": "PlyLink5KBk_Share_matanim_joint"
+      },
+      {
+        "filename": "PlLkWh.dat",
+        "symbol": "PlyLink5KWh_Share_joint",
+        "materialSymbol": "PlyLink5KWh_Share_matanim_joint"
+      }
+    ]
+  },
+  {
+    "slug": "sheik",
+    "code": "Sk",
+    "fighter": 19,
+    "costumes": [
+      {
+        "filename": "PlSkNr.dat",
+        "symbol": "PlySeak5K_Share_joint",
+        "materialSymbol": "PlySeak5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlSkRe.dat",
+        "symbol": "PlySeak5KRe_Share_joint",
+        "materialSymbol": "PlySeak5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlSkBu.dat",
+        "symbol": "PlySeak5KBu_Share_joint",
+        "materialSymbol": "PlySeak5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlSkGr.dat",
+        "symbol": "PlySeak5KGr_Share_joint",
+        "materialSymbol": "PlySeak5KGr_Share_matanim_joint"
+      },
+      {
+        "filename": "PlSkWh.dat",
+        "symbol": "PlySeak5KWh_Share_joint",
+        "materialSymbol": "PlySeak5KWh_Share_matanim_joint"
+      }
+    ]
+  },
+  {
+    "slug": "ness",
+    "code": "Ns",
+    "fighter": 11,
+    "costumes": [
+      {
+        "filename": "PlNsNr.dat",
+        "symbol": "PlyNess5K_Share_joint",
+        "materialSymbol": "PlyNess5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlNsYe.dat",
+        "symbol": "PlyNess5KYe_Share_joint",
+        "materialSymbol": "PlyNess5KYe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlNsBu.dat",
+        "symbol": "PlyNess5KBu_Share_joint",
+        "materialSymbol": "PlyNess5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlNsGr.dat",
+        "symbol": "PlyNess5KGr_Share_joint",
+        "materialSymbol": "PlyNess5KGr_Share_matanim_joint"
+      }
+    ]
+  },
+  {
+    "slug": "peach",
+    "code": "Pe",
+    "fighter": 12,
+    "costumes": [
+      {
+        "filename": "PlPeNr.dat",
+        "symbol": "PlyPeach5K_Share_joint",
+        "materialSymbol": "PlyPeach5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPeYe.dat",
+        "symbol": "PlyPeach5KYe_Share_joint",
+        "materialSymbol": "PlyPeach5KYe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPeWh.dat",
+        "symbol": "PlyPeach5KWh_Share_joint",
+        "materialSymbol": "PlyPeach5KWh_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPeBu.dat",
+        "symbol": "PlyPeach5KBu_Share_joint",
+        "materialSymbol": "PlyPeach5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPeGr.dat",
+        "symbol": "PlyPeach5KGr_Share_joint",
+        "materialSymbol": "PlyPeach5KGr_Share_matanim_joint"
+      }
+    ]
+  },
+  {
+    "slug": "popo",
+    "code": "Pp",
+    "fighter": 14,
+    "costumes": [
+      {
+        "filename": "PlPpNr.dat",
+        "symbol": "PlyPopo5K_Share_joint",
+        "materialSymbol": "PlyPopo5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPpGr.dat",
+        "symbol": "PlyPopo5KGr_Share_joint",
+        "materialSymbol": "PlyPopo5KGr_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPpOr.dat",
+        "symbol": "PlyPopo5KOr_Share_joint",
+        "materialSymbol": "PlyPopo5KOr_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPpRe.dat",
+        "symbol": "PlyPopo5KRe_Share_joint",
+        "materialSymbol": "PlyPopo5KRe_Share_matanim_joint"
+      }
+    ]
+  },
+  {
+    "slug": "nana",
+    "code": "Nn",
+    "fighter": 14,
+    "costumes": [
+      {
+        "filename": "PlNnNr.dat",
+        "symbol": "PlyNana5K_Share_joint",
+        "materialSymbol": "PlyNana5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlNnYe.dat",
+        "symbol": "PlyNana5KYe_Share_joint",
+        "materialSymbol": "PlyNana5KYe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlNnAq.dat",
+        "symbol": "PlyNana5KAq_Share_joint",
+        "materialSymbol": "PlyNana5KAq_Share_matanim_joint"
+      },
+      {
+        "filename": "PlNnWh.dat",
+        "symbol": "PlyNana5KWh_Share_joint",
+        "materialSymbol": "PlyNana5KWh_Share_matanim_joint"
+      }
+    ]
+  },
+  {
+    "slug": "pikachu",
+    "code": "Pk",
+    "fighter": 13,
+    "costumes": [
+      {
+        "filename": "PlPkNr.dat",
+        "symbol": "PlyPikachu5K_Share_joint",
+        "materialSymbol": "PlyPikachu5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPkRe.dat",
+        "symbol": "PlyPikachu5KRe_Share_joint",
+        "materialSymbol": "PlyPikachu5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPkBu.dat",
+        "symbol": "PlyPikachu5KBu_Share_joint",
+        "materialSymbol": "PlyPikachu5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPkGr.dat",
+        "symbol": "PlyPikachu5KGr_Share_joint",
+        "materialSymbol": "PlyPikachu5KGr_Share_matanim_joint"
+      }
+    ]
+  },
+  {
+    "slug": "samus",
+    "code": "Ss",
+    "fighter": 16,
+    "costumes": [
+      {
+        "filename": "PlSsNr.dat",
+        "symbol": "PlySamus5K_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlSsPi.dat",
+        "symbol": "PlySamus5KPi_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlSsBk.dat",
+        "symbol": "PlySamus5KBk_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlSsGr.dat",
+        "symbol": "PlySamus5KGr_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlSsLa.dat",
+        "symbol": "PlySamus5KLa_Share_joint",
+        "materialSymbol": "NULL"
+      }
+    ]
+  },
+  {
+    "slug": "yoshi",
+    "code": "Ys",
+    "fighter": 17,
+    "costumes": [
+      {
+        "filename": "PlYsNr.dat",
+        "symbol": "PlyYoshi5K_Share_joint",
+        "materialSymbol": "PlyYoshi5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlYsRe.dat",
+        "symbol": "PlyYoshi5KRe_Share_joint",
+        "materialSymbol": "PlyYoshi5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlYsBu.dat",
+        "symbol": "PlyYoshi5KBu_Share_joint",
+        "materialSymbol": "PlyYoshi5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlYsYe.dat",
+        "symbol": "PlyYoshi5KYe_Share_joint",
+        "materialSymbol": "PlyYoshi5KYe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlYsPi.dat",
+        "symbol": "PlyYoshi5KPi_Share_joint",
+        "materialSymbol": "PlyYoshi5KPi_Share_matanim_joint"
+      },
+      {
+        "filename": "PlYsAq.dat",
+        "symbol": "PlyYoshi5KAq_Share_joint",
+        "materialSymbol": "PlyYoshi5KAq_Share_matanim_joint"
+      }
+    ]
+  },
+  {
+    "slug": "jigglypuff",
+    "code": "Pr",
+    "fighter": 15,
+    "costumes": [
+      {
+        "filename": "PlPrNr.dat",
+        "symbol": "PlyPurin5K_Share_joint",
+        "materialSymbol": "PlyPurin5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPrRe.dat",
+        "symbol": "PlyPurin5KRe_Share_joint",
+        "materialSymbol": "PlyPurin5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPrBu.dat",
+        "symbol": "PlyPurin5KBu_Share_joint",
+        "materialSymbol": "PlyPurin5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPrGr.dat",
+        "symbol": "PlyPurin5KGr_Share_joint",
+        "materialSymbol": "PlyPurin5KGr_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPrYe.dat",
+        "symbol": "PlyPurin5KYe_Share_joint",
+        "materialSymbol": "PlyPurin5KYe_Share_matanim_joint"
+      }
+    ]
+  },
+  {
+    "slug": "mewtwo",
+    "code": "Mt",
+    "fighter": 10,
+    "costumes": [
+      {
+        "filename": "PlMtNr.dat",
+        "symbol": "PlyMewtwo5K_Share_joint",
+        "materialSymbol": "PlyMewtwo5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlMtRe.dat",
+        "symbol": "PlyMewtwo5KRe_Share_joint",
+        "materialSymbol": "PlyMewtwo5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlMtBu.dat",
+        "symbol": "PlyMewtwo5KBu_Share_joint",
+        "materialSymbol": "PlyMewtwo5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlMtGr.dat",
+        "symbol": "PlyMewtwo5KGr_Share_joint",
+        "materialSymbol": "PlyMewtwo5KGr_Share_matanim_joint"
+      }
+    ]
+  },
+  {
+    "slug": "luigi",
+    "code": "Lg",
+    "fighter": 7,
+    "costumes": [
+      {
+        "filename": "PlLgNr.dat",
+        "symbol": "PlyLuigi5K_Share_joint",
+        "materialSymbol": "PlyLuigi5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlLgWh.dat",
+        "symbol": "PlyLuigi5KWh_Share_joint",
+        "materialSymbol": "PlyLuigi5KWh_Share_matanim_joint"
+      },
+      {
+        "filename": "PlLgAq.dat",
+        "symbol": "PlyLuigi5KAq_Share_joint",
+        "materialSymbol": "PlyLuigi5KAq_Share_matanim_joint"
+      },
+      {
+        "filename": "PlLgPi.dat",
+        "symbol": "PlyLuigi5KPi_Share_joint",
+        "materialSymbol": "PlyLuigi5KPi_Share_matanim_joint"
+      }
+    ]
+  },
+  {
+    "slug": "marth",
+    "code": "Ms",
+    "fighter": 9,
+    "costumes": [
+      {
+        "filename": "PlMsNr.dat",
+        "symbol": "PlyMars5K_Share_joint",
+        "materialSymbol": "PlyMars5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlMsRe.dat",
+        "symbol": "PlyMars5KRe_Share_joint",
+        "materialSymbol": "PlyMars5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlMsGr.dat",
+        "symbol": "PlyMars5KGr_Share_joint",
+        "materialSymbol": "PlyMars5KGr_Share_matanim_joint"
+      },
+      {
+        "filename": "PlMsBk.dat",
+        "symbol": "PlyMars5KBk_Share_joint",
+        "materialSymbol": "PlyMars5KBk_Share_matanim_joint"
+      },
+      {
+        "filename": "PlMsWh.dat",
+        "symbol": "PlyMars5KWh_Share_joint",
+        "materialSymbol": "PlyMars5KWh_Share_matanim_joint"
+      }
+    ]
+  },
+  {
+    "slug": "zelda",
+    "code": "Zd",
+    "fighter": 18,
+    "costumes": [
+      {
+        "filename": "PlZdNr.dat",
+        "symbol": "PlyZelda5K_Share_joint",
+        "materialSymbol": "PlyZelda5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlZdRe.dat",
+        "symbol": "PlyZelda5KRe_Share_joint",
+        "materialSymbol": "PlyZelda5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlZdBu.dat",
+        "symbol": "PlyZelda5KBu_Share_joint",
+        "materialSymbol": "PlyZelda5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlZdGr.dat",
+        "symbol": "PlyZelda5KGr_Share_joint",
+        "materialSymbol": "PlyZelda5KGr_Share_matanim_joint"
+      },
+      {
+        "filename": "PlZdWh.dat",
+        "symbol": "PlyZelda5KWh_Share_joint",
+        "materialSymbol": "PlyZelda5KWh_Share_matanim_joint"
+      }
+    ]
+  },
+  {
+    "slug": "young-link",
+    "code": "Cl",
+    "fighter": 21,
+    "costumes": [
+      {
+        "filename": "PlClNr.dat",
+        "symbol": "PlyClink5K_Share_joint",
+        "materialSymbol": "PlyClink5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlClRe.dat",
+        "symbol": "PlyClink5KRe_Share_joint",
+        "materialSymbol": "PlyClink5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlClBu.dat",
+        "symbol": "PlyClink5KBu_Share_joint",
+        "materialSymbol": "PlyClink5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlClWh.dat",
+        "symbol": "PlyClink5KWh_Share_joint",
+        "materialSymbol": "PlyClink5KWh_Share_matanim_joint"
+      },
+      {
+        "filename": "PlClBk.dat",
+        "symbol": "PlyClink5KBk_Share_joint",
+        "materialSymbol": "PlyClink5KBk_Share_matanim_joint"
+      }
+    ]
+  },
+  {
+    "slug": "dr-mario",
+    "code": "Dr",
+    "fighter": 22,
+    "costumes": [
+      {
+        "filename": "PlDrNr.dat",
+        "symbol": "PlyDrmario5K_Share_joint",
+        "materialSymbol": "PlyDrmario5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlDrRe.dat",
+        "symbol": "PlyDrmario5KRe_Share_joint",
+        "materialSymbol": "PlyDrmario5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlDrBu.dat",
+        "symbol": "PlyDrmario5KBu_Share_joint",
+        "materialSymbol": "PlyDrmario5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlDrGr.dat",
+        "symbol": "PlyDrmario5KGr_Share_joint",
+        "materialSymbol": "PlyDrmario5KGr_Share_matanim_joint"
+      },
+      {
+        "filename": "PlDrBk.dat",
+        "symbol": "PlyDrmario5KBk_Share_joint",
+        "materialSymbol": "PlyDrmario5KBk_Share_matanim_joint"
+      }
+    ]
+  },
+  {
+    "slug": "falco",
+    "code": "Fc",
+    "fighter": 20,
+    "costumes": [
+      {
+        "filename": "PlFcNr.dat",
+        "symbol": "PlyFalco5K_Share_joint",
+        "materialSymbol": "PlyFalco5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlFcRe.dat",
+        "symbol": "PlyFalco5KRe_Share_joint",
+        "materialSymbol": "PlyFalco5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlFcBu.dat",
+        "symbol": "PlyFalco5KBu_Share_joint",
+        "materialSymbol": "PlyFalco5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlFcGr.dat",
+        "symbol": "PlyFalco5KGr_Share_joint",
+        "materialSymbol": "PlyFalco5KGr_Share_matanim_joint"
+      }
+    ]
+  },
+  {
+    "slug": "pichu",
+    "code": "Pc",
+    "fighter": 24,
+    "costumes": [
+      {
+        "filename": "PlPcNr.dat",
+        "symbol": "PlyPichu5K_Share_joint",
+        "materialSymbol": "PlyPichu5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPcRe.dat",
+        "symbol": "PlyPichu5KRe_Share_joint",
+        "materialSymbol": "PlyPichu5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPcBu.dat",
+        "symbol": "PlyPichu5KBu_Share_joint",
+        "materialSymbol": "PlyPichu5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlPcGr.dat",
+        "symbol": "PlyPichu5KGr_Share_joint",
+        "materialSymbol": "PlyPichu5KGr_Share_matanim_joint"
+      }
+    ]
+  },
+  {
+    "slug": "game-watch",
+    "code": "Gw",
+    "fighter": 3,
+    "costumes": [
+      {
+        "filename": "PlGwNr.dat",
+        "symbol": "PlyGamewatch5K_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlGwNr.dat",
+        "symbol": "PlyGamewatch5K_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlGwNr.dat",
+        "symbol": "PlyGamewatch5K_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlGwNr.dat",
+        "symbol": "PlyGamewatch5K_Share_joint",
+        "materialSymbol": "NULL"
+      }
+    ]
+  },
+  {
+    "slug": "ganondorf",
+    "code": "Gn",
+    "fighter": 25,
+    "costumes": [
+      {
+        "filename": "PlGnNr.dat",
+        "symbol": "PlyGanon5K_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlGnRe.dat",
+        "symbol": "PlyGanon5KRe_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlGnBu.dat",
+        "symbol": "PlyGanon5KBu_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlGnGr.dat",
+        "symbol": "PlyGanon5KGr_Share_joint",
+        "materialSymbol": "NULL"
+      },
+      {
+        "filename": "PlGnLa.dat",
+        "symbol": "PlyGanon5KLa_Share_joint",
+        "materialSymbol": "NULL"
+      }
+    ]
+  },
+  {
+    "slug": "roy",
+    "code": "Fe",
+    "fighter": 23,
+    "costumes": [
+      {
+        "filename": "PlFeNr.dat",
+        "symbol": "PlyEmblem5K_Share_joint",
+        "materialSymbol": "PlyEmblem5K_Share_matanim_joint"
+      },
+      {
+        "filename": "PlFeRe.dat",
+        "symbol": "PlyEmblem5KRe_Share_joint",
+        "materialSymbol": "PlyEmblem5KRe_Share_matanim_joint"
+      },
+      {
+        "filename": "PlFeBu.dat",
+        "symbol": "PlyEmblem5KBu_Share_joint",
+        "materialSymbol": "PlyEmblem5KBu_Share_matanim_joint"
+      },
+      {
+        "filename": "PlFeGr.dat",
+        "symbol": "PlyEmblem5KGr_Share_joint",
+        "materialSymbol": "PlyEmblem5KGr_Share_matanim_joint"
+      },
+      {
+        "filename": "PlFeYe.dat",
+        "symbol": "PlyEmblem5KYe_Share_joint",
+        "materialSymbol": "PlyEmblem5KYe_Share_matanim_joint"
+      }
+    ]
+  }
+]

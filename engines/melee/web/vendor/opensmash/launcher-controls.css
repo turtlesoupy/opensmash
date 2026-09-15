@@ -1,0 +1,97 @@
+/* Upstream OpenSmash button/settings rules, with selectors adapted for React. */
+  :is(.settings-menu-button, .create-character button[type=submit], .boot-action, .native-game-toolbar button) {
+    min-width: clamp(180px, 19vw, 250px);
+    min-height: clamp(48px, 6vw, 62px);
+    margin-top: 18px;
+    padding: 9px 22px;
+    border: 1px solid #5d3a2b;
+    border-radius: 0;
+    background: #080504;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 236, 190, .045),
+      inset 0 -3px rgba(38, 5, 0, .78),
+      0 3px 0 #160b08;
+    color: #fff2d6;
+    filter: none;
+    font: 600 clamp(15px, 1.55vw, 21px)/1 "Kanit", sans-serif !important;
+    letter-spacing: .045em;
+    text-shadow: 0 2px 0 #260500, 2px 0 0 #260500, -2px 0 0 #260500;
+    transition: border-color 100ms linear, background 100ms linear, box-shadow 100ms linear;
+    -webkit-font-smoothing: none;
+  }
+  :is(.settings-menu-button, .create-character button[type=submit], .boot-action, .native-game-toolbar button):hover,
+  :is(.settings-menu-button, .create-character button[type=submit], .boot-action, .native-game-toolbar button):focus-visible {
+    border-color: #fff0b5;
+    background: #130907;
+    box-shadow:
+      inset 0 0 0 2px rgba(255, 240, 181, .88),
+      inset 0 -3px rgba(38, 5, 0, .78),
+      0 3px 0 #160b08;
+    outline: 0;
+  }
+  :is(.settings-menu-button, .create-character button[type=submit], .boot-action, .native-game-toolbar button):active {
+    background: #21100b;
+    box-shadow: inset 0 2px 0 #050202, inset 0 0 0 2px rgba(255, 240, 181, .72);
+  }
+  :is(.settings-menu-button, .create-character button[type=submit], .boot-action, .native-game-toolbar button):disabled { opacity: .45; }
+
+.site-dialog-content {
+  width: min(980px, 100%);
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin: 0 auto;
+  padding: clamp(68px, 8vh, 96px) clamp(20px, 4vw, 48px) clamp(34px, 6vh, 68px);
+  font-family: "Kanit", sans-serif;
+}
+.site-dialog-content > header { margin-bottom: clamp(24px, 4vh, 38px); text-align: center; }
+.advanced-field-label {
+  color: #c7a985;
+  font: 600 clamp(13px, 1.35vw, 17px)/1.2 "Kanit", sans-serif;
+  letter-spacing: .045em;
+}
+.site-dialog h1 {
+  margin: 0;
+  color: #fff2d6;
+  filter: none;
+  font: 600 clamp(28px, 4vw, 44px)/1 "Kanit", sans-serif;
+  letter-spacing: .045em;
+  text-shadow: 0 2px 0 #260500, 2px 0 0 #260500, -2px 0 0 #260500;
+  -webkit-font-smoothing: none;
+}
+.settings-subtitle {
+  margin: 12px 0 0;
+  color: #806e5d;
+  font: 500 clamp(12px, 1.1vw, 14px)/1.4 "Kanit", sans-serif;
+  letter-spacing: .035em;
+}
+.advanced-form { display: grid; gap: clamp(22px, 3.5vh, 34px); }
+.settings-menu {
+  width: min(100%, 440px);
+  display: grid;
+  gap: 11px;
+  margin: 0 auto;
+}
+.settings-menu[hidden],
+.settings-subpage[hidden] { display: none; }
+.settings-menu .settings-menu-button {
+  width: 100%;
+  min-width: 0;
+  min-height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 0;
+  padding: 11px 18px;
+  text-align: left;
+}
+.settings-menu .settings-menu-button {
+  justify-content: center;
+  text-align: center;
+}
+.settings-menu .settings-sound-button {
+  justify-content: center;
+  text-align: center;
+}

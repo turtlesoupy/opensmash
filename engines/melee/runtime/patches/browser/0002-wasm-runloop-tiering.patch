@@ -1,0 +1,48 @@
+--- a/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore_Run.cpp
++++ b/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore_Run.cpp
+@@ -54,6 +54,9 @@
+   }
+ }
+ 
++#ifdef __EMSCRIPTEN__
++__attribute__((noinline))
++#endif
+ void StaticRecompCore::Run()
+ {
+   const bool diagnostics = Common::FramePhaseTiming::IsEnabled() ||
+@@ -68,6 +71,9 @@
+ }
+ 
+ template <bool Diagnostics>
++#ifdef __EMSCRIPTEN__
++__attribute__((noinline))
++#endif
+ void StaticRecompCore::RunWithDiagnostics()
+ {
+   auto& core_timing = m_system.GetCoreTiming();
+@@ -103,6 +109,12 @@
+     return;
+   }
+ 
++#ifdef __EMSCRIPTEN__
++  // V8 cannot replace a running Wasm activation with newly optimized code.
++  // Re-enter this non-inlined function periodically to use its optimized tier.
++  // https://v8.dev/docs/wasm-compilation-pipeline
++  unsigned wasm_slices = 0;
++#endif
+   while (*state_ptr == CPU::State::Running)
+   {
+     const TimePoint cpu_slice_start = log_phase ? Clock::now() : TimePoint{};
+@@ -329,6 +341,12 @@
+           m_native_dispatches - phase_native_dispatches, m_fallback_steps - phase_fallback_steps,
+           m_hook_fallback_instructions - phase_hook_fallbacks);
+     }
++#ifdef __EMSCRIPTEN__
++    // Every burst has already synchronized guest state back to PowerPCState.
++    // Keep CoreTiming/interrupt boundaries intact; CPUManager calls Run again.
++    if (++wasm_slices == 64)
++      return;
++#endif
+   }
+ }
+ 

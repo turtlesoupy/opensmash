@@ -1,0 +1,54 @@
+--- a/vendor/dolphin/Source/Core/InputCommon/ControllerInterface/ControllerInterface.cpp
++++ b/vendor/dolphin/Source/Core/InputCommon/ControllerInterface/ControllerInterface.cpp
+@@ -5,6 +5,7 @@
+ 
+ #include <algorithm>
+ #include "OpenSmashKeyboard.h"
++#include "OpenSmashPad.h"
+ 
+ #include "Common/Assert.h"
+ #include "Common/Logging/Log.h"
+@@ -162,6 +163,7 @@
+     backend->PopulateDevices();
+ 
+   if (OpenSmashInput::Enabled()) AddDevice(std::make_shared<OpenSmashInput::Keyboard>());
++  if (OpenSmashLauncher::Enabled()) for (unsigned port=0;port<4;++port) AddDevice(std::make_shared<OpenSmashInput::Pad>(port));
+   WiimoteReal::PopulateDevices();
+ 
+   if (m_populating_devices_counter.fetch_sub(1) == 1)
+--- a/vendor/dolphin/Source/Core/AudioCommon/Mixer.cpp
++++ b/vendor/dolphin/Source/Core/AudioCommon/Mixer.cpp
+@@ -2,6 +2,7 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ 
+ #include "AudioCommon/Mixer.h"
++#include "OpenSmashLauncher.h"
+ 
+ #include <algorithm>
+ #include <cmath>
+@@ -214,6 +215,7 @@
+   if (log_phase)
+     Common::FramePhaseTiming::AddAudioMix(Clock::now() - phase_start);
+ 
++  if (OpenSmashLauncher::Muted()) memset(samples, 0, num_samples * 2 * sizeof(s16));
+   return num_samples;
+ }
+ 
+@@ -244,6 +246,7 @@
+ 
+   m_surround_decoder.PutFrames(buffer.data(), needed_frames);
+   m_surround_decoder.ReceiveFrames(samples, num_samples);
++  if (OpenSmashLauncher::Muted()) memset(samples, 0, num_samples * SURROUND_CHANNELS * sizeof(float));
+ 
+   return num_samples;
+ }
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1026,6 +1026,7 @@
+ # Shared OpenSmash custom-mesh renderer; enabled only by its native builder.
+ if(OPENSMASH_NATIVE_SOURCE)
+     target_include_directories(inputcommon PRIVATE "${OPENSMASH_NATIVE_SOURCE}/native")
++    target_include_directories(audiocommon PRIVATE "${OPENSMASH_NATIVE_SOURCE}/native")
+     if(TARGET videovulkan)
+         target_include_directories(videovulkan PRIVATE "${OPENSMASH_NATIVE_SOURCE}/native")
+     endif()

@@ -1,0 +1,224 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1046,3 +1046,25 @@
+ endif()
+ 
+ include("${OPENSMASH_DESKTOP_SOURCE}/runtime.cmake")
++
++if(OPENSMASH_NATIVE_SOURCE)
++    add_executable(opensmash-mod-dispatch-test
++        "${OPENSMASH_NATIVE_SOURCE}/../tests/native_mod_dispatch.cpp"
++        src/runtime/mod_loader.cpp)
++    target_include_directories(opensmash-mod-dispatch-test PRIVATE
++        include vendor/dolphin/GXRuntime/include)
++    target_compile_features(opensmash-mod-dispatch-test PRIVATE cxx_std_20)
++endif()
++
++if(WIN32)
++    target_link_libraries(moderngekko PRIVATE bcrypt)
++endif()
++if(OPENSMASH_NATIVE_SOURCE)
++    add_executable(opensmash-hash-test
++        "${OPENSMASH_NATIVE_SOURCE}/../tests/native_hash.cpp" src/runtime/game.cpp)
++    target_include_directories(opensmash-hash-test PRIVATE include)
++    target_compile_features(opensmash-hash-test PRIVATE cxx_std_20)
++    if(WIN32)
++        target_link_libraries(opensmash-hash-test PRIVATE bcrypt)
++    endif()
++endif()
+--- a/src/runtime/game.cpp
++++ b/src/runtime/game.cpp
+@@ -8,6 +8,10 @@
+ #include <iomanip>
+ #include <sstream>
+ #include <vector>
++#ifdef _WIN32
++#include <windows.h>
++#include <bcrypt.h>
++#endif
+ 
+ namespace moderngekko
+ {
+@@ -92,10 +96,49 @@
+ 
+ std::optional<std::string> HashFileSha256(const std::filesystem::path& path)
+ {
++#ifdef _WIN32
++  // Stream large movies and assets through the platform SHA-256 implementation.
++  // The digest remains identical; no file is skipped or trusted from a cache.
++  struct Provider {
++    BCRYPT_ALG_HANDLE handle = nullptr;
++    Provider() { BCryptOpenAlgorithmProvider(&handle, BCRYPT_SHA256_ALGORITHM, nullptr, 0); }
++    ~Provider() { if (handle) BCryptCloseAlgorithmProvider(handle, 0); }
++  };
++  static const Provider provider;
++  if (!provider.handle)
++    return std::nullopt;
++  struct Hash {
++    BCRYPT_HASH_HANDLE handle = nullptr;
++    ~Hash() { if (handle) BCryptDestroyHash(handle); }
++  } hash;
++  if (BCryptCreateHash(provider.handle, &hash.handle, nullptr, 0, nullptr, 0, 0) < 0)
++    return std::nullopt;
++  std::ifstream file(path, std::ios::binary);
++  if (!file)
++    return std::nullopt;
++  std::array<unsigned char, 65536> buffer;
++  while (file) {
++    file.read(reinterpret_cast<char*>(buffer.data()), buffer.size());
++    const auto count = file.gcount();
++    if (count > 0 && BCryptHashData(hash.handle, buffer.data(), static_cast<ULONG>(count), 0) < 0)
++      return std::nullopt;
++  }
++  if (file.bad() || !file.eof())
++    return std::nullopt;
++  std::array<unsigned char, 32> digest;
++  if (BCryptFinishHash(hash.handle, digest.data(), static_cast<ULONG>(digest.size()), 0) < 0)
++    return std::nullopt;
++  std::ostringstream out;
++  out << std::hex << std::setfill('0');
++  for (const auto byte : digest)
++    out << std::setw(2) << unsigned(byte);
++  return out.str();
++#else
+   auto bytes = ReadFile(path);
+   if (!bytes)
+     return std::nullopt;
+   return Sha256(std::move(*bytes));
++#endif
+ }
+ 
+ std::optional<std::string> HashDirectorySha256(const std::filesystem::path& root)
+@@ -103,28 +146,34 @@
+   std::error_code ec;
+   if (!std::filesystem::is_directory(root, ec) || ec)
+     return std::nullopt;
+-  std::vector<std::filesystem::path> files;
++  struct AssetFile {
++    std::filesystem::path path;
++    std::string relative;
++  };
++  std::vector<AssetFile> files;
+   std::filesystem::recursive_directory_iterator iterator(
+       root, std::filesystem::directory_options::skip_permission_denied, ec);
+   const std::filesystem::recursive_directory_iterator end;
+   while (!ec && iterator != end)
+   {
+-    if (iterator->is_regular_file(ec) && !ec)
+-      files.push_back(iterator->path());
++    if (iterator->is_regular_file(ec) && !ec) {
++      // relative() canonicalizes through the filesystem on Windows. Compute
++      // it once, not twice per sort comparison across thousands of assets.
++      const auto relative = std::filesystem::relative(iterator->path(), root, ec).generic_string();
++      if (ec)
++        return std::nullopt;
++      files.push_back({iterator->path(), relative});
++    }
+     iterator.increment(ec);
+   }
+   if (ec)
+     return std::nullopt;
+   std::ranges::sort(files, [&](const auto& left, const auto& right) {
+-    return std::filesystem::relative(left, root).generic_string() <
+-           std::filesystem::relative(right, root).generic_string();
++    return left.relative < right.relative;
+   });
+   std::vector<std::uint8_t> manifest;
+-  for (const auto& path : files)
+-  {
+-    const std::string relative = std::filesystem::relative(path, root, ec).generic_string();
+-    if (ec)
+-      return std::nullopt;
++  for (const auto& [path, relative] : files)
++  {
+     const auto size = std::filesystem::file_size(path, ec);
+     const auto hash = HashFileSha256(path);
+     if (ec || !hash)
+--- a/src/runtime/mod_loader.cpp
++++ b/src/runtime/mod_loader.cpp
+@@ -16,8 +16,14 @@
+ 
+ #ifdef OPENSMASH_NATIVE_SKIN
+ extern "C" bool opensmash_skinning(CPUState*);
++static bool native_skin_enabled() {
++  // The module is selected before process startup. Host-call probes happen for
++  // every mesh, so do not scan and lock the Windows environment on each probe.
++  static const bool enabled = std::getenv("OPENSMASH_NATIVE_MODULE") != nullptr;
++  return enabled;
++}
+ static bool custom_skin_address(unsigned address) {
+-  return (address==0x8036E83Cu || address==0x80074048u) && std::getenv("OPENSMASH_NATIVE_MODULE");
++  return (address==0x8036E83Cu || address==0x80074048u) && native_skin_enabled();
+ }
+ #endif
+ 
+@@ -138,6 +144,17 @@
+       callbacks;
+   std::vector<ModernGekkoModFunction *> import_slots;
+   std::vector<PendingReturn> pending_returns;
++  // A conservative filter avoids two hash-table probes on ordinary game calls.
++  // Collisions only take the existing slow path; pending returns stay separate.
++  std::array<std::uint64_t, 1024> static_addresses{};
++  void MarkStaticAddress(std::uint32_t address) {
++    const auto bit = (address >> 2) & 65535u;
++    static_addresses[bit >> 6] |= std::uint64_t{1} << (bit & 63u);
++  }
++  bool MayHaveStaticAddress(std::uint32_t address) const {
++    const auto bit = (address >> 2) & 65535u;
++    return (static_addresses[bit >> 6] & (std::uint64_t{1} << (bit & 63u))) != 0;
++  }
+   bool runtime_started = false;
+   ModernGekkoModHostApi host_api{};
+ 
+@@ -415,6 +432,7 @@
+         continue;
+       }
+       m_impl->patches[patch.address] = patch.function;
++      m_impl->MarkStaticAddress(patch.address);
+     }
+     for (std::uint32_t i = 0; i < desc->num_hooks; ++i) {
+       const auto &hook = desc->hooks[i];
+@@ -424,6 +442,7 @@
+         continue;
+       }
+       auto &hooks = m_impl->hooks[hook.address];
++      m_impl->MarkStaticAddress(hook.address);
+       if (hook.kind == MODERNGEKKO_MOD_HOOK_ENTRY)
+         hooks.entry.push_back(hook.function);
+       else
+@@ -556,6 +575,7 @@
+   m_impl->callbacks.clear();
+   m_impl->hooks.clear();
+   m_impl->patches.clear();
++  m_impl->static_addresses.fill(0);
+   m_impl->exports.clear();
+   m_impl->mods_by_id.clear();
+   m_impl->loaded.clear();
+@@ -583,6 +603,8 @@
+       *state = saved;
+     }
+   }
++  if (!m_impl->MayHaveStaticAddress(address))
++    return false;
+   const auto hooks = m_impl->hooks.find(address);
+   if (hooks != m_impl->hooks.end()) {
+     for (ModernGekkoModFunction function : hooks->second.entry) {
+@@ -632,7 +654,8 @@
+ }
+ 
+ bool ModManager::HandlesAddress(std::uint32_t address) const {
+-  if (m_impl->patches.contains(address) || m_impl->hooks.contains(address))
++  if (m_impl->MayHaveStaticAddress(address) &&
++      (m_impl->patches.contains(address) || m_impl->hooks.contains(address)))
+     return true;
+   return std::ranges::any_of(m_impl->pending_returns,
+                              [address](const Impl::PendingReturn &pending) {
+@@ -677,7 +700,7 @@
+ bool ModManager::HostCallRangeContains(std::uint32_t start, std::uint32_t end,
+                                        void *user_data) {
+ #ifdef OPENSMASH_NATIVE_SKIN
+-  if (std::getenv("OPENSMASH_NATIVE_MODULE") &&
++  if (native_skin_enabled() &&
+       ((start<=0x8036E83Cu && end>0x8036E83Cu) || (start<=0x80074048u && end>0x80074048u))) return true;
+ #endif
+   return user_data &&

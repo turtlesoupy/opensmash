@@ -1,0 +1,135 @@
+name: Desktop launcher apps
+on:
+  workflow_dispatch:
+    inputs:
+      mac_dmg_only:
+        description: "Wrap the published Mac app in a DMG and validate it"
+        type: boolean
+        default: false
+      release_tag:
+        description: "Published app version to wrap (must match package.json)"
+        default: "v0.3.0"
+        type: string
+  # Release tags are handled by GCP Cloud Build. Kept as a manual fallback.
+permissions:
+  contents: read
+concurrency:
+  group: desktop-launcher-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  plan:
+    if: ${{ !inputs.mac_dmg_only }}
+    runs-on: ubuntu-24.04
+    outputs:
+      ready: ${{ steps.inputs.outputs.ready }}
+      matrix: ${{ steps.inputs.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: inputs
+        env: {GH_TOKEN: '${{ github.token }}'}
+        run: |
+          if ! gh release view desktop-runtime-v4 --json assets > /tmp/runtime-assets.json; then
+            echo 'ready=false' >> "$GITHUB_OUTPUT"
+            echo '::notice::Native runtime cache is not published yet. Run this workflow after the initial runtime build.'
+            exit 0
+          fi
+          python - <<'PYCODE'
+          import json,os
+          matrix=json.load(open('desktop/platforms.json'))
+          assets={a['name'] for a in json.load(open('/tmp/runtime-assets.json'))['assets']}
+          ready=all('native-runtime-'+p['key']+'.zip' in assets for p in matrix)
+          with open(os.environ['GITHUB_OUTPUT'],'a') as output:
+              output.write('ready='+str(ready).lower()+'\n')
+              output.write('matrix='+json.dumps(matrix)+'\n')
+          PYCODE
+  package:
+    needs: plan
+    if: needs.plan.outputs.ready == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22', cache: npm, cache-dependency-path: 'desktop/package-lock.json'}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12', cache: pip, cache-dependency-path: 'desktop/requirements.txt'}
+      - name: Fetch versioned payloads (no engine compilation)
+        shell: bash
+        env: {GH_TOKEN: '${{ github.token }}'}
+        run: |
+          test '${{ github.event.repository.private }}' = 'true'
+          python -m pip install -r desktop/requirements.txt
+          gh release download desktop-runtime-v4 --pattern native-runtime-${{ matrix.key }}.zip --dir build/desktop-inputs
+          gh release download desktop-characters-v1 --pattern characters.tar.gz --dir build/desktop-inputs
+          python tools/prepare_desktop_release.py build/desktop-inputs/native-runtime-${{ matrix.key }}.zip build/desktop-inputs/characters.tar.gz
+      - name: Build shared UI and freeze local service
+        shell: bash
+        run: |
+          npm --prefix web ci
+          npm --prefix web run build
+          python tools/build_desktop_payload.py
+          python -m unittest discover -s tests
+          node --test tests/launch_options.test.mjs
+      - name: Package app
+        shell: bash
+        env: {CSC_IDENTITY_AUTO_DISCOVERY: 'false'}
+        run: |
+          npm --prefix desktop ci
+          npm --prefix desktop run dist
+      - name: Verify clean packaged startup and ISO gate
+        shell: bash
+        run: |
+          if [ '${{ runner.os }}' = 'macOS' ]; then
+            python tools/verify_desktop_package.py "build/desktop-artifacts/mac${{ matrix.key == 'macos-arm64' && '-arm64' || '' }}/OpenSmash Melee.app/Contents/Resources"
+          elif [ '${{ runner.os }}' = 'Windows' ]; then
+            python tools/verify_desktop_package.py build/desktop-artifacts/win-unpacked/resources
+          else
+            python tools/verify_desktop_package.py build/desktop-artifacts/linux-unpacked/resources
+          fi
+      - name: Record artifact versions and checksums
+        run: python tools/desktop_artifact_manifest.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: opensmash-melee-${{ matrix.key }}-${{ github.sha }}
+          path: |
+            build/desktop-artifacts/*-Setup.exe
+            build/desktop-artifacts/*.dmg
+            build/desktop-artifacts/*.zip
+            build/desktop-artifacts/*.tar.gz
+            build/desktop-artifacts/build-manifest.json
+            build/desktop-artifacts/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 30
+
+  mac-dmg:
+    if: ${{ inputs.mac_dmg_only }}
+    runs-on: macos-15
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '22'}
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: npm --prefix desktop ci
+      - name: Build and validate DMG from the published app
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+        run: python tools/repackage_macos_dmg.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macos-dmg-${{ github.sha }}
+          path: |
+            build/dmg-candidate/*.dmg
+            build/dmg-candidate/*.json
+            build/dmg-candidate/*.txt
+            build/dmg-candidate/*.png
+          if-no-files-found: error
+          retention-days: 30

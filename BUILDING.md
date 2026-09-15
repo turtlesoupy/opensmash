@@ -178,3 +178,16 @@ For the original three-character ROM regression fixture, run
 `python3 hardware-rom/test_packer.py --base /path/to/baserom.us.z64 --rom PATH`.
 The orientation regression always runs; corruption tests explicitly skip when
 the local fixture is absent. The build itself audits arbitrary selected slots.
+
+## Melee and the shared desktop prototype
+
+Melee-specific browser, native and desktop tooling now lives under
+`engines/melee`. Run its existing commands from that directory; relative build
+outputs stay inside `engines/melee/build`. Its upstream decompilation dependency
+is pinned by the root `.gitmodules` file.
+
+The experimental shared native launcher is described in
+[desktop/README.md](desktop/README.md). It uses the same frontend build as the
+website and keeps its test data separate from existing Melee installations.
+This development path is not yet a replacement for the standalone release
+packaging, and does not establish full web/native feature parity.

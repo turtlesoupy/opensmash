@@ -1,0 +1,62 @@
+--- a/src/runtime/mod_loader.cpp
++++ b/src/runtime/mod_loader.cpp
+@@ -13,6 +13,13 @@
+ #include <unordered_map>
+ #include <unordered_set>
+ #include <utility>
++
++#ifdef OPENSMASH_NATIVE_SKIN
++extern "C" bool opensmash_skinning(CPUState*);
++static bool custom_skin_address(unsigned address) {
++  return (address==0x8036E83Cu || address==0x80074048u) && std::getenv("OPENSMASH_NATIVE_MODULE");
++}
++#endif
+ 
+ namespace moderngekko {
+ namespace {
+@@ -652,17 +659,27 @@
+ 
+ bool ModManager::HostCall(CPUState *state, std::uint32_t address,
+                           void *user_data) {
++#ifdef OPENSMASH_NATIVE_SKIN
++  if (custom_skin_address(address) && opensmash_skinning(state)) return true;
++#endif
+   return user_data &&
+          static_cast<ModManager *>(user_data)->Dispatch(state, address);
+ }
+ 
+ bool ModManager::HostCallContains(std::uint32_t address, void *user_data) {
++#ifdef OPENSMASH_NATIVE_SKIN
++  if (custom_skin_address(address)) return true;
++#endif
+   return user_data &&
+          static_cast<ModManager *>(user_data)->HandlesAddress(address);
+ }
+ 
+ bool ModManager::HostCallRangeContains(std::uint32_t start, std::uint32_t end,
+                                        void *user_data) {
++#ifdef OPENSMASH_NATIVE_SKIN
++  if (std::getenv("OPENSMASH_NATIVE_MODULE") &&
++      ((start<=0x8036E83Cu && end>0x8036E83Cu) || (start<=0x80074048u && end>0x80074048u))) return true;
++#endif
+   return user_data &&
+          static_cast<ModManager *>(user_data)->HandlesRange(start, end);
+ }
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1022,3 +1022,15 @@
+     add_test(NAME moderngekko.dolphin_shader
+              COMMAND moderngekko_dolphin_shader_test)
+ endif()
++
++# Shared OpenSmash custom-mesh renderer; enabled only by its native builder.
++if(OPENSMASH_NATIVE_SOURCE)
++    target_sources(moderngekko PRIVATE
++        "${OPENSMASH_NATIVE_SOURCE}/native/skin_bridge.cpp"
++        "${OPENSMASH_NATIVE_SOURCE}/web/skin_runtime.cpp")
++    target_include_directories(moderngekko PRIVATE
++        "${CMAKE_CURRENT_SOURCE_DIR}/vendor/dolphin/GXRuntime/include")
++    target_compile_definitions(moderngekko PRIVATE OPENSMASH_NATIVE_SKIN=1)
++    set_source_files_properties("${OPENSMASH_NATIVE_SOURCE}/web/skin_runtime.cpp"
++        PROPERTIES COMPILE_OPTIONS "-ffp-contract=off;-fno-fast-math")
++endif()

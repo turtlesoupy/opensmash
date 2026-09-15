@@ -1,0 +1,152 @@
+--- a/libultraship/src/fast/backends/gfx_metal.cpp
++++ b/libultraship/src/fast/backends/gfx_metal.cpp
+@@ -1,3 +1,4 @@
++#include "OpenSmashFrameOutput.h"
+ //
+ //  gfx_metal.cpp
+ //  libultraship
+@@ -681,7 +682,7 @@
+ 
+     MTL::Buffer* capture_buffer = nullptr;
+     uint32_t cap_w = 0, cap_h = 0;
+-    if (sMetalCapturePending) {
++    if (sMetalCapturePending || OpenSmashFrameOutput::Enabled()) {
+         // Blit from the screen framebuffer's RETAINED texture — the same
+         // object as mCurrentDrawable->texture() on normal frames. During
+         // drawable-pool starvation (nextDrawable nil under parallel-instance
+@@ -713,7 +714,9 @@
+         screen_framebuffer.mCommandBuffer->waitUntilCompleted();
+         const uint8_t* src = (const uint8_t*)capture_buffer->contents();
+         static const bool sRawCapture = (getenv("SSB64_SCREENSHOT_RAW") != nullptr);
+-        if (sRawCapture) {
++        if (OpenSmashFrameOutput::Enabled()) {
++            OpenSmashFrameOutput::Present(src,cap_w,cap_h,true);
++        } else if (sRawCapture) {
+             // Fast path: dump raw BGRA (+8-byte w/h header) and let the
+             // harness encode with ffmpeg. PNG encoding on the render
+             // thread cost ~0.4 s per frame and dominated capture time.
+@@ -860,10 +863,10 @@
+     // nextDrawable blocks up to ~1s and returns nil if the layer's drawable
+     // pool is exhausted (WindowServer under load, e.g. several instances
+     // booting at once). Retry a few times instead of dereferencing nil.
+-    for (int attempt = 0; attempt < 5 && mCurrentDrawable == nullptr; attempt++) {
++    for (int attempt = 0; !OpenSmashFrameOutput::Enabled() && attempt < 5 && mCurrentDrawable == nullptr; attempt++) {
+         mCurrentDrawable = mLayer->nextDrawable();
+     }
+-    if (mCurrentDrawable == nullptr) {
++    if (mCurrentDrawable == nullptr && !OpenSmashFrameOutput::Enabled()) {
+         // Keep last frame's render pass / texture (retained below); EndFrame
+         // skips present when there is no drawable but still renders and
+         // captures into the kept texture. Starvation can persist for the
+@@ -891,8 +894,12 @@
+     // shutdown). Releasing without this retain frees the queue's image out
+     // from under it and CAImageQueueCollect crashes inside a later
+     // nextDrawable (objc_msgSend on a freed object in release_images).
+-    tex.texture = mCurrentDrawable->texture();
+-    tex.texture->retain();
++    if (OpenSmashFrameOutput::Enabled()) {
++        auto* desc=MTL::TextureDescriptor::texture2DDescriptor(MTL::PixelFormatBGRA8Unorm,width,height,false);
++        desc->setStorageMode(MTL::StorageModePrivate);
++        desc->setUsage(MTL::TextureUsageRenderTarget | MTL::TextureUsageShaderRead);
++        tex.texture=mDevice->newTexture(desc);
++    } else {tex.texture = mCurrentDrawable->texture();tex.texture->retain();}
+ 
+     MTL::RenderPassDescriptor* render_pass_descriptor = MTL::RenderPassDescriptor::renderPassDescriptor();
+     render_pass_descriptor->colorAttachments()->object(0)->setTexture(tex.texture);
+--- a/libultraship/src/fast/backends/gfx_sdl2.cpp
++++ b/libultraship/src/fast/backends/gfx_sdl2.cpp
+@@ -1,3 +1,4 @@
++#include "OpenSmashFrameOutput.h"
+ #include <stdio.h>
+ 
+ #if defined(ENABLE_OPENGL) || defined(__APPLE__)
+@@ -433,6 +434,10 @@
+         flags = flags | SDL_WINDOW_METAL;
+     }
+ 
++    if(OpenSmashFrameOutput::Enabled()){
++        flags=(flags & ~(SDL_WINDOW_SHOWN|SDL_WINDOW_RESIZABLE|SDL_WINDOW_ALLOW_HIGHDPI))|SDL_WINDOW_HIDDEN;
++        mWindowWidth=960;mWindowHeight=720;startFullScreen=false;
++    }
+     mWnd = SDL_CreateWindow(title, posX, posY, mWindowWidth, mWindowHeight, flags);
+ #ifdef _WIN32
+     // Get Windows window handle and use it to subclass the window procedure.
+--- a/libultraship/src/fast/backends/gfx_opengl.cpp
++++ b/libultraship/src/fast/backends/gfx_opengl.cpp
+@@ -1,3 +1,4 @@
++#include "OpenSmashFrameOutput.h"
+ #include "ship/window/Window.h"
+ #ifdef ENABLE_OPENGL
+ 
+@@ -808,6 +809,14 @@
+ }
+ 
+ void GfxRenderingAPIOGL::EndFrame() {
++    if(OpenSmashFrameOutput::Enabled()){
++        GLint viewport[4],previous;glGetIntegerv(GL_VIEWPORT,viewport);glGetIntegerv(GL_READ_FRAMEBUFFER_BINDING,&previous);
++        glBindFramebuffer(GL_READ_FRAMEBUFFER,0);
++        static std::vector<unsigned char> pixels;pixels.resize(viewport[2]*viewport[3]*4);
++        glReadPixels(0,0,viewport[2],viewport[3],GL_RGBA,GL_UNSIGNED_BYTE,pixels.data());
++        glBindFramebuffer(GL_READ_FRAMEBUFFER,previous);
++        OpenSmashFrameOutput::Present(pixels.data(),viewport[2],viewport[3],false,true);
++    }
+     if (sGLCapturePending) {
+         sGLCapturePending = false;
+         GLCaptureBackbufferNow(sGLCapturePendingPath);
+--- a/libultraship/src/fast/backends/gfx_direct3d11.cpp
++++ b/libultraship/src/fast/backends/gfx_direct3d11.cpp
+@@ -1,3 +1,4 @@
++#include "OpenSmashFrameOutput.h"
+ #ifdef ENABLE_DX11
+ 
+ #include <algorithm>
+@@ -827,7 +828,9 @@
+     }
+ }
+ 
++static bool CaptureBackbufferToPNG_DX11(const char* path);
+ void GfxRenderingAPIDX11::EndFrame() {
++    if(OpenSmashFrameOutput::Enabled()) CaptureBackbufferToPNG_DX11("embedded");
+     mContext->Flush();
+ }
+ 
+@@ -1655,6 +1658,7 @@
+         return false;
+     }
+ 
++    if(OpenSmashFrameOutput::Enabled()){OpenSmashFrameOutput::Present(rgba.data(),w,h);return true;}
+     int ok = stbi_write_png(path, static_cast<int>(w), static_cast<int>(h), 4,
+                             rgba.data(), static_cast<int>(w * 4));
+     if (ok == 0) {
+--- a/libultraship/src/fast/backends/gfx_dxgi.cpp
++++ b/libultraship/src/fast/backends/gfx_dxgi.cpp
+@@ -1,3 +1,4 @@
++#include "OpenSmashFrameOutput.h"
+ #if defined(ENABLE_DX11) || defined(ENABLE_DX12)
+ 
+ #include <stdint.h>
+@@ -596,13 +597,13 @@
+ 
+     LoadDxgi();
+ 
+-    ShowWindow(h_wnd, SW_SHOW);
++    if(!OpenSmashFrameOutput::Enabled()) ShowWindow(h_wnd, SW_SHOW);
+     UpdateWindow(h_wnd);
+ 
+     // Get refresh rate
+     GetMonitorHzPeriod(mMonitor, mDetectedHz, mDisplayPeriod);
+ 
+-    if (start_in_fullscreen) {
++    if (start_in_fullscreen && !OpenSmashFrameOutput::Enabled()) {
+         ToggleBorderlessWindowFullScreen(true, false);
+     }
+ 
+@@ -612,7 +613,7 @@
+     // and only flashes its taskbar icon. The standard topmost-toggle
+     // + AttachThreadInput dance bypasses the foreground lock so the game
+     // actually appears on screen with focus on launch.
+-    {
++    if(!OpenSmashFrameOutput::Enabled()) {
+         DWORD thisTid = GetCurrentThreadId();
+         HWND fg = GetForegroundWindow();
+         DWORD fgTid = fg ? GetWindowThreadProcessId(fg, nullptr) : 0;

@@ -1,0 +1,69 @@
+--- a/vendor/dolphin/Source/Core/Core/Core.cpp
++++ b/vendor/dolphin/Source/Core/Core/Core.cpp
+@@ -475,7 +475,7 @@
+     std::promise<bool> init_from_thread;
+ 
+     // Spawn the GPU thread.
+-    std::thread gpu_thread{[&] {
++    const auto gpu_work = [&] {
+       Common::SetCurrentThreadName("Video thread");
+ 
+       const bool is_init = init_video();
+@@ -488,7 +488,14 @@
+       INFO_LOG_FMT(CONSOLE, "{}", StopMessage(false, "Video Loop Ended"));
+ 
+       deinit_video();
+-    }};
++    };
++#ifdef __EMSCRIPTEN__
++    auto gpu_thread = std::make_unique<BrowserEmuThread>();
++    if (!gpu_thread->start(gpu_work))
++      return ReturnType{};
++#else
++    auto gpu_thread = std::make_unique<std::thread>(gpu_work);
++#endif
+ 
+     if (init_from_thread.get_future().get())
+     {
+@@ -496,12 +503,12 @@
+       return std::make_unique<GuardType>([&, gpu_thread = std::move(gpu_thread)]() mutable {
+         INFO_LOG_FMT(CONSOLE, "{}", StopMessage(true, "Wait for Video Loop to exit ..."));
+         system.GetFifo().ExitGpuLoop();
+-        gpu_thread.join();
++        gpu_thread->join();
+         INFO_LOG_FMT(CONSOLE, "{}", StopMessage(true, "GPU thread stopped."));
+       });
+     }
+ 
+-    gpu_thread.join();
++    gpu_thread->join();
+   }
+   else  // SingleCore mode
+   {
+--- a/vendor/dolphin/Source/Core/Common/BlockingLoop.h
++++ b/vendor/dolphin/Source/Core/Common/BlockingLoop.h
+@@ -228,6 +228,8 @@
+ 
+   bool IsRunning() const { return !m_stopped.IsSet() && !m_shutdown.IsSet(); }
+   bool IsDone() const { return m_stopped.IsSet() || m_running_state.load() <= STATE_DONE; }
++  // A timed wake from STATE_SLEEPING must still run the payload.
++  bool IsIdleButAwake() const { return m_running_state.load() == STATE_DONE; }
+   // This function should be triggered regularly over time so
+   // that we will fall back from the busy loop to sleeping.
+   void AllowSleep() { m_may_sleep.Set(); }
+--- a/vendor/dolphin/Source/Core/VideoCommon/Fifo.cpp
++++ b/vendor/dolphin/Source/Core/VideoCommon/Fifo.cpp
+@@ -286,7 +286,12 @@
+ void FifoManager::RunGpuLoop()
+ {
+   m_gpu_mainloop.Run(
+-      [this] {
++      [this, idle_polls = 0u]() mutable {
++        // New work is processed immediately. While idle, retain a periodic
++        // status check without repeating expensive empty-queue work each spin.
++        if (m_gpu_mainloop.IsIdleButAwake() && (++idle_polls & 63u) != 0)
++          return;
++        idle_polls = 0;
+         // Run events from the CPU thread.
+         AsyncRequests::GetInstance()->PullEvents();
+ 

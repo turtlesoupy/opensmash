@@ -1,0 +1,50 @@
+.retro-social-links {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.retro-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  background: #5865f2;
+  color: #fff;
+  filter: none;
+  font-weight: 600;
+  letter-spacing: .01em;
+  text-shadow: 0 0 4px rgba(255, 255, 255, .5), 0 2px 0 #260500;
+  transition: background-color 120ms linear, transform 120ms linear;
+}
+.retro-github-link { background: #30363d; }
+.retro-github-link:hover,
+.retro-github-link:focus-visible { background: #484f58; }
+.retro-discord-link { background: #5865f2; }
+.retro-discord-link:hover,
+.retro-discord-link:focus-visible { background: #4752c4; }
+.retro-social-link:hover,
+.retro-social-link:focus-visible {
+  color: #fff;
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+.retro-social-link:focus-visible {
+  outline: 2px solid #fff2d6;
+  outline-offset: 2px;
+}
+.retro-social-link svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  fill: currentColor;
+}
+@media (max-width: 820px) {
+  .retro-social-link {
+    width: 30px;
+    height: 30px;
+    justify-content: center;
+    padding: 0;
+  }
+  .retro-social-link span { display: none; }
+}

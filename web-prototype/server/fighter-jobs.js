@@ -1284,12 +1284,19 @@ export function createFighterJobs({
       const job = [...jobs.values()].find((candidate) => candidate.slug === slug);
       return Boolean(job && job.visibility !== "private");
     },
-    async exportSource(id, ownerId) {
+    async exportPlayableSource(slug, viewerId) {
+      const cached=[...jobs.values()].find(job=>job.slug===slug);
+      const job=cached?await jobDatabase.get(cached.id):null;
+      if(!job||!isJobAccessible(job,viewerId)||job.status!=='complete')throw Object.assign(new Error('Fighter not found.'),{status:404});
+      return this.exportSource(job.id,job.ownerId,viewerId ?? null);
+    },
+    async exportSource(id, ownerId, playableViewer = undefined) {
       // Serialize this replica, then use revision checks across Firestore replicas.
       const previous=sourceExports.get(id) || Promise.resolve();
       const pending=previous.catch(()=>{}).then(async()=>{
         for(let attempt=0;attempt<5;attempt++) {
           const job=await jobDatabase.get(id);
+          if(playableViewer!==undefined&&!isJobAccessible(job,playableViewer))throw Object.assign(new Error('Fighter not found.'),{status:404});
           const result=await prepareSourceExport(job,ownerId,objectStore);
           const revision=job.revision || 0;
           const updated={...job,sourceExport:result,revision:revision+1,updatedAt:new Date().toISOString()};

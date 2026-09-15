@@ -1,0 +1,6 @@
+[
+  {"os":"macos-15","key":"macos-arm64"},
+  {"os":"macos-15-intel","key":"macos-x64"},
+  {"os":"ubuntu-24.04","key":"linux-x64"},
+  {"os":"windows-2025","key":"windows-x64"}
+]

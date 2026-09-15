@@ -1,0 +1,171 @@
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1068,3 +1068,10 @@
+         target_link_libraries(opensmash-hash-test PRIVATE bcrypt)
+     endif()
+ endif()
++
++if(OPENSMASH_NATIVE_SOURCE)
++    add_executable(opensmash-backend-test "${OPENSMASH_NATIVE_SOURCE}/../tests/native_backend.cpp")
++    target_include_directories(opensmash-backend-test PRIVATE
++        vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp)
++    target_compile_features(opensmash-backend-test PRIVATE cxx_std_20)
++endif()
+--- a/src/runtime/mod_loader.cpp
++++ b/src/runtime/mod_loader.cpp
+@@ -654,6 +654,11 @@
+ }
+ 
+ bool ModManager::HandlesAddress(std::uint32_t address) const {
++  // The JIT probes before entering a block, unlike the module dispatcher,
++  // which calls Dispatch unconditionally. Deliver startup events before the
++  // first guest instruction even when that address has no explicit hook.
++  if (!m_impl->runtime_started && !m_impl->loaded.empty())
++    return true;
+   if (m_impl->MayHaveStaticAddress(address) &&
+       (m_impl->patches.contains(address) || m_impl->hooks.contains(address)))
+     return true;
+--- a/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore_Run.cpp
++++ b/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore_Run.cpp
+@@ -2,6 +2,7 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ 
+ #include "Core/PowerPC/StaticRecomp/StaticRecompCore.h"
++#include "Core/PowerPC/StaticRecomp/StaticRecompBackend.h"
+ #include "Core/System.h"
+ #include "Core/PowerPC/PowerPC.h"
+ #include "Core/PowerPC/Interpreter/Interpreter.h"
+@@ -91,6 +92,16 @@
+   const bool sample_dispatch_bursts = Diagnostics && !m_dispatch_burst_log_path.empty();
+   const bool freeze_trace = Diagnostics && std::getenv("STATICRECOMP_FREEZE_TRACE") != nullptr;
+   const bool has_rel_modules = m_module && m_module->num_rel_modules != 0;
++  const char* backend = std::getenv("OPENSMASH_CPU_BACKEND");
++#ifdef _WIN32
++  constexpr bool windows = true;
++#else
++  constexpr bool windows = false;
++#endif
++  const bool prefer_jit = UseJitForNativeGame(windows, m_fallback_jit != nullptr,
++      NetPlay::IsNetPlayRunning(), m_lockstep_verifier->IsEnabled(), backend ? backend : "");
++  if (prefer_jit)
++    std::fprintf(stderr, "[staticrecomp] execution=jit (native mod hooks retained)\n");
+   const u32 idle_pc = m_idle_pc;
+   const u32 secondary_idle_pc = m_secondary_idle_pc;
+ 
+@@ -101,7 +112,7 @@
+   InitLookupTable(m_guest.ram_size, m_guest.exram_size);
+ 
+   const std::string initial_game_id = SConfig::GetInstance().GetGameID();
+-  m_module_active = m_module && (initial_game_id.empty() || initial_game_id == m_module->game_id);
++  m_module_active = !prefer_jit && m_module && (initial_game_id.empty() || initial_game_id == m_module->game_id);
+ 
+   if (!m_module_active && m_fallback_jit && !m_guest.host_call)
+   {
+@@ -121,7 +132,7 @@
+     core_timing.Advance();
+     UpdateProfileCapture();
+     const std::string current_game_id = SConfig::GetInstance().GetGameID();
+-    m_module_active = m_module && (current_game_id.empty() || current_game_id == m_module->game_id);
++    m_module_active = !prefer_jit && m_module && (current_game_id.empty() || current_game_id == m_module->game_id);
+ 
+     do
+     {
+--- /dev/null
++++ b/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompBackend.h
+@@ -0,0 +1,20 @@
++// Select the desktop execution engine without changing netplay or lockstep.
++#pragma once
++#include <string_view>
++
++constexpr bool UseJitForNativeGame(bool windows, bool available, bool netplay,
++                                   bool lockstep, std::string_view preference)
++{
++  if (!available || netplay || lockstep)
++    return false;
++  if (!preference.empty())
++    return preference == "jit";
++  return windows;
++}
++
++// Optimizer bailouts must update the engine that will recompile the block.
++template <typename Core>
++constexpr Core* SelectJitProfilingTarget(Core* registered, Core* outer, Core* fallback)
++{
++  return registered == outer && fallback ? fallback : registered;
++}
+--- a/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore.cpp
++++ b/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore.cpp
+@@ -2,6 +2,7 @@
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ 
+ #include "Core/PowerPC/StaticRecomp/StaticRecompCore.h"
++#include "Core/PowerPC/StaticRecomp/StaticRecompBackend.h"
+ 
+ #include <algorithm>
+ #include <cstdio>
+@@ -29,6 +30,13 @@
+ 
+ 
+ StaticRecompCore* g_static_recomp_core = nullptr;
++
++JitBase* StaticRecompGetProfilingTarget(JitBase* registered)
++{
++  return SelectJitProfilingTarget(registered, static_cast<JitBase*>(g_static_recomp_core),
++      g_static_recomp_core ? g_static_recomp_core->GetFallbackJit() : nullptr);
++}
++
+ 
+ u32 StaticRecompShouldYieldAt(u32 address)
+ {
+--- a/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore.h
++++ b/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore.h
+@@ -52,6 +52,7 @@
+   void Run() override;
+   void SingleStep() override;
+   bool IsModuleActive() const;
++  JitBase* GetFallbackJit() const { return m_fallback_jit.get(); }
+   bool DispatchableAt(u32 address);
+   bool FastDispatchableAt(u32 address);
+   bool IsHostCallAddress(u32 address) const;
+@@ -301,3 +302,5 @@
+ 
+ extern StaticRecompCore* g_static_recomp_core;
+ u32 StaticRecompShouldYieldAt(u32 address);
++
++JitBase* StaticRecompGetProfilingTarget(JitBase* registered);
+--- a/vendor/dolphin/Source/Core/Core/PowerPC/JitInterface.cpp
++++ b/vendor/dolphin/Source/Core/Core/PowerPC/JitInterface.cpp
+@@ -322,18 +322,21 @@
+   if (!m_jit)
+     return;
+ 
++  // A static core can delegate execution to a JIT. Recording the failed
++  // speculation on the wrapper would regenerate the same failing block.
++  JitBase* const jit = StaticRecompGetProfilingTarget(m_jit.get());
+   std::unordered_set<u32>* exception_addresses = nullptr;
+ 
+   switch (type)
+   {
+   case ExceptionType::FIFOWrite:
+-    exception_addresses = &m_jit->js.fifoWriteAddresses;
++    exception_addresses = &jit->js.fifoWriteAddresses;
+     break;
+   case ExceptionType::PairedQuantize:
+-    exception_addresses = &m_jit->js.pairedQuantizeAddresses;
++    exception_addresses = &jit->js.pairedQuantizeAddresses;
+     break;
+   case ExceptionType::SpeculativeConstants:
+-    exception_addresses = &m_jit->js.noSpeculativeConstantsAddresses;
++    exception_addresses = &jit->js.noSpeculativeConstantsAddresses;
+     break;
+   }
+ 
+@@ -356,7 +359,7 @@
+ 
+     // Invalidate the JIT block so that it gets recompiled with the external exception check
+     // included.
+-    m_jit->GetBlockCache()->InvalidateICache(ppc_state.pc, 4, true);
++    jit->GetBlockCache()->InvalidateICache(ppc_state.pc, 4, true);
+   }
+ }
+ 

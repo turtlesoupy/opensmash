@@ -1,0 +1,31 @@
+--- a/tools/moderngekko_run.cpp
++++ b/tools/moderngekko_run.cpp
+@@ -233,7 +233,13 @@
+     config.graphics.backend = frontend_config.graphics_backend;
+   config.fullscreen = frontend_config.fullscreen;
+   config.show_fps_in_title = frontend_config.show_fps_in_title;
++  // Embedded launchers render into another process's surface, so the engine
++  // never owns a focused window. Dolphin's input gate must not drop gamepad
++  // input while the launcher window has focus instead.
++  const bool embedded_surface = std::getenv("OPENSMASH_SURFACE_SERVICE") ||
++                                std::getenv("OPENSMASH_FRAME_FILE");
+   config.input.background_input =
++      embedded_surface ||
+       moderngekko::frontend::ControllerRequiresBackgroundInput(
+           frontend_config.controller);
+   if (use_default_mods) {
+@@ -367,9 +373,11 @@
+       std::cerr << "netplay requires at least one selected controller\n";
+       return 2;
+     }
+-    config.input.background_input = std::ranges::any_of(
+-        options.controllers,
+-        moderngekko::frontend::ControllerRequiresBackgroundInput);
++    config.input.background_input =
++        embedded_surface ||
++        std::ranges::any_of(
++            options.controllers,
++            moderngekko::frontend::ControllerRequiresBackgroundInput);
+     frontend_config.netplay_address = options.address;
+     frontend_config.netplay_port = options.port;
+     frontend_config.netplay_nickname = options.nickname;

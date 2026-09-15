@@ -1,7 +1,7 @@
 import { CAPTION_METRICS } from '../src/fonts/smash-caption-metrics.js';
 
 export function normalizeCaption(value) {
-  return String(value ?? '').toUpperCase().replace(/[^A-Z. ]/g, '').trim();
+  return String(value ?? '').toUpperCase().replace(/[^A-Z64. ]/g, '').trim();
 }
 
 // The original caption renderer's bearings, pair spacing, and selective
@@ -38,7 +38,7 @@ export function fitCaption(value, rightLimit = 43) {
   let text = normalizeCaption(value);
   const key = `${rightLimit}:${text}`;
   if (fittedCaptions.has(key)) return fittedCaptions.get(key);
-  const letters = text.replace(/[^A-Z]/g, '').length;
+  const letters = text.replace(/[^A-Z64]/g, '').length;
   const done = (cut, squeeze, layout) => {
     const result = Object.freeze({ text, cut, squeeze, glyphs: layout.glyphs,
       originX: cut === 'regular' ? 4 : 3, width: layout.width, scale: 1, condensed: cut !== 'regular' });

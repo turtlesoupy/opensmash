@@ -1,0 +1,98 @@
+--- a/vendor/dolphin/Source/Core/Core/PowerPC/JitCommon/JitBase.h
++++ b/vendor/dolphin/Source/Core/Core/PowerPC/JitCommon/JitBase.h
+@@ -157,6 +157,7 @@
+   bool m_enable_float_exceptions = false;
+   bool m_enable_div_by_zero_exceptions = false;
+   bool m_is_static_recomp_fallback = false;
++  bool m_static_recomp_fastmem = false;
+   bool m_low_dcbz_hack = false;
+   bool m_fprf = false;
+   bool m_accurate_nans = false;
+@@ -204,10 +205,11 @@
+   bool IsProfilingEnabled() const { return m_enable_profiling && m_enable_debugging; }
+   bool IsDebuggingEnabled() const { return m_enable_debugging; }
+   bool IsStaticRecompFallback() const { return m_is_static_recomp_fallback; }
+-  void SetStaticRecompFallback(bool enabled)
++  void SetStaticRecompFallback(bool enabled, bool fastmem = false)
+   {
+     m_is_static_recomp_fallback = enabled;
+-    if (enabled)
++    m_static_recomp_fastmem = enabled && fastmem;
++    if (enabled && !fastmem)
+     {
+       m_fastmem_enabled = false;
+       m_page_table_fastmem_enabled = false;
+--- a/vendor/dolphin/Source/Core/Core/PowerPC/JitCommon/JitBase.cpp
++++ b/vendor/dolphin/Source/Core/Core/PowerPC/JitCommon/JitBase.cpp
+@@ -146,7 +146,8 @@
+   jo.fp_exceptions = m_enable_float_exceptions;
+   jo.div_by_zero_exceptions = m_enable_div_by_zero_exceptions;
+ 
+-  if (Config::Get(Config::MAIN_CPU_CORE) == PowerPC::CPUCore::StaticRecomp)
++  if (Config::Get(Config::MAIN_CPU_CORE) == PowerPC::CPUCore::StaticRecomp &&
++      !m_static_recomp_fastmem)
+   {
+     m_fastmem_enabled = false;
+     m_page_table_fastmem_enabled = false;
+--- a/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore.cpp
++++ b/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore.cpp
+@@ -264,9 +264,16 @@
+   }
+   if (m_fallback_jit)
+   {
+-    m_fallback_jit->SetStaticRecompFallback(true);
++    bool fastmem = false;
++#if defined(_WIN32) && defined(_M_X86_64)
++    const char* backend = std::getenv("OPENSMASH_CPU_BACKEND");
++    fastmem = UseJitForNativeGame(true, true, NetPlay::IsNetPlayRunning(),
++        m_lockstep_verifier && m_lockstep_verifier->IsEnabled(), backend ? backend : "") &&
++        !std::getenv("OPENSMASH_DISABLE_JIT_FASTMEM");
++#endif
++    m_fallback_jit->SetStaticRecompFallback(true, fastmem);
+     m_fallback_jit->Init();
+-    m_fallback_jit->SetStaticRecompFallback(true);
++    m_fallback_jit->SetStaticRecompFallback(true, fastmem);
+   }
+ }
+ 
+--- a/vendor/dolphin/Source/Core/Core/PowerPC/JitInterface.cpp
++++ b/vendor/dolphin/Source/Core/Core/PowerPC/JitInterface.cpp
+@@ -94,7 +94,7 @@
+   if (!m_jit)
+     return false;
+ 
+-  return m_jit->WantsPageTableMappings();
++  return StaticRecompGetProfilingTarget(m_jit.get())->WantsPageTableMappings();
+ }
+ #endif
+ 
+@@ -107,9 +107,9 @@
+   auto& memory = m_system.GetMemory();
+ #ifdef _M_ARM_64
+   // JitArm64 is currently using the no fastmem arena code path even when only fastmem is off.
+-  const bool fastmem_arena = m_jit->jo.fastmem;
++  const bool fastmem_arena = StaticRecompGetProfilingTarget(m_jit.get())->jo.fastmem;
+ #else
+-  const bool fastmem_arena = m_jit->jo.fastmem_arena;
++  const bool fastmem_arena = StaticRecompGetProfilingTarget(m_jit.get())->jo.fastmem_arena;
+ #endif
+   if (ppc_state.msr.DR)
+   {
+@@ -227,7 +227,7 @@
+     return false;
+   }
+ 
+-  return m_jit->HandleFault(access_address, ctx);
++  return StaticRecompGetProfilingTarget(m_jit.get())->HandleFault(access_address, ctx);
+ }
+ 
+ bool JitInterface::HandleStackFault()
+@@ -237,7 +237,7 @@
+     return false;
+   }
+ 
+-  return m_jit->HandleStackFault();
++  return StaticRecompGetProfilingTarget(m_jit.get())->HandleStackFault();
+ }
+ 
+ void JitInterface::ClearCache(const Core::CPUThreadGuard&)

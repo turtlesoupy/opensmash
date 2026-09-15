@@ -1,0 +1,133 @@
+{
+  "name": "opensmash-melee-desktop",
+  "productName": "OpenSmash Melee",
+  "version": "0.3.4",
+  "private": true,
+  "description": "Shared OpenSmash launcher with a native Melee runtime",
+  "author": "OpenSmash contributors",
+  "license": "UNLICENSED",
+  "main": "main.cjs",
+  "scripts": {
+    "dev": "electron .",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --publish never",
+    "predev": "node build-surface.cjs",
+    "prepack": "node build-surface.cjs",
+    "predist": "node build-surface.cjs"
+  },
+  "devDependencies": {
+    "electron": "44.3.0",
+    "electron-builder": "26.15.3",
+    "node-gyp": "12.4.0"
+  },
+  "build": {
+    "appId": "fun.smash.melee",
+    "asar": true,
+    "directories": {
+      "output": "../build/desktop-artifacts"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "package.json",
+      "surface.cjs",
+      "frame.cjs",
+      "game-lifecycle.cjs",
+      "window-state.cjs",
+      "fullscreen.cjs",
+      "native/build/Release/surface.node"
+    ],
+    "extraResources": [
+      {
+        "from": "../web/dist",
+        "to": "web"
+      },
+      {
+        "from": "../build/desktop-backend",
+        "to": "backend"
+      },
+      {
+        "from": "../build/desktop-runtime",
+        "to": "runtime"
+      },
+      {
+        "from": "../build/desktop-payload",
+        "to": "payload"
+      },
+      {
+        "from": "../build/desktop-characters",
+        "to": "characters"
+      },
+      {
+        "from": "licenses",
+        "to": "licenses"
+      }
+    ],
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.games",
+      "identity": null
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "linux": {
+      "target": [
+        "tar.gz"
+      ],
+      "category": "Game"
+    },
+    "artifactName": "OpenSmash-Melee-${version}-${os}-${arch}.${ext}",
+    "asarUnpack": [
+      "native/build/Release/*.node"
+    ],
+    "nsis": {
+      "artifactName": "OpenSmash-Melee-${version}-win-${arch}-Setup.${ext}",
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false,
+      "packElevateHelper": false,
+      "differentialPackage": false,
+      "useZip": true,
+      "allowToChangeInstallationDirectory": true,
+      "include": "installer/windows.nsh"
+    },
+    "dmg": {
+      "title": "OpenSmash Melee ${version}",
+      "background": "installer/dmg-background.png",
+      "iconSize": 96,
+      "iconTextSize": 13,
+      "window": {
+        "width": 640,
+        "height": 400
+      },
+      "contents": [
+        {
+          "x": 170,
+          "y": 226,
+          "type": "file"
+        },
+        {
+          "x": 470,
+          "y": 226,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ],
+      "publish": []
+    }
+  }
+}

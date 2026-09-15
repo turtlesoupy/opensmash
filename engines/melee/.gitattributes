@@ -1,0 +1,6 @@
+# Patch context includes intentional upstream whitespace.
+*.patch text eol=lf -whitespace
+
+# Preserve upstream license files byte-for-byte, including their line endings.
+desktop/licenses/** -whitespace
+web/public/brand/kanit/OFL.txt -whitespace

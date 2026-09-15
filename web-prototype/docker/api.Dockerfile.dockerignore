@@ -24,3 +24,35 @@ pipeline/web-prototype/docs/
 !BattleShip/web-dist/torch/**
 !BattleShip/web-dist/rom-extract.js
 !BattleShip/web-dist/torch-worker.js
+
+# Shared launcher adapters only: no engine build caches, discs or converted assets.
+!pipeline/engines/
+!pipeline/engines/ssb64/
+!pipeline/engines/ssb64/launcher/
+!pipeline/engines/ssb64/launcher/**
+!pipeline/engines/melee/
+!pipeline/engines/melee/server/
+!pipeline/engines/melee/server/**
+!pipeline/engines/melee/launcher/
+!pipeline/engines/melee/launcher/**
+!pipeline/engines/melee/web/
+!pipeline/engines/melee/web/app/
+!pipeline/engines/melee/web/app/**
+!pipeline/engines/melee/web/lib/
+!pipeline/engines/melee/web/lib/**
+!pipeline/engines/melee/web/public/
+!pipeline/engines/melee/web/public/catalog.json
+!pipeline/engines/melee/runtime/
+!pipeline/engines/melee/runtime/launch-options.json
+!pipeline/engines/melee/runtime/web/
+!pipeline/engines/melee/runtime/web/launch-options.mjs
+
+# Embedded Python converter code only. Inputs and lazy caches use the private bucket.
+!pipeline/engines/melee/requirements.txt
+!pipeline/engines/melee/tools/
+!pipeline/engines/melee/tools/**
+!pipeline/engines/melee/opensmash_melee/
+!pipeline/engines/melee/opensmash_melee/**
+!pipeline/engines/melee/runtime/**
+**/__pycache__/
+**/*.pyc

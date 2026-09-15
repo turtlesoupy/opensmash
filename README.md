@@ -17,6 +17,18 @@ own ROM. The few generator inputs that come from the game (sprites, skeletons,
 announcer clips) are gitignored and rebuilt locally from your ROM; see
 [Game-derived inputs](#game-derived-inputs).
 
+## Melee integration
+
+This branch brings Melee into `engines/melee` and connects it to the existing
+launcher at `/melee`. The source import includes browser runtime, native engines,
+conversion tools and desktop packaging. See [integration status and acceptance
+criteria](docs/melee-integration.md) before deploying this branch; hosted Melee
+character preparation and a unified two-engine desktop release are not complete.
+
+The standalone Melee build remains available from `engines/melee`. Initialize its
+pinned upstream with `git submodule update --init engines/melee/melee`. Existing
+Smash 64 native and ROM commands in [BUILDING.md](BUILDING.md) remain unchanged.
+
 ## Upstream projects
 
 Everything below the site is a chain of forks. We keep our own copies so the

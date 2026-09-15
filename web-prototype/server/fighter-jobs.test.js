@@ -506,5 +506,9 @@ test("simultaneous source exports across replicas preserve every returned URL an
     const capability=results[0].url.split('/')[3];
     assert.equal(a.jobs.sourceExport(capability,'manifest.json').manifest.files['rigged.glb'].bytes,10);
     await assert.rejects(a.jobs.exportSource(stored.id,'other'),/not found/);
+    await assert.rejects(a.jobs.exportPlayableSource(stored.slug,'other'),/not found/);
+    assert.ok((await a.jobs.exportPlayableSource(stored.slug,'owner-1')).url);
+    stored.visibility='public';stored.revision++;
+    assert.ok((await a.jobs.exportPlayableSource(stored.slug,null)).url);
   } finally {await a.cleanup();await b.cleanup();}
 });

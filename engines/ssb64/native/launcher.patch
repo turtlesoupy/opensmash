@@ -1,0 +1,40 @@
+--- a/port/web_input.cpp
++++ b/port/web_input.cpp
+@@ -1,6 +1,9 @@
+ /* Browser port map — see web_input.h for the contract. */
+ #include "web_input.h"
+ #include "port_log.h"
++#ifndef __EMSCRIPTEN__
++#include "launcher_input.h"
++#endif
+ 
+ #include <stdlib.h>
+ #include <string.h>
+@@ -138,7 +141,7 @@
+ 		}
+ 	}
+ #else
+-	(void)pads;
++	if (pads && OpenSmashLauncher::Enabled()) LauncherPads(pads,sConnected);
+ #endif
+ }
+ 
+--- a/port/audio/audio_playback.cpp
++++ b/port/audio/audio_playback.cpp
+@@ -13,6 +13,7 @@
+ // portAudioPushSilence() once per tick.
+ 
+ #include "audio_playback.h"
++#include "OpenSmashLauncher.h"
+ #include "port_log.h"
+ #include "voice_inject.h"
+ 
+@@ -256,7 +257,7 @@
+     // swap the payload rather than skipping the submit. Used by the eval
+     // harness, which boots up to 10 instances at once.
+     static const bool sMuted = getenv("SSB64_MUTE") != nullptr;
+-    if (sMuted) {
++    if (sMuted || OpenSmashLauncher::Muted()) {
+         static int16_t sMuteBuf[MAX_SAMPLES_STEREO] = {0};
+         if (sampleCount * 2 <= (int32_t)MAX_SAMPLES_STEREO) {
+             pcm = sMuteBuf;

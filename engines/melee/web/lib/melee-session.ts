@@ -1,0 +1,151 @@
+import {cacheDisc,restoreCachedDisc,removeCachedDisc} from './disc-cache.ts';
+import {unlockAudio} from './audio.ts';
+import {MeleeFrameWorker} from './melee-frame-worker.ts';
+import {meleePath} from './paths.ts';
+/** One initialized engine waits at the game boundary while the roster is open. */
+type Session={worker:Worker;audio:SharedArrayBuffer;ready:Promise<void>;verified:Promise<void>;readyAt:number;cancel:()=>void};
+let standby:Session|undefined;
+const currentSession=():Session|undefined=>standby;
+let localDisc:File|undefined;
+const verifiedDiscs=new WeakSet<File>();
+type DiscSetup={state:string;ready:boolean;message:string;storageMessage?:string};
+let discSetup:DiscSetup={state:'missing',ready:false,message:'Choose your Melee disc.'};
+const discListeners=new Set<(status:DiscSetup)=>void>();
+let discRevision=0,restoreStarted=false;
+let cacheAbort:AbortController|undefined;
+let restoring:Promise<void>|undefined;
+export const localDiscReady=()=>discSetup.ready;
+let consumers=0;
+let suspendTimer:ReturnType<typeof setTimeout>|undefined;
+/** Effect replay must not discard a disc that is already warming. */
+export function retainMelee(){
+ consumers++;
+ clearTimeout(suspendTimer);suspendTimer=undefined;
+ let released=false;
+ return()=>{
+  if(released)return;released=true;
+  if(--consumers===0)suspendTimer=setTimeout(()=>{
+   suspendTimer=undefined;
+   if(consumers===0)suspendMelee();
+  },0);
+ };
+}
+function updateDisc(status:DiscSetup){discSetup=status;for(const listener of discListeners)listener(status);}
+export function subscribeLocalDisc(listener:(status:DiscSetup)=>void){
+ discListeners.add(listener);listener(discSetup);return()=>{discListeners.delete(listener);};
+}
+export function suspendMelee(){
+ standby?.cancel();standby?.worker.terminate();standby=undefined;
+ if(discSetup.state==='checking'&&localDisc){
+  ++discRevision;cacheAbort?.abort();localDisc=undefined;restoreStarted=false;
+  updateDisc({state:'missing',ready:false,message:'Disc setup cancelled. Choose your disc to continue.'});
+ }
+}
+export async function clearLocalDisc(){
+ ++discRevision;restoreStarted=true;cacheAbort?.abort();
+ localDisc=undefined;
+ suspendMelee();
+ updateDisc({state:'missing',ready:false,message:'Choose your Melee disc.'});
+ restoreStarted=true;
+ await removeCachedDisc();
+}
+// The old upload/extraction path is a loopback-only comparison tool.
+export const usesLocalDisc=()=>!(['localhost','127.0.0.1','[::1]'].includes(location.hostname)&&new URLSearchParams(location.search).get('disc')==='server');
+export function restoreLocalDisc():Promise<void>{
+ if(restoreStarted||localDisc||!usesLocalDisc())return restoring||Promise.resolve();
+ restoring=restoreDiscFromStorage();return restoring;
+}
+async function restoreDiscFromStorage(){
+ restoreStarted=true;const revision=discRevision;
+ updateDisc({state:'checking',ready:false,message:'Looking for your saved disc…'});
+ try{
+  const file=await restoreCachedDisc();
+  if(revision!==discRevision)return;
+  if(file)await selectLocalDisc(file,true);
+  else updateDisc({state:'missing',ready:false,message:'Choose your Melee disc.'});
+ }catch(e){if(revision===discRevision)updateDisc({state:'error',ready:false,message:`Could not restore your disc. Choose it again. ${(e as Error).message}`});}
+}
+export async function selectLocalDisc(file:File,restored=false){
+ const revision=++discRevision;restoreStarted=true;cacheAbort?.abort();
+ const controller=new AbortController();cacheAbort=controller;
+ // Opening the audio device can block on some hosts. Do it during disc setup,
+ // before gameplay, and reuse the context when the match connects its ring.
+ void unlockAudio().catch(()=>{});
+ standby?.cancel();standby?.worker.terminate();standby=undefined;
+ localDisc=file;
+ updateDisc({state:'checking',ready:false,message:'Checking your local disc…'});
+ let session:Session|undefined,listener:((event:MessageEvent)=>void)|undefined;
+ try{
+  warmMelee();session=currentSession();
+  if(!session)throw Error('This browser needs shared memory and OffscreenCanvas support.');
+  listener=({data}:MessageEvent)=>{
+   if(data.type==='status'&&currentSession()===session)updateDisc({state:'checking',ready:false,message:data.message});
+  };
+  session.worker.addEventListener('message',listener);
+  await session.verified;
+  let storageMessage='Saved disc restored from this device.';
+  if(currentSession()===session&&!restored){
+   // Finish the disk copy before enabling play, keeping I/O out of the match.
+   session.worker.removeEventListener('message',listener);
+   let lastPercent=-1;
+   try{storageMessage=await cacheDisc(file,controller.signal,fraction=>{
+    const percent=Math.floor(fraction*100);
+    if(revision===discRevision&&percent!==lastPercent){lastPercent=percent;updateDisc({state:'checking',ready:false,message:`Saving disc on this device… ${percent}%`});}
+   });}catch(e){
+    if(controller.signal.aborted)return;
+    storageMessage=`Playing without a saved copy. ${(e as Error).name==='QuotaExceededError'?'Not enough browser storage.':(e as Error).message} Choose the disc again next visit.`;
+   }
+  }
+  if(revision===discRevision&&currentSession()===session)updateDisc({state:'ready',ready:true,message:'Ready to play.',storageMessage});
+ }catch(error){
+  if(localDisc===file&&currentSession()===session){
+   standby=undefined;localDisc=undefined;session?.worker.terminate();
+   updateDisc({state:'error',ready:false,message:(error as Error).message});
+  }
+  throw error;
+ }finally{if(session&&listener)session.worker.removeEventListener('message',listener);}
+}
+const sessions=new WeakMap<Worker,Session>();
+
+export function warmMelee(){
+ if(standby||!crossOriginIsolated||typeof SharedArrayBuffer==='undefined'||(usesLocalDisc()&&!localDisc))return;
+ const disc=localDisc;
+ const engine=new URLSearchParams(location.search).get('engine')||'upstream';
+ const upstream=engine==='upstream',direct=upstream||engine==='direct-c';
+ const worker=(upstream?new MeleeFrameWorker(meleePath('/engine/upstream/runtime.html')):new Worker(meleePath(direct?'/engine/direct-c/worker.mjs':'/engine/engine-worker.js'),direct?{type:'module'}:{})) as Worker,audio=new SharedArrayBuffer(16+(direct?32768:8192)*2*4);
+ let resolve!:()=>void,reject!:(reason:Error)=>void;
+ let verify!:()=>void,rejectVerify!:(reason:Error)=>void;
+ const verified=new Promise<void>((ok,fail)=>{verify=ok;rejectVerify=fail;});
+ void verified.catch(()=>{});
+ const ready=new Promise<void>((ok,fail)=>{resolve=ok;reject=fail;});
+ void ready.catch(()=>{});
+ const fail=(error:Error)=>{reject(error);rejectVerify(error);};
+ const session={worker,audio,ready,verified,readyAt:0,cancel:()=>fail(Error('Game closed'))};
+ standby=session;sessions.set(worker,session);
+ worker.addEventListener('message',({data})=>{
+  if(data.type==='ready-for-selection'){session.readyAt=Date.now();resolve();}
+  if(data.type==='disc-verified'&&disc){verifiedDiscs.add(disc);verify();}
+  if(data.type==='error')fail(Error(data.message));
+  if(data.type==='frame'&&!worker.onmessage)data.bitmap?.close();
+ });
+ worker.addEventListener('error',e=>fail(Error(e.message||'The engine could not start.')));
+ const query=new URLSearchParams(location.search);
+ worker.postMessage({type:'start',warm:true,character:'pending',skin:'host',localGame:!usesLocalDisc(),
+  iso:disc,discVerified:!!disc&&verifiedDiscs.has(disc),
+  profile:query.get('profile'),benchmark:query.get('benchmark'),audio});
+}
+
+export function claimMelee():Session{
+ warmMelee();
+ if(!standby)throw Error('This browser needs shared memory support.');
+ const session=standby;standby=undefined;return session;
+}
+
+export function releaseMelee(worker:Worker){
+ sessions.get(worker)?.cancel();sessions.delete(worker);worker.terminate();
+ if(!location.pathname?.startsWith('/melee'))warmMelee();
+}
+
+if((import.meta as any).hot)(import.meta as any).hot.dispose(()=>{
+ standby?.cancel();standby?.worker.terminate();standby=undefined;
+});

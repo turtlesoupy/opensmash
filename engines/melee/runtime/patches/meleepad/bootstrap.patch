@@ -1,0 +1,66 @@
+diff --git a/patches/moderngekko-dolphin/0045-netplay-canonical-difference-summary.patch b/patches/moderngekko-dolphin/0045-netplay-canonical-difference-summary.patch
+index c6f4db1..881e59a 100644
+--- a/patches/moderngekko-dolphin/0045-netplay-canonical-difference-summary.patch
++++ b/patches/moderngekko-dolphin/0045-netplay-canonical-difference-summary.patch
+@@ -40,7 +40,7 @@ diff --git a/Source/Core/Core/NetPlay/NetPlayServer.cpp b/Source/Core/Core/NetPl
+ +        }
+          for (const TimeBaseRecord& record : timebases)
+          {
+-            mismatch += " pid=" + std::to_string(record.pid) +
++           mismatch += " pid=" + std::to_string(record.pid) +
+ @@ -1192,7 +1220,14 @@ unsigned int NetPlayServer::OnData(sf::Packet& packet, Client& player)
+                        " canonical_ram_hash=" +
+ -                          fmt::format("{:#018x}", record.canonical.ram_hash);
+@@ -51,3 +51,4 @@ diff --git a/Source/Core/Core/NetPlay/NetPlayServer.cpp b/Source/Core/Core/NetPl
+ +                        fmt::format("{:#018x}",
+ +                                    record.canonical.ram_region_hashes[first_ram_region]);
+ +          }
++         }
+diff --git a/patches/moderngekko/0011-ios-shader-workers.patch b/patches/moderngekko/0011-ios-shader-workers.patch
+index 3fddb19..654e0d4 100644
+--- a/patches/moderngekko/0011-ios-shader-workers.patch
++++ b/patches/moderngekko/0011-ios-shader-workers.patch
+@@ -24,7 +24,7 @@ index 0cedfdb..0422bb3 100644
+ @@ -502,6 +510,12 @@ bool ConfigureDolphin(Runtime::Impl* impl)
+                    ShaderCompilationMode::AsynchronousUberShaders);
+    Config::SetBase(Config::GFX_WAIT_FOR_SHADERS_BEFORE_STARTING, true);
+-  #ifdef MODERNGEKKO_HAVE_IOS
++ #ifdef MODERNGEKKO_HAVE_IOS
+ +  // Compile newly encountered specialized pipelines on otherwise idle cores
+ +  // so the ubershader fallback remains brief during stage transitions.
+ +  Config::SetBase(Config::GFX_SHADER_COMPILER_THREADS, 3);
+diff --git a/scripts/bootstrap-dependencies.sh b/scripts/bootstrap-dependencies.sh
+index d0f6b66..f96315e 100755
+--- a/scripts/bootstrap-dependencies.sh
++++ b/scripts/bootstrap-dependencies.sh
+@@ -311,15 +311,11 @@ apply_patch_once_or_marker "$MG/vendor/dolphin" "$static_recomp_dispatch_burst_p
+ apply_patch_once_or_marker "$MG/vendor/dolphin" "$dispatch_sample_phase_patch" \
+   Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore.cpp \
+   STATICRECOMP_DISPATCH_SAMPLE_INTERVAL
+-apply_patch_once_or_marker "$MG/vendor/dolphin" "$dispatch_time_attribution_patch" \
+-  Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore.cpp \
+-  STATICRECOMP_DISPATCH_TIME_LOG
++
+ apply_patch_once_or_marker "$MG/vendor/dolphin" "$caller_idle_preflight_patch" \
+   Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore.cpp \
+   STATICRECOMP_CALLER_IDLE_PC
+-apply_patch_once_or_marker "$MG/vendor/dolphin" "$secondary_idle_preflight_patch" \
+-  Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore.cpp \
+-  STATICRECOMP_SECONDARY_IDLE_PC
++
+ apply_patch_once_or_marker "$MG/vendor/dolphin" "$module_cpu_tune_patch" \
+   module-template/CMakeLists.txt \
+   RECOMPCORE_MODULE_TUNE_CPU
+@@ -341,6 +337,12 @@ apply_patch_once_or_marker "$MG/vendor/dolphin" "$netplay_execution_fingerprint_
+ apply_patch_once_or_marker "$MG/vendor/dolphin" "$netplay_canonical_boundary_patch" \
+   Source/Core/Core/NetPlay/NetPlayCommon.h \
+   'struct CanonicalStateSnapshot'
++apply_patch_once_or_marker "$MG/vendor/dolphin" "$dispatch_time_attribution_patch" \
++  Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore.cpp \
++  STATICRECOMP_DISPATCH_TIME_LOG
++apply_patch_once_or_marker "$MG/vendor/dolphin" "$secondary_idle_preflight_patch" \
++  Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore.cpp \
++  STATICRECOMP_SECONDARY_IDLE_PC
+ apply_patch_once_or_marker "$MG/vendor/dolphin" "$netplay_canonical_summary_patch" \
+   Source/Core/Core/NetPlay/NetPlayServer.cpp \
+   '" differences=" + differences'

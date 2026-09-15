@@ -1,0 +1,26 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Melee hardware preview</title><style>
+body{margin:0;background:#141217;color:#eee;font:16px system-ui}canvas{display:block;width:100%;height:85vh}label{display:flex;gap:20px;justify-content:center;padding:20px}input{width:50%}
+</style></head><body><canvas></canvas><button id="play" style="position:absolute;top:20px;left:20px;padding:10px 20px">Play insertion</button><label>Insertion <input aria-label="Insertion" type="range" min="0" max="100" step="0.01" value="0"></label><p style="text-align:center;margin:0;color:#aaa;font-size:13px">Drag to rotate · Scroll to zoom · No audio</p>
+<script type="module">
+import * as THREE from 'three';
+import {discDockPose,DISC_DOCK_MS} from '../../engines/melee/launcher/disc-motion.js';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {createDisc,createGameCube,GAMECUBE_LID_OPEN} from '../../engines/melee/launcher/disc-hardware.js';
+import labelUrl from '../visual/assets/cartridge-label-art.webp?url';
+const renderer=new THREE.WebGLRenderer({canvas:document.querySelector('canvas'),antialias:true});
+renderer.setSize(innerWidth,innerHeight*.85);renderer.setPixelRatio(devicePixelRatio);renderer.setClearColor(0x141217);renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+const scene=new THREE.Scene(),camera=new THREE.OrthographicCamera(-1,1,.75,-.75,.01,100);camera.position.set(2.3,1.9,-2.3);camera.lookAt(0,.05,0);
+scene.add(new THREE.HemisphereLight(0xffffff,0x555555,.8));const key=new THREE.DirectionalLight(0xffffff,3.8);key.position.set(2,4,-3);key.castShadow=true;key.shadow.mapSize.set(2048,2048);key.shadow.camera.left=key.shadow.camera.bottom=-1;key.shadow.camera.right=key.shadow.camera.top=1;key.shadow.normalBias=.001;scene.add(key);
+const cube=await createGameCube(),disc=createDisc(await new THREE.TextureLoader().loadAsync(labelUrl));scene.add(cube,disc);
+disc.scale.setScalar(.44);disc.rotation.z=Math.PI/2;
+disc.traverse(o=>{if(o.isMesh)o.castShadow=o.receiveShadow=true;});
+const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,.03,0);controls.enablePan=false;controls.minZoom=.6;controls.maxZoom=3;controls.update();
+controls.addEventListener('change',()=>renderer.render(scene,camera));
+function resize(){const width=innerWidth,height=innerHeight*.85,aspect=width/height;const half=Math.max(.7,.62/aspect);camera.left=-half*aspect;camera.right=half*aspect;camera.top=half;camera.bottom=-half;camera.updateProjectionMatrix();renderer.setSize(width,height);renderer.render(scene,camera);}
+addEventListener('resize',resize);resize();
+let playback=0;
+function draw(){const t=document.querySelector('input').value/100;const pose=discDockPose(1220+t*(3510-1220));disc.position.copy(cube.userData.snapAnchor);disc.position.y+=pose.height;disc.quaternion.setFromAxisAngle(new THREE.Vector3(0,0,1),Math.PI/2).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0),pose.spin));cube.userData.lid.rotation.z=GAMECUBE_LID_OPEN*pose.lid;renderer.render(scene,camera);}
+document.querySelector('input').addEventListener('input',()=>{cancelAnimationFrame(playback);draw();});
+document.querySelector('#play').addEventListener('click',()=>{cancelAnimationFrame(playback);const start=performance.now();function tick(now){document.querySelector('input').value=Math.min(100,(now-start)/(3510-1220)*100);draw();if(now-start<3510-1220)playback=requestAnimationFrame(tick);}playback=requestAnimationFrame(tick);});draw();
+</script></body></html>

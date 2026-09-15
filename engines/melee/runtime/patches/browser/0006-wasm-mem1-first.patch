@@ -1,0 +1,37 @@
+--- a/vendor/dolphin/GXRuntime/include/core/cpu.h
++++ b/vendor/dolphin/GXRuntime/include/core/cpu.h
+@@ -168,6 +168,26 @@
+ 
+ static GXRUNTIME_ALWAYS_INLINE u8* get_ram_ptr(CPUState* cpu, u32 addr, u32 size, u32* out_offset) {
+     u32 masked_addr = addr & ~0x40000000u;
++#ifdef __EMSCRIPTEN__
++    // GameCube titles have no MEM2: test MEM1 first so the common hit does not
++    // load and branch on the EXRAM pointer. The two ranges do not overlap, so
++    // the result is identical for every address.
++    {
++        u32 offset = masked_addr - 0x80000000u;
++        if (offset <= cpu->ram_size - size) {
++            if (out_offset) *out_offset = offset;
++            return cpu->ram + offset;
++        }
++    }
++    if (cpu->exram) {
++        u32 offset = masked_addr - 0x90000000u;
++        if (offset <= cpu->exram_size - size) {
++            if (out_offset) *out_offset = (u32)-1;
++            return cpu->exram + offset;
++        }
++    }
++    return NULL;
++#else
+     
+     // Check MEM2 (EXRAM) first as it is much more common in Wii titles
+     if (cpu->exram) {
+@@ -186,6 +206,7 @@
+     }
+     
+     return NULL;
++#endif
+ }
+ 
+ static GXRUNTIME_ALWAYS_INLINE void clear_matching_reservation(CPUState* cpu, u32 addr) {

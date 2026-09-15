@@ -1,0 +1,16 @@
+# Explicit infrastructure check only: boot, authenticate, write status, delete.
+steps:
+  - id: linux
+    name: gcr.io/google.com/cloudsdktool/google-cloud-cli:stable
+    entrypoint: bash
+    args: ['infra/gcp/python.sh', 'infra/gcp/coordinator.py', 'run', '--smoke', '--platform', 'linux-x64', '--build', '$BUILD_ID']
+  - id: windows
+    waitFor: ['-']
+    name: gcr.io/google.com/cloudsdktool/google-cloud-cli:stable
+    entrypoint: bash
+    args: ['infra/gcp/python.sh', 'infra/gcp/coordinator.py', 'run', '--smoke', '--platform', 'windows-x64', '--build', '$BUILD_ID']
+serviceAccount: projects/fun-opensmash-builds/serviceAccounts/release-coordinator@fun-opensmash-builds.iam.gserviceaccount.com
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_MEDIUM
+timeout: 900s

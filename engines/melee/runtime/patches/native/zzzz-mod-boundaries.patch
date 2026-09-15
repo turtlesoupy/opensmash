@@ -1,0 +1,49 @@
+--- a/vendor/dolphin/Source/Core/Core/PowerPC/PPCAnalyst.cpp
++++ b/vendor/dolphin/Source/Core/Core/PowerPC/PPCAnalyst.cpp
+@@ -21,6 +21,7 @@
+ #include "Core/PowerPC/PPCSymbolDB.h"
+ #include "Core/PowerPC/PPCTables.h"
+ #include "Core/PowerPC/PowerPC.h"
++#include "Core/PowerPC/StaticRecomp/StaticRecompCore.h"
+ #include "Core/PowerPC/SignatureDB/SignatureDB.h"
+ #include "Core/System.h"
+ 
+@@ -666,6 +667,12 @@
+   auto& mmu = system.GetMMU();
+   for (std::size_t i = 0; i < block_size; ++i)
+   {
++    // A mod entry must return through the dispatcher even when branch following
++    // would otherwise inline it into its caller. Keep unrelated blocks optimized.
++    if (i != 0 && g_static_recomp_core &&
++        g_static_recomp_core->IsHostCallAddress(address))
++      break;
++
+     auto result = mmu.TryReadInstruction(address);
+     if (!result.valid)
+     {
+--- a/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore_Run.cpp
++++ b/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore_Run.cpp
+@@ -292,7 +292,7 @@
+         {
+           SyncIn();
+           bool handled = m_guest.host_call(&m_guest, m_guest.pc);
+-          if (!handled && m_guest.pc < m_guest.ram_size)
++          if (!handled && m_guest.pc < m_guest.ram_size && !(m_guest.pc & 0x80000000u))
+             handled = m_guest.host_call(&m_guest, m_guest.pc | 0x80000000u);
+           if (m_fallback_jit && IsHostCallAddress(m_guest.lr))
+             m_fallback_jit->GetBlockCache()->InvalidateICache(m_guest.lr, 4, true);
+@@ -309,8 +309,12 @@
+           SyncOut();
+           if (m_fallback_jit)
+           {
+-            m_host_call_passthrough_pc = ppc.pc;
+-            m_host_call_passthrough = true;
++            // Observational hooks leave PC unchanged. Execute their first
++            // instruction once before re-entering the JIT: cache misses can
++            // revisit the dispatcher without executing any guest instruction.
++            ppc.downcount -= interpreter.SingleStepInner();
++            ++m_fallback_steps;
++            continue;
+           }
+         }
+         // SingleStepInner delivers synchronous exceptions itself; external

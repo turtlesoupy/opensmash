@@ -1,0 +1,9 @@
+{
+  "meleepad": {
+    "url": "https://github.com/chrissotraidis/meleepad.git",
+    "revision": "83b81ed2416c0d64fc36556289dbffe4af306a0a"
+  },
+  "moderngekko": "048c426ba3db0369e40826d22ad3adcce7fe7c58",
+  "recompcore": "e13ab348f13cd67879f6db6e9d7185410f8f62c6",
+  "dolrecomp": "93b881c8f73df1d64a88491f2aa50c7c9ed2384d"
+}

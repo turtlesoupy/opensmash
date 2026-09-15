@@ -1,0 +1,1169 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1022,3 +1022,7 @@
+     add_test(NAME moderngekko.dolphin_shader
+              COMMAND moderngekko_dolphin_shader_test)
+ endif()
++
++if(EMSCRIPTEN AND OPENSMASH_BROWSER_FRONTEND)
++  include("${OPENSMASH_BROWSER_FRONTEND}/CMakeLists.txt")
++endif()
+diff --git a/include/moderngekko/runtime.hpp b/include/moderngekko/runtime.hpp
+--- a/include/moderngekko/runtime.hpp
++++ b/include/moderngekko/runtime.hpp
+@@ -53,6 +53,10 @@
+   Kind kind = Kind::None;
+   std::filesystem::path path;
+   const ModernGekkoModuleDesc* descriptor = nullptr;
++  bool (*host_call)(CPUState*, unsigned, void*) = nullptr;
++  bool (*host_call_contains)(unsigned, void*) = nullptr;
++  bool (*host_call_range_contains)(unsigned, unsigned, void*) = nullptr;
++  void* host_call_user = nullptr;
+ };
+ 
+ struct GraphicsSettings
+diff --git a/src/runtime/dolphin_runtime.cpp b/src/runtime/dolphin_runtime.cpp
+--- a/src/runtime/dolphin_runtime.cpp
++++ b/src/runtime/dolphin_runtime.cpp
+@@ -469,6 +469,10 @@
+ 
+   if (impl->config.headless)
+     impl->platform = Platform::CreateHeadlessPlatform();
++#ifdef __EMSCRIPTEN__
++  else
++    impl->platform = Platform::CreateHeadlessPlatform();
++#endif
+ #ifdef MODERNGEKKO_HAVE_IOS
+   else
+     impl->platform = Platform::CreateIOSPlatform();
+@@ -532,8 +536,15 @@
+     Config::SetBase(Config::GFX_EFB_SCALE,
+                     *impl->config.graphics.internal_resolution_scale);
+   Config::SetBase(Config::GFX_SHADER_CACHE, true);
++#ifdef __EMSCRIPTEN__
++  // WebGL has no shared context for Dolphin's shader compiler threads.
++  Config::SetBase(Config::GFX_SHADER_COMPILATION_MODE, ShaderCompilationMode::Synchronous);
++  Config::SetBase(Config::GFX_SHADER_COMPILER_THREADS, 0);
++  Config::SetBase(Config::GFX_SHADER_PRECOMPILER_THREADS, 0);
++#else
+   Config::SetBase(Config::GFX_SHADER_COMPILATION_MODE,
+                   ShaderCompilationMode::AsynchronousUberShaders);
++#endif
+   Config::SetBase(Config::GFX_WAIT_FOR_SHADERS_BEFORE_STARTING, true);
+ #ifdef MODERNGEKKO_HAVE_IOS
+   // Compile newly encountered specialized pipelines on otherwise idle cores
+@@ -581,6 +592,10 @@
+     recomp_source = StaticRecompModuleSource::Attached(
+         reinterpret_cast<const StaticRecompModuleDesc *>(
+             impl->config.module.descriptor));
++  recomp_source.host_call = impl->config.module.host_call;
++  recomp_source.host_call_contains = impl->config.module.host_call_contains;
++  recomp_source.host_call_range_contains = impl->config.module.host_call_range_contains;
++  recomp_source.host_call_user = impl->config.module.host_call_user;
+   if (!impl->mods->Empty()) {
+     recomp_source.host_call = &ModManager::HostCall;
+     recomp_source.host_call_contains = &ModManager::HostCallContains;
+diff --git a/src/runtime/game.cpp b/src/runtime/game.cpp
+--- a/src/runtime/game.cpp
++++ b/src/runtime/game.cpp
+@@ -1,3 +1,5 @@
++#include <cstdlib>
++#include <cstring>
+ #include "moderngekko/game.hpp"
+ 
+ #include <algorithm>
+@@ -8,6 +10,9 @@
+ #include <iomanip>
+ #include <sstream>
+ #include <vector>
++#ifdef __EMSCRIPTEN__
++#include <mbedtls/sha256.h>
++#endif
+ 
+ namespace moderngekko
+ {
+@@ -92,14 +97,49 @@
+ 
+ std::optional<std::string> HashFileSha256(const std::filesystem::path& path)
+ {
++#ifdef __EMSCRIPTEN__
++  std::ifstream file(path, std::ios::binary);
++  if (!file) return std::nullopt;
++  mbedtls_sha256_context context;
++  mbedtls_sha256_init(&context);
++  int error = mbedtls_sha256_starts_ret(&context, 0);
++  std::array<unsigned char, 65536> bytes;
++  while (!error && file) {
++    file.read(reinterpret_cast<char*>(bytes.data()), bytes.size());
++    const auto count = file.gcount();
++    if (count) error = mbedtls_sha256_update_ret(&context, bytes.data(), count);
++  }
++  unsigned char hash[32];
++  if (!error && file.eof()) error = mbedtls_sha256_finish_ret(&context, hash);
++  else error = -1;
++  mbedtls_sha256_free(&context);
++  if (error) return std::nullopt;
++  std::ostringstream out;
++  out << std::hex << std::setfill('0');
++  for (auto byte : hash) out << std::setw(2) << unsigned(byte);
++  return out.str();
++#else
+   auto bytes = ReadFile(path);
+   if (!bytes)
+     return std::nullopt;
+   return Sha256(std::move(*bytes));
++#endif
+ }
+ 
+ std::optional<std::string> HashDirectorySha256(const std::filesystem::path& root)
+ {
++#ifdef __EMSCRIPTEN__
++  // The browser launcher has already verified the whole source disc. This is
++  // a cache identity, including any costume override, not a second integrity gate.
++  // Avoid eagerly fetching and retaining unused movie files in the lazy FS.
++  if (root == "/game/files") {
++    const char* identity = std::getenv("OPENSMASH_VERIFIED_ASSET_IDENTITY");
++    if (identity && std::strlen(identity) == 64 &&
++        std::all_of(identity, identity + 64, [](char c) {
++          return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f');
++        })) return std::string(identity);
++  }
++#endif
+   std::error_code ec;
+   if (!std::filesystem::is_directory(root, ec) || ec)
+     return std::nullopt;
+diff --git a/vendor/dolphin/GXRuntime/include/core/browser_fma.h b/vendor/dolphin/GXRuntime/include/core/browser_fma.h
+new file mode 100644
+--- /dev/null
++++ b/vendor/dolphin/GXRuntime/include/core/browser_fma.h
+@@ -0,0 +1,15 @@
++// SPDX-License-Identifier: GPL-3.0-or-later
++#pragma once
++#include <math.h>
++// A product of two finite binary32 values is exact in binary64 (48 significant
++// bits, with ample exponent range). Only the addition rounds, exactly as fma.
++// This avoids Wasm's software binary64 fma for common skinning operands. The
++// existing PPC rounding correction, FPSCR and exceptional-value paths remain.
++static inline double opensmash_exact_fma(double a, double c, double b) {
++#ifdef __EMSCRIPTEN__
++    if (isfinite(a) && isfinite(c) && isfinite(b) &&
++        (double)(float)a == a && (double)(float)c == c)
++        return a * c + b;
++#endif
++    return fma(a, c, b);
++}
+diff --git a/vendor/dolphin/GXRuntime/src/core/cpu_interpreter_float.c b/vendor/dolphin/GXRuntime/src/core/cpu_interpreter_float.c
+--- a/vendor/dolphin/GXRuntime/src/core/cpu_interpreter_float.c
++++ b/vendor/dolphin/GXRuntime/src/core/cpu_interpreter_float.c
+@@ -1,5 +1,6 @@
+ #include "cpu_interpreter_private.h"
+ #include <string.h>
++#include "core/browser_fma.h"
+ 
+ #if defined(__clang__) || defined(__GNUC__)
+ #define GXRUNTIME_ALWAYS_INLINE __attribute__((always_inline))
+@@ -295,15 +296,15 @@
+     f64 result;
+ 
+     if (!single) {
+-        result = fma(a, c, addend);
++        result = opensmash_exact_fma(a, c, addend);
+     } else {
+         f64 rounded_c = force_25_bit(c);
+-        result = fma(a, rounded_c, addend);
++        result = opensmash_exact_fma(a, rounded_c, addend);
+         u64 bits = f64_bits(result);
+         if ((bits & 0x000000001FFFFFFFull) == 0x0000000010000000ull) {
+             f64 a_prime = addend - result;
+             f64 b_prime = result + a_prime;
+-            f64 error = fma(a, rounded_c, a_prime) + (addend - b_prime);
++            f64 error = opensmash_exact_fma(a, rounded_c, a_prime) + (addend - b_prime);
+             if (error != 0.0) {
+                 if ((error > 0.0) == (result > 0.0)) bits++;
+                 else bits--;
+@@ -485,11 +486,11 @@
+     FPRes result = {0.0, 0};
+ 
+     if (!single) {
+-        result.value = fma(a, c, sub ? -b : b);
++        result.value = opensmash_exact_fma(a, c, sub ? -b : b);
+     } else {
+         f64 c_round = force_25bit_c(c);
+         f64 b_sign = sub ? -b : b;
+-        result.value = fma(a, c_round, b_sign);
++        result.value = opensmash_exact_fma(a, c_round, b_sign);
+ 
+         u64 result_bits = f64_bits(result.value);
+         const u64 D_MASK = 0x000000001FFFFFFFull;
+@@ -497,7 +498,7 @@
+         if ((result_bits & D_MASK) == EVEN_TIE) {
+             f64 a_prime = b_sign - result.value;
+             f64 b_prime = result.value + a_prime;
+-            f64 delta_a = fma(a, c_round, a_prime);
++            f64 delta_a = opensmash_exact_fma(a, c_round, a_prime);
+             f64 delta_b = b_sign - b_prime;
+             f64 error = delta_a + delta_b;
+             if (error != 0.0) {
+diff --git a/vendor/dolphin/Externals/libusb/CMakeLists.txt b/vendor/dolphin/Externals/libusb/CMakeLists.txt
+--- a/vendor/dolphin/Externals/libusb/CMakeLists.txt
++++ b/vendor/dolphin/Externals/libusb/CMakeLists.txt
+@@ -22,7 +22,9 @@
+ )
+ endif()
+ 
+-if(WIN32 OR CYGWIN)
++if(EMSCRIPTEN)
++  target_sources(usb PRIVATE libusb/libusb/os/null_usb.c)
++elseif(WIN32 OR CYGWIN)
+   target_sources(usb PRIVATE
+     libusb/libusb/os/threads_windows.c
+     libusb/libusb/os/windows_common.c
+diff --git a/vendor/dolphin/Source/Core/Common/MemoryUtil.cpp b/vendor/dolphin/Source/Core/Common/MemoryUtil.cpp
+--- a/vendor/dolphin/Source/Core/Common/MemoryUtil.cpp
++++ b/vendor/dolphin/Source/Core/Common/MemoryUtil.cpp
+@@ -1,3 +1,6 @@
++#ifdef __EMSCRIPTEN__
++#include <emscripten/heap.h>
++#endif
+ // Copyright 2008 Dolphin Emulator Project
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ 
+@@ -275,6 +278,8 @@
+   system_info sysinfo;
+   get_system_info(&sysinfo);
+   return static_cast<size_t>(sysinfo.max_pages * B_PAGE_SIZE);
++#elif defined(__EMSCRIPTEN__)
++  return emscripten_get_heap_max();
+ #else
+   struct sysinfo memInfo;
+   sysinfo(&memInfo);
+diff --git a/vendor/dolphin/Source/Core/Common/Thread.cpp b/vendor/dolphin/Source/Core/Common/Thread.cpp
+--- a/vendor/dolphin/Source/Core/Common/Thread.cpp
++++ b/vendor/dolphin/Source/Core/Common/Thread.cpp
+@@ -1,3 +1,6 @@
++#ifdef __EMSCRIPTEN__
++#include <emscripten/threading.h>
++#endif
+ // Copyright 2008 Dolphin Emulator Project
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ 
+@@ -176,7 +179,9 @@
+ 
+ void SetCurrentThreadName(const char* name)
+ {
+-#ifdef __APPLE__
++#ifdef __EMSCRIPTEN__
++  emscripten_set_thread_name(pthread_self(), name);
++#elif defined(__APPLE__)
+   pthread_setname_np(name);
+ #elif defined __FreeBSD__ || defined __OpenBSD__
+   pthread_set_name_np(pthread_self(), name);
+diff --git a/vendor/dolphin/Externals/SFML/SFML/include/SFML/Config.hpp b/vendor/dolphin/Externals/SFML/SFML/include/SFML/Config.hpp
+--- a/vendor/dolphin/Externals/SFML/SFML/include/SFML/Config.hpp
++++ b/vendor/dolphin/Externals/SFML/SFML/include/SFML/Config.hpp
+@@ -67,6 +67,11 @@
+ #error This Apple operating system is not supported by SFML library
+ 
+ #endif
++
++#elif defined(__EMSCRIPTEN__)
++
++// The networking and string subset uses Emscripten's POSIX interfaces.
++#define SFML_SYSTEM_EMSCRIPTEN
+ 
+ #elif defined(__unix__)
+ 
+diff --git a/vendor/dolphin/Externals/zlib-ng/zlib-ng/cmake/detect-arch.cmake b/vendor/dolphin/Externals/zlib-ng/zlib-ng/cmake/detect-arch.cmake
+--- a/vendor/dolphin/Externals/zlib-ng/zlib-ng/cmake/detect-arch.cmake
++++ b/vendor/dolphin/Externals/zlib-ng/zlib-ng/cmake/detect-arch.cmake
+@@ -88,6 +88,8 @@
+ elseif("${ARCH}" MATCHES "riscv(32|64)")
+     set(BASEARCH "riscv")
+     set(BASEARCH_RISCV_FOUND TRUE)
++elseif(EMSCRIPTEN)
++    set(BASEARCH "wasm")
+ else()
+     set(BASEARCH "x86")
+     set(BASEARCH_X86_FOUND TRUE)
+diff --git a/vendor/dolphin/Source/Core/Common/CMakeLists.txt b/vendor/dolphin/Source/Core/Common/CMakeLists.txt
+--- a/vendor/dolphin/Source/Core/Common/CMakeLists.txt
++++ b/vendor/dolphin/Source/Core/Common/CMakeLists.txt
+@@ -259,6 +259,8 @@
+     Logging/ConsoleListenerNix.cpp
+     MemArenaDarwin.cpp
+   )
++elseif(EMSCRIPTEN)
++  target_sources(common PRIVATE Logging/ConsoleListenerNix.cpp MemArenaEmscripten.cpp)
+ else()
+   target_sources(common PRIVATE
+     Logging/ConsoleListenerNix.cpp
+diff --git a/vendor/dolphin/Source/Core/Common/MemArena.h b/vendor/dolphin/Source/Core/Common/MemArena.h
+--- a/vendor/dolphin/Source/Core/Common/MemArena.h
++++ b/vendor/dolphin/Source/Core/Common/MemArena.h
+@@ -148,6 +148,9 @@
+ 
+   vm_address_t m_region_address = 0;
+   vm_size_t m_region_size = 0;
++#elif defined(__EMSCRIPTEN__)
++  u8* m_wasm_storage = nullptr;
++  size_t m_wasm_size = 0;
+ #else
+   int m_shm_fd = 0;
+   void* m_reserved_region = nullptr;
+diff --git a/vendor/dolphin/Source/Core/Common/MemArenaEmscripten.cpp b/vendor/dolphin/Source/Core/Common/MemArenaEmscripten.cpp
+new file mode 100644
+--- /dev/null
++++ b/vendor/dolphin/Source/Core/Common/MemArenaEmscripten.cpp
+@@ -0,0 +1,59 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++// The static CPU core uses page tables, so its RAM needs no host virtual aliases.
++#include "Common/MemArena.h"
++#include <cstdlib>
++#include <cstring>
++#include "Common/Assert.h"
++
++namespace Common
++{
++MemArena::MemArena() = default;
++MemArena::~MemArena() { ReleaseSHMSegment(); }
++void MemArena::GrabSHMSegment(size_t size, std::string_view)
++{
++  ASSERT(!m_wasm_storage);
++  m_wasm_storage = static_cast<u8*>(std::calloc(1, size));
++  m_wasm_size = m_wasm_storage ? size : 0;
++}
++void MemArena::ReleaseSHMSegment()
++{
++  std::free(m_wasm_storage);
++  m_wasm_storage = nullptr;
++  m_wasm_size = 0;
++}
++void* MemArena::CreateView(s64 offset, size_t size)
++{
++  if (!m_wasm_storage || offset < 0 || static_cast<u64>(offset) > m_wasm_size ||
++      size > m_wasm_size - static_cast<size_t>(offset))
++    return nullptr;
++  return m_wasm_storage + offset;
++}
++void MemArena::ReleaseView(void*, size_t) {}
++// JIT fastmem explicitly remains unavailable in WebAssembly.
++u8* MemArena::ReserveMemoryRegion(size_t) { return nullptr; }
++void MemArena::ReleaseMemoryRegion() {}
++void* MemArena::MapInMemoryRegion(s64, size_t, void*, bool) { return nullptr; }
++bool MemArena::ChangeMappingProtection(void*, size_t, bool) { return false; }
++void MemArena::UnmapFromMemoryRegion(void*, size_t) {}
++size_t MemArena::GetPageSize() const { return 65536; }
++
++LazyMemoryRegion::LazyMemoryRegion() = default;
++LazyMemoryRegion::~LazyMemoryRegion() { Release(); }
++void* LazyMemoryRegion::Create(size_t size)
++{
++  ASSERT(!m_memory);
++  m_memory = std::calloc(1, size);
++  m_size = m_memory ? size : 0;
++  return m_memory;
++}
++void LazyMemoryRegion::Clear()
++{
++  if (m_memory) std::memset(m_memory, 0, m_size);
++}
++void LazyMemoryRegion::Release()
++{
++  std::free(m_memory);
++  m_memory = nullptr;
++  m_size = 0;
++}
++} // namespace Common
+diff --git a/vendor/dolphin/Source/Core/Common/GL/GLExtensions/GLExtensions.cpp b/vendor/dolphin/Source/Core/Common/GL/GLExtensions/GLExtensions.cpp
+--- a/vendor/dolphin/Source/Core/Common/GL/GLExtensions/GLExtensions.cpp
++++ b/vendor/dolphin/Source/Core/Common/GL/GLExtensions/GLExtensions.cpp
+@@ -1,3 +1,4 @@
++#include <cstdio>
+ // Copyright 2013 Dolphin Emulator Project
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ 
+@@ -2420,8 +2421,12 @@
+     // Give it a second try with dlsym
+     *func = dlsym(RTLD_NEXT, name.c_str());
+ #endif
+-    if (*func == nullptr)
++    if (*func == nullptr) {
++#ifdef __EMSCRIPTEN__
++      std::fprintf(stderr, "[opensmash] missing GL function %s\n", name.c_str());
++#endif
+       ERROR_LOG_FMT(VIDEO, "Couldn't load function {}", name);
++    }
+   }
+   return *func;
+ }
+diff --git a/vendor/dolphin/Source/Core/Common/FileUtil.cpp b/vendor/dolphin/Source/Core/Common/FileUtil.cpp
+--- a/vendor/dolphin/Source/Core/Common/FileUtil.cpp
++++ b/vendor/dolphin/Source/Core/Common/FileUtil.cpp
+@@ -764,6 +764,9 @@
+ 
+ static std::string CreateSysDirectoryPath()
+ {
++#ifdef __EMSCRIPTEN__
++  return "/sys/";
++#endif
+ #if defined(_WIN32) || defined(LINUX_LOCAL_DEV)
+ #define SYSDATA_DIR "Sys"
+ #elif defined(__APPLE__) && defined(__IPHONE_OS_VERSION_MIN_REQUIRED)
+diff --git a/vendor/dolphin/Source/Core/Common/Timer.cpp b/vendor/dolphin/Source/Core/Common/Timer.cpp
+--- a/vendor/dolphin/Source/Core/Common/Timer.cpp
++++ b/vendor/dolphin/Source/Core/Common/Timer.cpp
+@@ -215,7 +215,7 @@
+   // Note that Linux's CLOCK_MONOTONIC "does not count time that the system is suspended".
+   // This is in contrast to the behavior on macOS and FreeBSD.
+   static constexpr auto clock_id =
+-#if defined(__linux__)
++#if defined(__linux__) || defined(__EMSCRIPTEN__)
+       CLOCK_MONOTONIC;
+ #elif defined(__APPLE__)
+       CLOCK_UPTIME_RAW;
+diff --git a/vendor/dolphin/Source/Core/Common/GL/GLInterface/WebGL.h b/vendor/dolphin/Source/Core/Common/GL/GLInterface/WebGL.h
+new file mode 100644
+--- /dev/null
++++ b/vendor/dolphin/Source/Core/Common/GL/GLInterface/WebGL.h
+@@ -0,0 +1,95 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++#pragma once
++#include <cstdio>
++#include "Common/GL/GLContext.h"
++#include <emscripten.h>
++#include <emscripten/html5.h>
++#include <emscripten/html5_webgl.h>
++
++class GLContextWebGL final : public GLContext
++{
++  EMSCRIPTEN_WEBGL_CONTEXT_HANDLE m_context = 0;
++  static inline thread_local EMSCRIPTEN_WEBGL_CONTEXT_HANDLE s_canvas_context = 0;
++  const char* m_selector = "#canvas";
++public:
++  static inline thread_local bool probe = false;
++  ~GLContextWebGL() override
++  {
++    // The probe and renderer each own a canvas and context. Terminating the
++    // runtime worker releases both; no native window is created.
++  }
++  bool IsHeadless() const override { return false; }
++  bool MakeCurrent() override
++  {
++    return emscripten_webgl_make_context_current(m_context) == EMSCRIPTEN_RESULT_SUCCESS;
++  }
++  bool ClearCurrent() override
++  {
++    return emscripten_webgl_make_context_current(0) == EMSCRIPTEN_RESULT_SUCCESS;
++  }
++  void Swap() override {
++    EM_ASM({ Module.swapStart = performance.now(); });
++    emscripten_webgl_commit_frame();
++    EM_ASM({
++      const committed = performance.now();
++      const bitmap = GLctx.canvas.transferToImageBitmap();
++      if (!(Module.swapCount++ % 60) || !Module.swapCount) {
++        Module.swapCount = Module.swapCount || 1;
++        err("[opensmash] present commit_ms=" + (committed-Module.swapStart) + " bitmap_ms=" + (performance.now()-committed));
++      }
++      postMessage(({cmd: 'opensmash-frame', bitmap: bitmap}), [bitmap]);
++    });
++  }
++  void Update() override
++  {
++    int width = 960, height = 720;
++    emscripten_get_canvas_element_size(m_selector, &width, &height);
++    m_backbuffer_width = width;
++    m_backbuffer_height = height;
++  }
++  void* GetFuncAddress(const std::string& name) override
++  {
++    return emscripten_webgl_get_proc_address(name.c_str());
++  }
++protected:
++  bool Initialize(const WindowSystemInfo&, bool stereo, bool) override
++  {
++    if (stereo) return false;
++    if (probe) {
++      m_selector = "#opensmash-probe";
++      EM_ASM({
++        GL.offscreenCanvases["opensmash-probe"] = ({
++          offscreenCanvas: new OffscreenCanvas(16, 16), id: "opensmash-probe"
++        });
++      });
++    }
++    if (!probe && s_canvas_context) {
++      m_context = s_canvas_context;
++      m_opengl_mode = Mode::OpenGLES;
++      Update();
++      return MakeCurrent();
++    }
++    EmscriptenWebGLContextAttributes attributes;
++    emscripten_webgl_init_context_attributes(&attributes);
++    attributes.majorVersion = 2;
++    attributes.minorVersion = 0;
++    attributes.alpha = false;
++    attributes.antialias = false;
++    attributes.explicitSwapControl = true;
++    attributes.proxyContextToMainThread = EMSCRIPTEN_WEBGL_CONTEXT_PROXY_DISALLOW;
++    attributes.renderViaOffscreenBackBuffer = true;
++    m_context = emscripten_webgl_create_context(m_selector, &attributes);
++    std::fprintf(stderr, "[opensmash] WebGL context %lu\n", static_cast<unsigned long>(m_context));
++    if (m_context <= 0 || !MakeCurrent()) return false;
++    if (!probe) {
++      s_canvas_context = m_context;
++      EM_ASM({
++        const ext = GLctx.getExtension('WEBGL_debug_renderer_info');
++        err('[opensmash] GPU ' + (ext ? GLctx.getParameter(ext.UNMASKED_RENDERER_WEBGL) : 'unavailable'));
++      });
++    }
++    m_opengl_mode = Mode::OpenGLES;
++    Update();
++    return true;
++  }
++};
+diff --git a/vendor/dolphin/Source/Core/Common/GL/GLContext.cpp b/vendor/dolphin/Source/Core/Common/GL/GLContext.cpp
+--- a/vendor/dolphin/Source/Core/Common/GL/GLContext.cpp
++++ b/vendor/dolphin/Source/Core/Common/GL/GLContext.cpp
+@@ -4,6 +4,9 @@
+ #include <memory>
+ 
+ #include "Common/GL/GLContext.h"
++#ifdef __EMSCRIPTEN__
++#include "Common/GL/GLInterface/WebGL.h"
++#endif
+ 
+ #if defined(__APPLE__)
+ #include "Common/GL/GLInterface/AGL.h"
+@@ -79,6 +82,9 @@
+                                              bool prefer_gles)
+ {
+   std::unique_ptr<GLContext> context;
++#ifdef __EMSCRIPTEN__
++  context = std::make_unique<GLContextWebGL>();
++#endif
+ #if defined(__APPLE__) && !defined(__IPHONE_OS_VERSION_MIN_REQUIRED)
+   if (wsi.type == WindowSystemType::MacOS || wsi.type == WindowSystemType::Headless)
+     context = std::make_unique<GLContextAGL>();
+diff --git a/vendor/dolphin/Source/Core/VideoBackends/Software/SWOGLWindow.cpp b/vendor/dolphin/Source/Core/VideoBackends/Software/SWOGLWindow.cpp
+--- a/vendor/dolphin/Source/Core/VideoBackends/Software/SWOGLWindow.cpp
++++ b/vendor/dolphin/Source/Core/VideoBackends/Software/SWOGLWindow.cpp
+@@ -44,7 +44,8 @@
+     ERROR_LOG_FMT(VIDEO, "GLExtensions::Init failed!Does your video card support OpenGL 2.0?");
+     return false;
+   }
+-  else if (GLExtensions::Version() < 310)
++  else if (GLExtensions::Version() < 310 &&
++           !(m_gl_context->IsGLES() && GLExtensions::Version() >= 300))
+   {
+     ERROR_LOG_FMT(VIDEO, "OpenGL Version {} detected, but at least 3.1 is required.",
+                   GLExtensions::Version());
+@@ -95,7 +96,7 @@
+ 
+   glViewport(0, 0, glWidth, glHeight);
+ 
+-  glActiveTexture(GL_TEXTURE9);
++  glActiveTexture(GL_TEXTURE0);
+   glBindTexture(GL_TEXTURE_2D, m_image_texture);
+ 
+   // TODO: Apply xfb_region
+diff --git a/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLGfx.cpp b/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLGfx.cpp
+--- a/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLGfx.cpp
++++ b/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLGfx.cpp
+@@ -387,7 +387,10 @@
+   if (zEnable)
+   {
+     glDepthMask(zEnable ? GL_TRUE : GL_FALSE);
+-    glClearDepthf(float(z & 0xFFFFFF) / 16777216.0f);
++    float clear_depth = float(z & 0xFFFFFF) / 16777216.0f;
++    if (!g_backend_info.bSupportsReversedDepthRange)
++      clear_depth = 1.0f - clear_depth;
++    glClearDepthf(clear_depth);
+     clear_mask |= GL_DEPTH_BUFFER_BIT;
+   }
+ 
+@@ -536,7 +539,12 @@
+   {
+     glEnable(GL_DEPTH_TEST);
+     glDepthMask(state.update_enable ? GL_TRUE : GL_FALSE);
+-    glDepthFunc(glCmpFuncs[u32(state.func.Value())]);
++    // Forward-only depth ranges invert the stored console depth, including the
++    // comparison (the same mapping used by Dolphin's Metal/Vulkan backends).
++    static constexpr u32 inverted[8] = {0, 4, 2, 6, 1, 5, 3, 7};
++    const u32 comparison = u32(state.func.Value());
++    glDepthFunc(glCmpFuncs[g_backend_info.bSupportsReversedDepthRange ? comparison :
++                          inverted[comparison]]);
+   }
+   else
+   {
+diff --git a/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLStreamBuffer.cpp b/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLStreamBuffer.cpp
+--- a/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLStreamBuffer.cpp
++++ b/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLStreamBuffer.cpp
+@@ -346,6 +346,10 @@
+ // Chooses the best streaming method based on the supported extensions and known issues
+ std::unique_ptr<StreamBuffer> StreamBuffer::Create(u32 type, u32 size)
+ {
++#ifdef __EMSCRIPTEN__
++  // WebGL/ANGLE may rename the full store on each update; upload only live bytes.
++  return std::make_unique<BufferData>(type, size);
++#endif
+   // without basevertex support, only streaming methods whith uploads everything to zero works fine:
+   if (!g_ogl_config.bSupportsGLBaseVertex)
+   {
+diff --git a/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLTexture.cpp b/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLTexture.cpp
+--- a/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLTexture.cpp
++++ b/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLTexture.cpp
+@@ -1,3 +1,6 @@
++#ifdef __EMSCRIPTEN__
++#include <emscripten.h>
++#endif
+ // Copyright 2017 Dolphin Emulator Project
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ 
+@@ -416,6 +419,9 @@
+ 
+ OGLStagingTexture::~OGLStagingTexture()
+ {
++#ifdef __EMSCRIPTEN__
++  m_map_pointer = nullptr;
++#endif
+   if (m_fence != nullptr)
+     glDeleteSync(m_fence);
+   if (m_map_pointer)
+@@ -574,7 +580,11 @@
+     // Unmap the buffer before writing when not using persistent mappings.
+     if (m_map_pointer)
+     {
++#ifdef __EMSCRIPTEN__
++      glBufferSubData(GL_PIXEL_UNPACK_BUFFER, 0, m_buffer_size, m_map_pointer);
++#else
+       glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
++#endif
+       m_map_pointer = nullptr;
+     }
+   }
+@@ -630,6 +640,17 @@
+   if (m_map_pointer)
+     return true;
+ 
++#ifdef __EMSCRIPTEN__
++  if (!m_web_storage) m_web_storage = std::make_unique<char[]>(m_buffer_size);
++  glBindBuffer(m_target, m_buffer_name);
++  if (m_type != StagingTextureType::Upload) {
++    EM_ASM({ GLctx.getBufferSubData($0, 0, HEAPU8, $1, $2); },
++           m_target, m_web_storage.get(), m_buffer_size);
++  }
++  glBindBuffer(m_target, 0);
++  m_map_pointer = m_web_storage.get();
++  return true;
++#endif
+   // Slow path, map the texture, unmap it later.
+   GLenum flags;
+   if (m_type == StagingTextureType::Readback)
+@@ -646,6 +667,16 @@
+ 
+ void OGLStagingTexture::Unmap()
+ {
++#ifdef __EMSCRIPTEN__
++  if (!m_map_pointer) return;
++  if (m_type != StagingTextureType::Readback) {
++    glBindBuffer(m_target, m_buffer_name);
++    glBufferSubData(m_target, 0, m_buffer_size, m_map_pointer);
++    glBindBuffer(m_target, 0);
++  }
++  m_map_pointer = nullptr;
++  return;
++#endif
+   // No-op with persistent mapped buffers.
+   if (!m_map_pointer || UsePersistentStagingBuffers())
+     return;
+diff --git a/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLTexture.h b/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLTexture.h
+--- a/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLTexture.h
++++ b/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLTexture.h
+@@ -95,6 +95,9 @@
+   GLenum m_target;
+   GLuint m_buffer_name;
+   size_t m_buffer_size;
++#ifdef __EMSCRIPTEN__
++  std::unique_ptr<char[]> m_web_storage;
++#endif
+   GLsync m_fence = nullptr;
+ };
+ 
+diff --git a/vendor/dolphin/Source/Core/AudioCommon/AudioCommon.cpp b/vendor/dolphin/Source/Core/AudioCommon/AudioCommon.cpp
+--- a/vendor/dolphin/Source/Core/AudioCommon/AudioCommon.cpp
++++ b/vendor/dolphin/Source/Core/AudioCommon/AudioCommon.cpp
+@@ -11,6 +11,9 @@
+ #include "AudioCommon/CoreAudioSoundStream.h"
+ #endif
+ #include "AudioCommon/CubebStream.h"
++#ifdef __EMSCRIPTEN__
++#include "AudioCommon/BrowserSoundStream.h"
++#endif
+ #include "AudioCommon/Mixer.h"
+ #include "AudioCommon/NullSoundStream.h"
+ #include "AudioCommon/OpenALStream.h"
+@@ -33,6 +36,9 @@
+ 
+ static std::unique_ptr<SoundStream> CreateSoundStreamForBackend(std::string_view backend)
+ {
++#ifdef __EMSCRIPTEN__
++  if (backend == "Browser") return std::make_unique<BrowserSoundStream>();
++#endif
+ #if defined(__IPHONE_OS_VERSION_MIN_REQUIRED)
+   if (backend == BACKEND_COREAUDIO && CoreAudioSound::IsValid())
+     return std::make_unique<CoreAudioSound>();
+@@ -134,6 +140,9 @@
+   std::vector<std::string> backends;
+ 
+   backends.emplace_back(BACKEND_NULLSOUND);
++#ifdef __EMSCRIPTEN__
++  backends.emplace_back("Browser");
++#endif
+ #if defined(__IPHONE_OS_VERSION_MIN_REQUIRED)
+   if (CoreAudioSound::IsValid())
+     backends.emplace_back(BACKEND_COREAUDIO);
+diff --git a/vendor/dolphin/Source/Core/AudioCommon/BrowserSoundStream.h b/vendor/dolphin/Source/Core/AudioCommon/BrowserSoundStream.h
+new file mode 100644
+--- /dev/null
++++ b/vendor/dolphin/Source/Core/AudioCommon/BrowserSoundStream.h
+@@ -0,0 +1,38 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++#pragma once
++#include <array>
++#include <mutex>
++#include <emscripten.h>
++#include "AudioCommon/SoundStream.h"
++namespace {
++std::mutex browser_audio_mutex;
++Mixer* browser_audio_mixer = nullptr;
++bool browser_audio_running = false;
++class BrowserSoundStream final : public SoundStream {
++public:
++  bool Init() override {
++    std::lock_guard lock(browser_audio_mutex);
++    browser_audio_mixer = GetMixer();
++    return true;
++  }
++  bool SetRunning(bool running) override {
++    std::lock_guard lock(browser_audio_mutex);
++    browser_audio_running = running;
++    return true;
++  }
++  ~BrowserSoundStream() override {
++    std::lock_guard lock(browser_audio_mutex);
++    browser_audio_mixer = nullptr;
++    browser_audio_running = false;
++  }
++};
++}
++extern "C" EMSCRIPTEN_KEEPALIVE const short* opensmash_audio_mix() {
++  static std::array<short, 1024> samples;
++  std::lock_guard lock(browser_audio_mutex);
++  if (browser_audio_mixer && browser_audio_running)
++    browser_audio_mixer->Mix(samples.data(), 512);
++  else
++    samples.fill(0);
++  return samples.data();
++}
+diff --git a/vendor/dolphin/Source/Core/Core/Core.cpp b/vendor/dolphin/Source/Core/Core/Core.cpp
+--- a/vendor/dolphin/Source/Core/Core/Core.cpp
++++ b/vendor/dolphin/Source/Core/Core/Core.cpp
+@@ -92,12 +92,45 @@
+ #include "VideoCommon/VideoBackendBase.h"
+ #include "VideoCommon/VideoEvents.h"
+ 
++#ifdef __EMSCRIPTEN__
++#include <emscripten/threading.h>
++#endif
++
+ namespace Core
+ {
+ static bool s_wants_determinism;
+ 
+ // Declarations and definitions
++#ifdef __EMSCRIPTEN__
++// Transfer the untouched game canvas to the CPU/GPU thread. Keeping WebGL
++// local avoids a synchronous proxy for every draw and state query.
++class BrowserEmuThread {
++  pthread_t m_thread{};
++  bool m_joinable = false;
++public:
++  bool joinable() const { return m_joinable; }
++  void join() { pthread_join(m_thread, nullptr); m_joinable = false; }
++  template<class F> bool start(F&& function) {
++    using Fn = std::decay_t<F>;
++    auto* task = new Fn(std::forward<F>(function));
++    pthread_attr_t attr;
++    pthread_attr_init(&attr);
++    emscripten_pthread_attr_settransferredcanvases(&attr, "#canvas");
++    int result = pthread_create(&m_thread, &attr, [](void* pointer) -> void* {
++      std::unique_ptr<Fn> run(static_cast<Fn*>(pointer));
++      (*run)();
++      return nullptr;
++    }, task);
++    pthread_attr_destroy(&attr);
++    if (result) { delete task; return false; }
++    m_joinable = true;
++    return true;
++  }
++};
++static BrowserEmuThread s_emu_thread;
++#else
+ static std::thread s_emu_thread;
++#endif
+ static Common::HookableEvent<Core::State> s_state_changed_event;
+ 
+ static bool s_is_throttler_temp_disabled = false;
+@@ -228,7 +261,16 @@
+ 
+   // Start the emu thread
+   s_state.store(State::Starting);
++#ifdef __EMSCRIPTEN__
++  if (!s_emu_thread.start([&system, boot = std::move(boot), prepared_wsi]() mutable {
++        EmuThread(system, std::move(boot), prepared_wsi);
++      })) {
++    s_state.store(State::Uninitialized);
++    return false;
++  }
++#else
+   s_emu_thread = std::thread(EmuThread, std::ref(system), std::move(boot), prepared_wsi);
++#endif
+   return true;
+ }
+ 
+diff --git a/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLMain.cpp b/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLMain.cpp
+--- a/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLMain.cpp
++++ b/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLMain.cpp
+@@ -41,6 +41,9 @@
+ 
+ #include "Common/Common.h"
+ #include "Common/GL/GLContext.h"
++#ifdef __EMSCRIPTEN__
++#include "Common/GL/GLInterface/WebGL.h"
++#endif
+ #include "Common/GL/GLUtil.h"
+ #include "Common/MsgHandler.h"
+ 
+@@ -75,10 +78,16 @@
+ 
+ void VideoBackend::InitBackendInfo(const WindowSystemInfo& wsi)
+ {
++#ifdef __EMSCRIPTEN__
++  GLContextWebGL::probe = true;
++#endif
+   std::unique_ptr<GLContext> temp_gl_context =
+       GLContext::Create(wsi, g_Config.stereo_mode == StereoMode::QuadBuffer, true,
+                         Config::Get(Config::GFX_PREFER_GLES));
+ 
++#ifdef __EMSCRIPTEN__
++  GLContextWebGL::probe = false;
++#endif
+   if (!temp_gl_context)
+     return;
+ 
+@@ -121,7 +130,12 @@
+   g_backend_info.bSupports3DVision = false;
+   g_backend_info.bSupportsPostProcessing = true;
+   g_backend_info.bSupportsSSAA = true;
++#ifdef __EMSCRIPTEN__
++  // WebGL rejects near > far. Use Dolphin's forward-range depth fallback.
++  g_backend_info.bSupportsReversedDepthRange = false;
++#else
+   g_backend_info.bSupportsReversedDepthRange = true;
++#endif
+   g_backend_info.bSupportsLogicOp = true;
+   g_backend_info.bSupportsMultithreading = false;
+   g_backend_info.bSupportsCopyToVram = true;
+diff --git a/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLConfig.cpp b/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLConfig.cpp
+--- a/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLConfig.cpp
++++ b/vendor/dolphin/Source/Core/VideoBackends/OGL/OGLConfig.cpp
+@@ -686,8 +686,12 @@
+                                                g_ogl_config.bSupportsImageLoadStore;
+ 
+   // Background compiling is supported only when shared contexts aren't broken.
++#ifdef __EMSCRIPTEN__
++  g_backend_info.bSupportsBackgroundCompiling = false;
++#else
+   g_backend_info.bSupportsBackgroundCompiling =
+       !DriverDetails::HasBug(DriverDetails::BUG_SHARED_CONTEXT_SHADER_COMPILATION);
++#endif
+ 
+   // Program binaries are supported on GL4.1+, ARB_get_program_binary, or ES3.
+   if (supports_glsl_cache)
+diff --git a/vendor/dolphin/Source/Core/VideoCommon/VertexShaderManager.cpp b/vendor/dolphin/Source/Core/VideoCommon/VertexShaderManager.cpp
+--- a/vendor/dolphin/Source/Core/VideoCommon/VertexShaderManager.cpp
++++ b/vendor/dolphin/Source/Core/VideoCommon/VertexShaderManager.cpp
+@@ -131,6 +131,12 @@
+ 
+ bool VertexShaderManager::UseVertexDepthRange()
+ {
++#ifdef __EMSCRIPTEN__
++  // WebGL also rejects the game's negative zRange (used by the VS roster).
++  // Fold that inversion into vertex depth and leave the API range forward.
++  if (xfmem.viewport.zRange < 0.0f)
++    return true;
++#endif
+   // Backend has full support for unrestricted depth ranges including the ability to clamp the
+   // final depth value to MAX_EFB_DEPTH.
+   if (g_backend_info.bSupportsUnrestrictedDepthRange)
+diff --git a/vendor/dolphin/Source/Core/VideoCommon/DriverDetails.cpp b/vendor/dolphin/Source/Core/VideoCommon/DriverDetails.cpp
+--- a/vendor/dolphin/Source/Core/VideoCommon/DriverDetails.cpp
++++ b/vendor/dolphin/Source/Core/VideoCommon/DriverDetails.cpp
+@@ -27,7 +27,9 @@
+ };
+ 
+ // Local members
+-#ifdef _WIN32
++#ifdef __EMSCRIPTEN__
++constexpr u32 m_os = OS_ALL;
++#elif defined(_WIN32)
+ constexpr u32 m_os = OS_ALL | OS_WINDOWS;
+ #elif ANDROID
+ constexpr u32 m_os = OS_ALL | OS_ANDROID;
+diff --git a/vendor/dolphin/Source/Core/VideoCommon/UberShaderPixel.cpp b/vendor/dolphin/Source/Core/VideoCommon/UberShaderPixel.cpp
+--- a/vendor/dolphin/Source/Core/VideoCommon/UberShaderPixel.cpp
++++ b/vendor/dolphin/Source/Core/VideoCommon/UberShaderPixel.cpp
+@@ -1161,14 +1161,14 @@
+     out.Write("  // Helpers for logic op blending approximations\n"
+               "  if (logic_op_enable) {{\n"
+               "    switch (logic_op_mode) {{\n");
+-    out.Write("      case {}: // Clear\n", static_cast<u32>(LogicOp::Clear));
++    out.Write("      case {}u: // Clear\n", static_cast<u32>(LogicOp::Clear));
+     out.Write("        TevResult = int4(0, 0, 0, 0);\n"
+               "        break;\n");
+-    out.Write("      case {}: // Copy Inverted\n", static_cast<u32>(LogicOp::CopyInverted));
++    out.Write("      case {}u: // Copy Inverted\n", static_cast<u32>(LogicOp::CopyInverted));
+     out.Write("        TevResult ^= 0xff;\n"
+               "        break;\n");
+-    out.Write("      case {}: // Set\n", static_cast<u32>(LogicOp::Set));
+-    out.Write("      case {}: // Invert\n", static_cast<u32>(LogicOp::Invert));
++    out.Write("      case {}u: // Set\n", static_cast<u32>(LogicOp::Set));
++    out.Write("      case {}u: // Invert\n", static_cast<u32>(LogicOp::Invert));
+     out.Write("        TevResult = int4(255, 255, 255, 255);\n"
+               "        break;\n");
+     out.Write("      default:\n"
+diff --git a/vendor/dolphin/Source/Core/DiscIO/VolumeWad.h b/vendor/dolphin/Source/Core/DiscIO/VolumeWad.h
+--- a/vendor/dolphin/Source/Core/DiscIO/VolumeWad.h
++++ b/vendor/dolphin/Source/Core/DiscIO/VolumeWad.h
+@@ -13,6 +13,7 @@
+ #include "Common/CommonTypes.h"
+ #include "Core/IOS/ES/Formats.h"
+ #include "DiscIO/Volume.h"
++#include "DiscIO/Blob.h"
+ 
+ namespace DiscIO
+ {
+diff --git a/vendor/dolphin/Source/Core/Core/IOS/Network/Socket.h b/vendor/dolphin/Source/Core/Core/IOS/Network/Socket.h
+--- a/vendor/dolphin/Source/Core/Core/IOS/Network/Socket.h
++++ b/vendor/dolphin/Source/Core/Core/IOS/Network/Socket.h
+@@ -15,7 +15,7 @@
+ #define FREE(x) HeapFree(GetProcessHeap(), 0, (x))
+ 
+ #elif defined(__linux__) or defined(__APPLE__) or defined(__FreeBSD__) or defined(__NetBSD__) or   \
+-    defined(__OpenBSD__) or defined(__HAIKU__)
++    defined(__OpenBSD__) or defined(__HAIKU__) or defined(__EMSCRIPTEN__)
+ #include <arpa/inet.h>
+ #include <netdb.h>
+ #include <sys/ioctl.h>
+diff --git a/vendor/dolphin/Source/Core/Core/DSP/DSPCaptureLogger.h b/vendor/dolphin/Source/Core/Core/DSP/DSPCaptureLogger.h
+--- a/vendor/dolphin/Source/Core/Core/DSP/DSPCaptureLogger.h
++++ b/vendor/dolphin/Source/Core/Core/DSP/DSPCaptureLogger.h
+@@ -7,11 +7,7 @@
+ #include <string>
+ 
+ #include "Common/CommonTypes.h"
+-
+-namespace Common
+-{
+-class PCAP;
+-}
++#include "Common/PcapFile.h"
+ 
+ namespace DSP
+ {
+diff --git a/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore_Hooks.cpp b/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore_Hooks.cpp
+--- a/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore_Hooks.cpp
++++ b/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore_Hooks.cpp
+@@ -81,22 +81,34 @@
+     if (core->m_lockstep_verifier->m_ls_journaling)
+       core->m_lockstep_verifier->m_journal.native_mmio.push_back({ea, static_cast<u32>(value), size});
+     auto& gpfifo = core->m_system.GetGPFifo();
++    // Static code already checks interrupts at dispatch boundaries. It needs
++    // the same pipe flush, but not dynamic-JIT FIFO-write profiling/invalidation.
+     switch (size)
+     {
+     case 1:
+-      gpfifo.Write8(static_cast<u8>(value));
++      gpfifo.FastWrite8(static_cast<u8>(value));
++      gpfifo.FastCheckGatherPipe();
+       return;
+     case 2:
+-      gpfifo.Write16(static_cast<u16>(value));
++      gpfifo.FastWrite16(static_cast<u16>(value));
++      gpfifo.FastCheckGatherPipe();
+       return;
+     case 4:
+-      gpfifo.Write32(static_cast<u32>(value));
++      gpfifo.FastWrite32(static_cast<u32>(value));
++      gpfifo.FastCheckGatherPipe();
++      return;
++    case 8:
++      // Paired-single matrix uploads are one 64-bit gather-pipe store.
++      // Use the same writer as the MMU instead of checking the pipe eight times.
++      gpfifo.FastWrite64(value);
++      gpfifo.FastCheckGatherPipe();
+       return;
+     default:
+       for (u32 i = size * 8u; i > 0;)
+       {
+         i -= 8;
+-        gpfifo.Write8(static_cast<u8>(value >> i));
++        gpfifo.FastWrite8(static_cast<u8>(value >> i));
++        gpfifo.FastCheckGatherPipe();
+       }
+       return;
+     }
+diff --git a/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore_Sync.cpp b/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore_Sync.cpp
+--- a/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore_Sync.cpp
++++ b/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore_Sync.cpp
+@@ -79,10 +79,10 @@
+   // Sample the first cache line of every 4 KiB MEM1 page. This spans the full
+   // memory allocation while keeping a once-per-second diagnostic far below a
+   // full 24 MiB scan on mobile CPUs.
+-  constexpr u32 PAGE_SIZE = 4096;
++  constexpr u32 GUEST_PAGE_SIZE = 4096;
+   constexpr u32 SAMPLE_SIZE = 64;
+   u64 hash = FNV_OFFSET;
+-  for (u32 offset = 0; offset < m_guest.ram_size; offset += PAGE_SIZE)
++  for (u32 offset = 0; offset < m_guest.ram_size; offset += GUEST_PAGE_SIZE)
+   {
+     const u32 remaining = m_guest.ram_size - offset;
+     const u32 size = remaining < SAMPLE_SIZE ? remaining : SAMPLE_SIZE;
+@@ -94,11 +94,11 @@
+ std::array<u64, 32> StaticRecompCore::HashSelectedRamRegions() const
+ {
+   constexpr u32 REGION_SIZE = 1024 * 1024;
+-  constexpr u32 PAGE_SIZE = 4096;
++  constexpr u32 GUEST_PAGE_SIZE = 4096;
+   constexpr u32 SAMPLE_SIZE = 64;
+   std::array<u64, 32> hashes;
+   hashes.fill(FNV_OFFSET);
+-  for (u32 offset = 0; offset < m_guest.ram_size; offset += PAGE_SIZE)
++  for (u32 offset = 0; offset < m_guest.ram_size; offset += GUEST_PAGE_SIZE)
+   {
+     const size_t region = offset / REGION_SIZE;
+     if (region >= hashes.size())
+diff --git a/vendor/dolphin/Source/Core/Core/HW/GCPad.cpp b/vendor/dolphin/Source/Core/Core/HW/GCPad.cpp
+--- a/vendor/dolphin/Source/Core/Core/HW/GCPad.cpp
++++ b/vendor/dolphin/Source/Core/Core/HW/GCPad.cpp
+@@ -1,3 +1,4 @@
++#include <cstdio>
+ // Copyright 2010 Dolphin Emulator Project
+ // SPDX-License-Identifier: GPL-2.0-or-later
+ 
+@@ -8,6 +9,29 @@
+ #include "InputCommon/ControllerEmu/ControlGroup/ControlGroup.h"
+ #include "InputCommon/GCPadStatus.h"
+ #include "InputCommon/InputConfig.h"
++
++#ifdef __EMSCRIPTEN__
++#include <atomic>
++#include <emscripten/emscripten.h>
++namespace {
++struct BrowserPad {
++  std::atomic<unsigned> sequence{0}, edges{0}, buttons{0}, sticks{0x80808080}, triggers{0};
++};
++BrowserPad browser_pads[4];
++}
++// Called by the frontend worker; the CPU thread samples one coherent pad packet.
++extern "C" EMSCRIPTEN_KEEPALIVE void opensmash_set_pad(
++    unsigned port, unsigned buttons, unsigned sticks, unsigned triggers, unsigned connected) {
++  if (port >= 4) return;
++  auto& pad = browser_pads[port];
++  pad.sequence.fetch_add(1);
++  pad.edges.fetch_or((buttons & 0x1f7f) & ~pad.buttons.load());
++  pad.buttons.store((buttons & 0x1f7f) | (connected ? 0x10000 : 0));
++  pad.sticks.store(sticks);
++  pad.triggers.store(triggers & 0xffff);
++  pad.sequence.fetch_add(1);
++}
++#endif
+ 
+ namespace Pad
+ {
+@@ -55,7 +79,29 @@
+ 
+ GCPadStatus GetStatus(int pad_num)
+ {
++#ifdef __EMSCRIPTEN__
++  GCPadStatus result;
++  if (pad_num < 0 || pad_num >= 4) { result.isConnected = false; return result; }
++  auto& pad = browser_pads[pad_num];
++  unsigned before, buttons, sticks, triggers;
++  do {
++    before = pad.sequence.load();
++    buttons = pad.buttons.load();
++    sticks = pad.sticks.load();
++    triggers = pad.triggers.load();
++  } while ((before & 1) || before != pad.sequence.load());
++  buttons |= pad.edges.exchange(0);
++  result.isConnected = (buttons & 0x10000) != 0;
++  result.button = buttons & 0xffff;
++  result.stickX = sticks; result.stickY = sticks >> 8;
++  result.substickX = sticks >> 16; result.substickY = sticks >> 24;
++  result.triggerLeft = triggers; result.triggerRight = triggers >> 8;
++  result.analogA = (buttons & PAD_BUTTON_A) ? 255 : 0;
++  result.analogB = (buttons & PAD_BUTTON_B) ? 255 : 0;
++  return result;
++#else
+   return static_cast<GCPad*>(s_config.GetController(pad_num))->GetInput();
++#endif
+ }
+ 
+ ControllerEmu::ControlGroup* GetGroup(int pad_num, PadGroup group)
+diff --git a/vendor/dolphin/Source/Core/Core/HW/DVD/AMMediaboard.cpp b/vendor/dolphin/Source/Core/Core/HW/DVD/AMMediaboard.cpp
+--- a/vendor/dolphin/Source/Core/Core/HW/DVD/AMMediaboard.cpp
++++ b/vendor/dolphin/Source/Core/Core/HW/DVD/AMMediaboard.cpp
+@@ -34,7 +34,7 @@
+ #include "VideoCommon/OnScreenDisplay.h"
+ 
+ #if defined(__linux__) or defined(__APPLE__) or defined(__FreeBSD__) or defined(__NetBSD__) or     \
+-    defined(__HAIKU__)
++    defined(__HAIKU__) || defined(__EMSCRIPTEN__)
+ 
+ #include <unistd.h>
+ 
+diff --git a/vendor/dolphin/Source/Core/Core/HW/DVD/AMMediaboardSocket.cpp b/vendor/dolphin/Source/Core/Core/HW/DVD/AMMediaboardSocket.cpp
+--- a/vendor/dolphin/Source/Core/Core/HW/DVD/AMMediaboardSocket.cpp
++++ b/vendor/dolphin/Source/Core/Core/HW/DVD/AMMediaboardSocket.cpp
+@@ -34,7 +34,7 @@
+ #include "VideoCommon/OnScreenDisplay.h"
+ 
+ #if defined(__linux__) or defined(__APPLE__) or defined(__FreeBSD__) or defined(__NetBSD__) or     \
+-    defined(__HAIKU__)
++    defined(__HAIKU__) || defined(__EMSCRIPTEN__)
+ 
+ #include <unistd.h>
+ 
+diff --git a/vendor/dolphin/Source/Core/Core/HW/EXI/EXI_DeviceEthernet.h b/vendor/dolphin/Source/Core/Core/HW/EXI/EXI_DeviceEthernet.h
+--- a/vendor/dolphin/Source/Core/Core/HW/EXI/EXI_DeviceEthernet.h
++++ b/vendor/dolphin/Source/Core/Core/HW/EXI/EXI_DeviceEthernet.h
+@@ -412,7 +412,7 @@
+     bool m_bba_link_up = false;
+     bool m_bba_failure_notified = false;
+ #if defined(WIN32) || defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__) ||          \
+-    defined(__OpenBSD__) || defined(__NetBSD__) || defined(__HAIKU__)
++    defined(__OpenBSD__) || defined(__NetBSD__) || defined(__HAIKU__) || defined(__EMSCRIPTEN__)
+     sf::UdpSocket m_sf_socket;
+     sf::IpAddress m_sf_recipient_ip = sf::IpAddress::Any;
+     char m_in_frame[9004]{};
+@@ -456,7 +456,7 @@
+     std::map<u32, Common::MACAddress> m_arp_table;
+     sf::TcpListener m_upnp_httpd;
+ #if defined(WIN32) || defined(__linux__) || defined(__APPLE__) || defined(__FreeBSD__) ||          \
+-    defined(__OpenBSD__) || defined(__NetBSD__) || defined(__HAIKU__)
++    defined(__OpenBSD__) || defined(__NetBSD__) || defined(__HAIKU__) || defined(__EMSCRIPTEN__)
+     NetworkRef m_network_ref;
+     std::thread m_read_thread;
+     Common::Flag m_read_enabled;

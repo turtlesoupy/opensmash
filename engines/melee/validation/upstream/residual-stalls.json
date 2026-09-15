@@ -1,0 +1,430 @@
+{
+  "date": "2026-09-15",
+  "scope": "Ichiro/Roy, Donald Trump/Falco, Michelangelo/Link, Brinstar Depths; two-minute focused CPU combat runs with normal audio in headed Chrome 152 on Apple M5. Browser storage differs between fresh/returning runs; OS and GPU caches were not purged.",
+  "measurements": {
+    "residual-clean": {
+      "run": {
+        "players": 3,
+        "lineup": "custom",
+        "caseStudy": true,
+        "stage": 15,
+        "stockCharacters": null,
+        "measuredWindows": 4,
+        "strictWindows": false,
+        "chromeArgs": []
+      },
+      "events": [
+        {
+          "type": "startup-performance",
+          "clickToMatchMs": 4155,
+          "receivedAt": 1789502039014
+        },
+        {
+          "type": "presentation-validation",
+          "direct": true
+        },
+        {
+          "type": "combat-performance",
+          "profile": "upstream",
+          "durationMs": 30002.94000005722,
+          "frames": 1796,
+          "combatFrames": 1797,
+          "fps": 59.86080030812229,
+          "presentedBitmapFps": 59.86080030812229,
+          "p95": 19.420000076293945,
+          "p99": 21.139999866485596,
+          "maxFrameMs": 66.75499987602234,
+          "over33ms": 2,
+          "audioPeak": 1,
+          "audioUnderrunSamples": 0,
+          "audioRenderedSamples": 1440768,
+          "audioOverrunSamples": 0,
+          "targetFps": 60,
+          "receivedAt": 1789502068997
+        },
+        {
+          "type": "combat-performance",
+          "profile": "upstream",
+          "durationMs": 30016.645000219345,
+          "frames": 1801,
+          "combatFrames": 3599,
+          "fps": 60.00004330886544,
+          "presentedBitmapFps": 60.00004330886544,
+          "p95": 19.585000038146973,
+          "p99": 21.59000015258789,
+          "maxFrameMs": 34.63499999046326,
+          "over33ms": 1,
+          "audioPeak": 1,
+          "audioUnderrunSamples": 0,
+          "audioRenderedSamples": 1440768,
+          "audioOverrunSamples": 0,
+          "targetFps": 60,
+          "receivedAt": 1789502099031
+        },
+        {
+          "type": "combat-performance",
+          "profile": "upstream",
+          "durationMs": 30002.105000019073,
+          "frames": 1783,
+          "combatFrames": 5383,
+          "fps": 59.42916338699789,
+          "presentedBitmapFps": 59.42916338699789,
+          "p95": 19.865000009536743,
+          "p99": 24.445000171661377,
+          "maxFrameMs": 162.6449999809265,
+          "over33ms": 7,
+          "audioPeak": 1,
+          "audioUnderrunSamples": 0,
+          "audioRenderedSamples": 1440768,
+          "audioOverrunSamples": 0,
+          "targetFps": 60,
+          "receivedAt": 1789502129050
+        },
+        {
+          "type": "combat-performance",
+          "profile": "upstream",
+          "durationMs": 30000.86999988556,
+          "frames": 1800,
+          "combatFrames": 7184,
+          "fps": 59.998260050687406,
+          "presentedBitmapFps": 59.998260050687406,
+          "p95": 19.59999990463257,
+          "p99": 22.125,
+          "maxFrameMs": 33.46499991416931,
+          "over33ms": 2,
+          "audioPeak": 1,
+          "audioUnderrunSamples": 0,
+          "audioRenderedSamples": 1440768,
+          "audioOverrunSamples": 0,
+          "targetFps": 60,
+          "receivedAt": 1789502159069
+        }
+      ]
+    },
+    "residual-pools-warm": {
+      "run": {
+        "players": 3,
+        "lineup": "custom",
+        "caseStudy": true,
+        "stage": 15,
+        "stockCharacters": null,
+        "measuredWindows": 4,
+        "strictWindows": false,
+        "chromeArgs": []
+      },
+      "events": [
+        {
+          "type": "startup-performance",
+          "clickToMatchMs": 4008,
+          "receivedAt": 1789503118388
+        },
+        {
+          "type": "presentation-validation",
+          "direct": true
+        },
+        {
+          "type": "combat-performance",
+          "profile": "upstream",
+          "durationMs": 30007.210000038147,
+          "frames": 1800,
+          "combatFrames": 1801,
+          "fps": 59.98558346469771,
+          "presentedBitmapFps": 59.98558346469771,
+          "p95": 19.975000143051147,
+          "p99": 22.27999997138977,
+          "maxFrameMs": 29.865000009536743,
+          "over33ms": 0,
+          "audioPeak": 1,
+          "audioUnderrunSamples": 0,
+          "audioRenderedSamples": 1439744,
+          "audioOverrunSamples": 0,
+          "targetFps": 60,
+          "receivedAt": 1789503148378
+        },
+        {
+          "type": "combat-performance",
+          "profile": "upstream",
+          "durationMs": 30014.715000152588,
+          "frames": 1801,
+          "combatFrames": 3603,
+          "fps": 60.00390141938193,
+          "presentedBitmapFps": 60.00390141938193,
+          "p95": 20.259999990463257,
+          "p99": 22.19000005722046,
+          "maxFrameMs": 26.69000005722046,
+          "over33ms": 0,
+          "audioPeak": 1,
+          "audioUnderrunSamples": 0,
+          "audioRenderedSamples": 1440768,
+          "audioOverrunSamples": 0,
+          "targetFps": 60,
+          "receivedAt": 1789503178406
+        },
+        {
+          "type": "combat-performance",
+          "profile": "upstream",
+          "durationMs": 30000.340000152588,
+          "frames": 1800,
+          "combatFrames": 5404,
+          "fps": 59.99932000740141,
+          "presentedBitmapFps": 59.99932000740141,
+          "p95": 20.43499994277954,
+          "p99": 22.455000162124634,
+          "maxFrameMs": 23.804999828338623,
+          "over33ms": 0,
+          "audioPeak": 1,
+          "audioUnderrunSamples": 0,
+          "audioRenderedSamples": 1439744,
+          "audioOverrunSamples": 0,
+          "targetFps": 60,
+          "receivedAt": 1789503208423
+        },
+        {
+          "type": "combat-performance",
+          "profile": "upstream",
+          "durationMs": 30000.894999980927,
+          "frames": 1800,
+          "combatFrames": 7205,
+          "fps": 59.99821005343822,
+          "presentedBitmapFps": 59.99821005343822,
+          "p95": 20.164999961853027,
+          "p99": 22.15499997138977,
+          "maxFrameMs": 23.66000008583069,
+          "over33ms": 0,
+          "audioPeak": 1,
+          "audioUnderrunSamples": 0,
+          "audioRenderedSamples": 1439744,
+          "audioOverrunSamples": 0,
+          "targetFps": 60,
+          "receivedAt": 1789503238441
+        },
+        {
+          "type": "startup-performance",
+          "clickToMatchMs": 4824,
+          "receivedAt": 1789503243650
+        }
+      ]
+    },
+    "residual-retained-fresh": {
+      "run": {
+        "players": 3,
+        "lineup": "custom",
+        "caseStudy": true,
+        "maxCaseFrameMs": 33.34,
+        "stage": 15,
+        "stockCharacters": null,
+        "measuredWindows": 4,
+        "strictWindows": false,
+        "chromeArgs": []
+      },
+      "events": [
+        {
+          "type": "startup-performance",
+          "clickToMatchMs": 4428,
+          "receivedAt": 1789503610580
+        },
+        {
+          "type": "presentation-validation",
+          "direct": true
+        },
+        {
+          "type": "combat-performance",
+          "profile": "upstream",
+          "durationMs": 30008.81500005722,
+          "frames": 1800,
+          "combatFrames": 1801,
+          "fps": 59.9823751786456,
+          "presentedBitmapFps": 59.9823751786456,
+          "p95": 19.585000038146973,
+          "p99": 22.169999837875366,
+          "maxFrameMs": 30.02999997138977,
+          "over33ms": 0,
+          "audioPeak": 1,
+          "audioUnderrunSamples": 0,
+          "audioRenderedSamples": 1440768,
+          "audioOverrunSamples": 0,
+          "targetFps": 60,
+          "receivedAt": 1789503640571
+        },
+        {
+          "type": "combat-performance",
+          "profile": "upstream",
+          "durationMs": 30001.730000019073,
+          "frames": 1800,
+          "combatFrames": 3602,
+          "fps": 59.99654019947702,
+          "presentedBitmapFps": 59.99654019947702,
+          "p95": 18.855000019073486,
+          "p99": 21.700000047683716,
+          "maxFrameMs": 27.430000066757202,
+          "over33ms": 0,
+          "audioPeak": 1,
+          "audioUnderrunSamples": 0,
+          "audioRenderedSamples": 1440768,
+          "audioOverrunSamples": 0,
+          "targetFps": 60,
+          "receivedAt": 1789503670589
+        },
+        {
+          "type": "combat-performance",
+          "profile": "upstream",
+          "durationMs": 30001.049999952316,
+          "frames": 1800,
+          "combatFrames": 5403,
+          "fps": 59.99790007359279,
+          "presentedBitmapFps": 59.99790007359279,
+          "p95": 18.769999980926514,
+          "p99": 20.805000066757202,
+          "maxFrameMs": 27.71499991416931,
+          "over33ms": 0,
+          "audioPeak": 1,
+          "audioUnderrunSamples": 0,
+          "audioRenderedSamples": 1440768,
+          "audioOverrunSamples": 0,
+          "targetFps": 60,
+          "receivedAt": 1789503700605
+        },
+        {
+          "type": "combat-performance",
+          "profile": "upstream",
+          "durationMs": 30000.789999961853,
+          "frames": 1800,
+          "combatFrames": 7204,
+          "fps": 59.99842004168186,
+          "presentedBitmapFps": 59.99842004168186,
+          "p95": 18.930000066757202,
+          "p99": 21.240000009536743,
+          "maxFrameMs": 26.664999961853027,
+          "over33ms": 0,
+          "audioPeak": 1,
+          "audioUnderrunSamples": 0,
+          "audioRenderedSamples": 1440768,
+          "audioOverrunSamples": 0,
+          "targetFps": 60,
+          "receivedAt": 1789503730621
+        },
+        {
+          "type": "startup-performance",
+          "clickToMatchMs": 5149,
+          "receivedAt": 1789503736105
+        }
+      ]
+    },
+    "residual-retained-returning": {
+      "run": {
+        "players": 3,
+        "lineup": "custom",
+        "caseStudy": true,
+        "maxCaseFrameMs": 33.34,
+        "stage": 15,
+        "stockCharacters": null,
+        "measuredWindows": 4,
+        "strictWindows": true,
+        "chromeArgs": []
+      },
+      "events": [
+        {
+          "type": "startup-performance",
+          "clickToMatchMs": 4104,
+          "receivedAt": 1789503789324
+        },
+        {
+          "type": "presentation-validation",
+          "direct": true
+        },
+        {
+          "type": "combat-performance",
+          "profile": "upstream",
+          "durationMs": 30000.84499979019,
+          "frames": 1800,
+          "combatFrames": 1801,
+          "fps": 59.99831004801992,
+          "presentedBitmapFps": 59.99831004801992,
+          "p95": 17.835000038146973,
+          "p99": 18.430000066757202,
+          "maxFrameMs": 20.585000038146973,
+          "over33ms": 0,
+          "audioPeak": 1,
+          "audioUnderrunSamples": 0,
+          "audioRenderedSamples": 1440768,
+          "audioOverrunSamples": 0,
+          "targetFps": 60,
+          "receivedAt": 1789503819309
+        },
+        {
+          "type": "combat-performance",
+          "profile": "upstream",
+          "durationMs": 30001.245000123978,
+          "frames": 1800,
+          "combatFrames": 3602,
+          "fps": 59.997510103082774,
+          "presentedBitmapFps": 59.997510103082774,
+          "p95": 17.700000047683716,
+          "p99": 18.299999952316284,
+          "maxFrameMs": 18.884999990463257,
+          "over33ms": 0,
+          "audioPeak": 1,
+          "audioUnderrunSamples": 0,
+          "audioRenderedSamples": 1439744,
+          "audioOverrunSamples": 0,
+          "targetFps": 60,
+          "receivedAt": 1789503849326
+        },
+        {
+          "type": "combat-performance",
+          "profile": "upstream",
+          "durationMs": 30000.680000066757,
+          "frames": 1800,
+          "combatFrames": 5403,
+          "fps": 59.99864003069246,
+          "presentedBitmapFps": 59.99864003069246,
+          "p95": 17.740000009536743,
+          "p99": 18.330000162124634,
+          "maxFrameMs": 18.84999990463257,
+          "over33ms": 0,
+          "audioPeak": 1,
+          "audioUnderrunSamples": 0,
+          "audioRenderedSamples": 1439744,
+          "audioOverrunSamples": 0,
+          "targetFps": 60,
+          "receivedAt": 1789503879342
+        },
+        {
+          "type": "combat-performance",
+          "profile": "upstream",
+          "durationMs": 30016.22000002861,
+          "frames": 1801,
+          "combatFrames": 7205,
+          "fps": 60.00089285054158,
+          "presentedBitmapFps": 60.00089285054158,
+          "p95": 17.81000018119812,
+          "p99": 18.295000076293945,
+          "maxFrameMs": 21.93499994277954,
+          "over33ms": 0,
+          "audioPeak": 1,
+          "audioUnderrunSamples": 0,
+          "audioRenderedSamples": 1440768,
+          "audioOverrunSamples": 0,
+          "targetFps": 60,
+          "receivedAt": 1789503909375
+        }
+      ]
+    }
+  },
+  "notes": [
+    "residual-clean is the pre-change two-minute reproduction; it failed the 100 ms maximum-frame gate.",
+    "residual-pools-warm removed all >33 ms frames but failed the unchanged p95 <=20 ms gate.",
+    "residual-retained-fresh passed the normal timing/audio gate and explicit 33.34 ms worst-frame gate; replay passed.",
+    "residual-retained-returning passed all four normal timing/audio windows and the explicit 33.34 ms maximum-frame gate."
+  ],
+  "finalWasmSha256": "d1e419a1f0c3cf492f828b659426eaafe923c5a8c9baf121aed672ad259a5fa7",
+  "validation": {
+    "keyboardMovementAttackRelease": "passed on default launcher",
+    "replay": "passed without rehashing disc",
+    "visualInspection": "passed on post-timing combat and replay screenshots",
+    "stagingLifecycleUnitTest": "passed",
+    "frameTransportUnitTest": "passed",
+    "browserSessionUnitTest": "passed",
+    "typescriptViteBuild": "passed"
+  }
+}

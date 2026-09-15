@@ -1,4 +1,9 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {loadSettings as loadMeleeSettings} from '../../engines/melee/web/lib/launch';
+import {restoreLocalDisc,localDiscReady,selectLocalDisc,subscribeLocalDisc} from '../../engines/melee/web/lib/melee-session';
+import {desktop as meleeDesktop} from '../../engines/melee/web/lib/desktop';
+import {pollService as pollMeleeService} from '../../engines/melee/web/lib/service-poll';
+import {selectionPorts as meleeSelectionPorts} from '../../engines/melee/launcher/launch-plan.mjs';
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import flowMusicUrl from "../visual/assets/skyward-save.mp3?url";
 import viewportLogoUrl from "../visual/assets/branding/super-weights-bros-stacked-white.png?url";
 import AuthGate from "./AuthGate.jsx";
@@ -331,7 +336,51 @@ function CreateExperienceOverlay({ onAuthenticated, onClose, onCreated, onPlay, 
   );
 }
 
+const NativeSsb64 = lazy(()=>import('../../engines/ssb64/launcher/NativeGame.jsx'));
+const MeleeExperience = lazy(()=>import('../../engines/melee/launcher/Experience.tsx'));
+const MeleeControls = lazy(()=>import('../../engines/melee/web/app/Controls.tsx'));
+const MeleeSettings = lazy(()=>import('../../engines/melee/launcher/Experience.tsx').then(m=>({default:m.MeleeSettings})));
+
 export default function App() {
+  const nativeSsb64=Boolean(window.openSmashDesktop?.engines?.ssb64);
+  const [isMelee, setIsMelee] = useState(() => /^\/melee(?:\/|$)/.test(window.location.pathname));
+  const [meleeDiscReady,setMeleeDiscReady] = useState(false);
+  useEffect(() => {
+    if (meleeDesktop()) return pollMeleeService('/melee/api/setup',s=>setMeleeDiscReady(s.ready),()=>setMeleeDiscReady(false));
+    if(isMelee)void restoreLocalDisc();
+    return subscribeLocalDisc(s=>setMeleeDiscReady(s.ready));
+  }, [isMelee]);
+  async function validateMeleeDisc(file, onStatus) {
+    if (!meleeDesktop()) {
+      const unsubscribe = subscribeLocalDisc(status => onStatus?.(status.message));
+      try { return await selectLocalDisc(file); }
+      finally { unsubscribe(); }
+    }
+    const result = await meleeDesktop().chooseDisc();
+    if (result.cancelled) throw Error('No disc selected.');
+  }
+  function syncExperience() {
+    setEngine(null);
+    setPendingAction(null);
+    setAdvancedOpen(false);
+    setImmersive(false);
+    setIsMelee(/^\/melee(?:\/|$)/.test(window.location.pathname));
+  }
+  function switchExperience(experience) {
+    if (experience === (isMelee ? 'melee' : 'ssb64')) return;
+    if (engine && !window.confirm('Leave the current game and switch experiences?')) return;
+    window.history.pushState({}, '', experience === 'melee' ? '/melee' : '/');
+    syncExperience();
+  }
+  useEffect(() => {
+    window.characterGrid?.syncExperience?.(isMelee ? 'melee' : 'ssb64');
+  }, [isMelee]);
+  useEffect(() => {
+    window.addEventListener('popstate', syncExperience);
+    return () => window.removeEventListener('popstate', syncExperience);
+  }, []);
+  function launchMelee(action){setEngine({experience:'melee',id:crypto.randomUUID(),action:{...action,selectionMode:advancedOptions.selectionMode,portPlan:controllerPlan(advancedOptions,gamepads)}});setPendingAction(null);}
+
   useEffect(installPerformanceCapture, []);
   const isCreatePage = window.location.pathname.replace(/\/+$/, "") === "/create";
   const isTrailerPage = window.location.pathname.replace(/\/+$/, "") === "/trailer";
@@ -382,6 +431,7 @@ export default function App() {
   // first one at the document level (capture phase, so nothing can swallow it)
   // and fan it out to every audio source: trailer iframe, flow music, engine
   // AudioContext. The sound preference stays the single override.
+  useEffect(()=>{window.openSmashDesktop?.mute(!soundOn);},[soundOn]);
   const [audioUnlocked, setAudioUnlocked] = useState(false);
   // The home-page trailer only goes audible after the viewer explicitly turns
   // sound on through the site's own toggle (or unmutes the player itself). A
@@ -400,6 +450,7 @@ export default function App() {
   const [advancedOptions, setAdvancedOptions] = useState(loadAdvancedOptions);
   const gamepads = useGamepads();
   const [advancedOpen, setAdvancedOpen] = useState(false);
+  useEffect(() => window.meleeDesktop?.onOpenSettings(() => setAdvancedOpen(true)), []);
   const [aboutOpen, setAboutOpen] = useState(false);
   // Fighter job whose generation details modal is open (null = closed).
   const [detailsJobId, setDetailsJobId] = useState(null);
@@ -930,6 +981,7 @@ export default function App() {
   }
 
   function launch(action) {
+    if(isMelee){launchMelee(action);return;}
     try {
       const launchOptions = launchOptionsFor(action);
       const launchAction = prepareLaunchAction(action, launchOptions);
@@ -1035,11 +1087,13 @@ export default function App() {
   }
 
   async function requestLaunch(action) {
+    if(isMelee){launchMelee(action);return;}
     setPageError("");
     if (isCreatePage && controlsRoadblockRequired()) {
       window.location.assign("/");
       return;
     }
+    if(nativeSsb64){launch(action);return;}
     const session = authorized ? null : await getSession();
     if (authorized || session?.authorized) {
       setAuthorized(true);
@@ -1196,6 +1250,7 @@ export default function App() {
       return "about:blank";
     }
     try {
+      if(isMelee){launchMelee(action);return "about:blank";}
       const launchOptions = launchOptionsFor(action);
       const launchAction = prepareLaunchAction(action, launchOptions);
       const src = engineUrl(launchAction, launchOptions, gamepads);
@@ -1526,6 +1581,10 @@ export default function App() {
     Object.assign(visualBridgeRef.current, {
       characters,
       fighterJobs,
+      handlesGameSetup: isMelee||nativeSsb64,
+      experience: isMelee ? 'melee' : 'ssb64',
+      switchExperience,
+      nativeDiscPicker: isMelee && Boolean(meleeDesktop()),
       announceCharacter(slug) {
         const character = characters.find((candidate) => candidate.slug === slug);
         if (character) announceCharacter(character);
@@ -1535,13 +1594,19 @@ export default function App() {
       completeCreateRom() { setCreateStage("creator"); },
       hasGamepad() { return gamepads.length > 0; },
       selectionSlots() {
+        if(isMelee){
+          const plan=controllerPlan(advancedOptions,gamepads);
+          return meleeSelectionPorts(plan,advancedOptions.selectionMode,loadMeleeSettings().mode).map(port=>
+            !plan[port]||plan[port].kind==='cpu'?`CPU${port+1}`:`${port+1}P`);
+        }
         return characterSelectionSlots(launchOptionsFor({ type: "character" }), gamepads);
       },
       humanPortCount() {
         return controllerPlan(advancedOptions, gamepads)
           .filter((entry) => entry?.kind === "keyboard" || entry?.kind === "gamepad").length;
       },
-      isAuthorized() { return authorized; },
+      isAuthorized() { return isMelee ? meleeDiscReady : authorized; },
+      async restoreDisc() { if(meleeDesktop())return meleeDiscReady;await restoreLocalDisc();return localDiscReady(); },
       launch: launchVisualAction,
       cancelCreateRom() { setCreateStage(null); },
       navigate(pathname) {
@@ -1557,7 +1622,7 @@ export default function App() {
         if (job) setDetailsJobId(job.id);
       },
       validateCreateRom: validateCreateVisualRom,
-      validateRom: validateVisualRom,
+      validateRom: isMelee ? validateMeleeDisc : validateVisualRom,
     });
     window.openSmashReactBridge = visualBridgeRef.current;
 
@@ -1568,6 +1633,7 @@ export default function App() {
             onBoot={setTrailerSetup} />
         )}
         <RetroHome
+          engineContent={engine?.experience==='melee'?<Suspense fallback={<p>Loading Melee…</p>}><MeleeExperience key={engine.id} action={engine.action} onClose={()=>setEngine(null)} soundOn={soundOn}/></Suspense>:nativeSsb64&&engine?<Suspense fallback={<p>Loading Smash 64…</p>}><NativeSsb64 key={engine.src} src={engine.src} onClose={()=>setEngine(null)} soundOn={soundOn}/></Suspense>:null}
           aboutOpen={aboutOpen}
           advancedActive={hasAdvancedOverrides(advancedOptions)}
           authorized={authorized}
@@ -1626,6 +1692,8 @@ export default function App() {
           onSaveSettings={saveFighterSettings}
         />
         <SettingsModal
+          engineControls={isMelee?<Suspense fallback={<p>Loading bindings…</p>}><MeleeControls/></Suspense>:null}
+          engineSettings={isMelee?<Suspense fallback={<p>Loading Melee settings…</p>}><MeleeSettings/></Suspense>:null}
           accountConnected={Boolean(user)}
           authorized={authorized}
           debugMode={new URLSearchParams(window.location.search).get("debug") === "1"}

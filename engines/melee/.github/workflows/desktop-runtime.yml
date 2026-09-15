@@ -1,0 +1,91 @@
+name: Native runtime payloads
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Platform to build (use one for a targeted retry)
+        type: choice
+        options: [all, macos-arm64, macos-x64, linux-x64, windows-x64]
+        default: all
+permissions:
+  contents: write
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    outputs:
+      matrix: ${{ steps.matrix.outputs.value }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: matrix
+        env: {PLATFORM: '${{ inputs.platform }}'}
+        run: python -c "import json,os; p=os.environ.get('PLATFORM','all'); m=json.load(open('desktop/platforms.json')); open(os.environ['GITHUB_OUTPUT'],'a').write('value='+json.dumps([x for x in m if p=='all' or x['key']==p])+'\n')"
+  runtime:
+    needs: plan
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: ilammy/msvc-dev-cmd@v1
+        if: runner.os == 'Windows'
+      - name: Linux dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y g++-14 ccache ninja-build libgtk-3-dev libasound2-dev libpulse-dev libudev-dev libevdev-dev libxrandr-dev libxi-dev libx11-xcb-dev libxinerama-dev libxcursor-dev libgl1-mesa-dev libvulkan-dev libusb-1.0-0-dev libbluetooth-dev libwayland-dev libxkbcommon-dev libhidapi-dev
+      - name: macOS compiler cache
+        if: runner.os == 'macOS'
+        run: brew install ccache
+      - uses: actions/cache/restore@v4
+        with:
+          path: build/ccache
+          key: ${{ matrix.key }}-desktop-ccache-v1-${{ github.run_id }}
+          restore-keys: ${{ matrix.key }}-desktop-ccache-v1-
+      - name: Build tools
+        run: python -m pip install cmake ninja
+      - name: Download immutable private build inputs
+        env: {GH_TOKEN: '${{ github.token }}'}
+        shell: bash
+        run: |
+          test '${{ github.event.repository.private }}' = 'true'
+          gh release download desktop-inputs-v3 --pattern native-inputs-v3.tar.gz --dir build/desktop-inputs
+      - name: Build payload
+        env:
+          CCACHE_DIR: ${{ github.workspace }}/build/ccache
+          CCACHE_BASEDIR: ${{ github.workspace }}
+          CCACHE_MAXSIZE: 2G
+        shell: bash
+        run: |
+          if [ '${{ runner.os }}' = 'Windows' ]; then export CC=clang-cl CXX=clang-cl; fi
+          if [ '${{ runner.os }}' = 'Linux' ]; then export CC=clang CXX=g++-14; fi
+          if [ '${{ runner.os }}' = 'Linux' ]; then
+            printf '#include <expected>\n#include <format>\nint main(){std::expected<int,int> x=1; return std::format("{}",*x)!="1";}\n' > /tmp/desktop-toolchain.cpp
+            "$CXX" -std=c++23 /tmp/desktop-toolchain.cpp -o /tmp/desktop-toolchain
+            /tmp/desktop-toolchain
+          fi
+          python tools/build_desktop_runtime.py build/desktop-inputs/native-inputs-v3.tar.gz
+          python -c "import shutil; shutil.make_archive('build/native-runtime-${{ matrix.key }}','zip','build/desktop-runtime')"
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: build/ccache
+          key: ${{ matrix.key }}-desktop-ccache-v1-${{ github.run_id }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: native-runtime-${{ matrix.key }}
+          path: build/native-runtime-${{ matrix.key }}.zip
+          retention-days: 30
+  publish:
+    if: ${{ inputs.platform == 'all' }}
+    needs: runtime
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: {path: build/runtime-artifacts, merge-multiple: true}
+      - name: Publish private runtime cache
+        env: {GH_TOKEN: '${{ github.token }}'}
+        run: gh release create desktop-runtime-v3 build/runtime-artifacts/*.zip --prerelease --title 'Desktop runtime v3 (embedded display)' --notes 'Versioned native engine payloads. No ISO or extracted game filesystem. Reused by desktop launcher builds.'

@@ -1,0 +1,166 @@
+{
+  "run": {
+    "players": 4,
+    "lineup": "custom",
+    "stage": 31,
+    "stockCharacters": null,
+    "measuredWindows": 3,
+    "strictWindows": true,
+    "chromeArgs": [
+      "--disable-audio-output"
+    ]
+  },
+  "windows": [
+    {
+      "type": "combat-performance",
+      "profile": "upstream",
+      "durationMs": 30028.44000005722,
+      "frames": 1727,
+      "combatFrames": 1728,
+      "fps": 57.51214515295197,
+      "presentedBitmapFps": 57.51214515295197,
+      "p95": 18.235000133514404,
+      "p99": 19.674999952316284,
+      "maxFrameMs": 411.9399998188019,
+      "over33ms": 6,
+      "audioPeak": 1,
+      "audioUnderrunSamples": 8444,
+      "audioRenderedSamples": 1440768,
+      "audioOverrunSamples": 0,
+      "targetFps": 60,
+      "receivedAt": 1789495900593
+    },
+    {
+      "type": "combat-performance",
+      "profile": "upstream",
+      "durationMs": 30016.914999961853,
+      "frames": 1736,
+      "combatFrames": 3465,
+      "fps": 57.834057897095896,
+      "presentedBitmapFps": 57.834057897095896,
+      "p95": 19.21499991416931,
+      "p99": 26.545000076293945,
+      "maxFrameMs": 456.02500009536743,
+      "over33ms": 11,
+      "audioPeak": 1,
+      "audioUnderrunSamples": 7427,
+      "audioRenderedSamples": 1440768,
+      "audioOverrunSamples": 0,
+      "targetFps": 60,
+      "receivedAt": 1789495930636
+    },
+    {
+      "type": "combat-performance",
+      "profile": "upstream",
+      "durationMs": 30001.27499985695,
+      "frames": 1763,
+      "combatFrames": 5229,
+      "fps": 58.76416918975631,
+      "presentedBitmapFps": 58.76416918975631,
+      "p95": 18.69000005722046,
+      "p99": 20.829999923706055,
+      "maxFrameMs": 526.7799999713898,
+      "over33ms": 5,
+      "audioPeak": 1,
+      "audioUnderrunSamples": 9848,
+      "audioRenderedSamples": 1439744,
+      "audioOverrunSamples": 0,
+      "targetFps": 60,
+      "receivedAt": 1789495960654
+    }
+  ],
+  "startup": [
+    {
+      "type": "startup-performance",
+      "clickToMatchMs": 5315,
+      "receivedAt": 1789495870580
+    }
+  ],
+  "errors": [],
+  "sessions": [
+    {
+      "type": "session",
+      "backend": "melee-pc-upstream",
+      "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+      "hardwareConcurrency": 10,
+      "launch": {
+        "mode": 0,
+        "stage": 31,
+        "level": 9,
+        "stocks": 20,
+        "minutes": 8,
+        "ports": [
+          {
+            "device": "keyboard",
+            "character": "alanturing",
+            "target": "mario",
+            "fighter": 8,
+            "color": 0,
+            "custom": true
+          },
+          {
+            "device": "cpu",
+            "character": "donaldtrump",
+            "target": "falco",
+            "fighter": 20,
+            "color": 0,
+            "custom": true
+          },
+          {
+            "device": "cpu",
+            "character": "abrahamlincoln",
+            "target": "captain-falcon",
+            "fighter": 0,
+            "color": 0,
+            "custom": true
+          },
+          {
+            "device": "cpu",
+            "character": "barackobama",
+            "target": "link",
+            "fighter": 6,
+            "color": 0,
+            "custom": true
+          }
+        ],
+        "costumes": [
+          {
+            "character": "alanturing",
+            "target": "mario",
+            "fighter": 8,
+            "color": 0,
+            "filename": "PlMrNr.dat"
+          },
+          {
+            "character": "donaldtrump",
+            "target": "falco",
+            "fighter": 20,
+            "color": 0,
+            "filename": "PlFcNr.dat"
+          },
+          {
+            "character": "abrahamlincoln",
+            "target": "captain-falcon",
+            "fighter": 0,
+            "color": 0,
+            "filename": "PlCaNr.dat"
+          },
+          {
+            "character": "barackobama",
+            "target": "link",
+            "fighter": 6,
+            "color": 0,
+            "filename": "PlLkNr.dat"
+          }
+        ],
+        "packedPorts": [
+          264,
+          276,
+          256,
+          262
+        ]
+      },
+      "receivedAt": 1789495865643
+    }
+  ]
+}

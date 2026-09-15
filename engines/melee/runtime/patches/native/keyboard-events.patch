@@ -1,0 +1,56 @@
+--- a/vendor/dolphin/Source/Core/InputCommon/ControllerInterface/Quartz/QuartzKeyboardAndMouse.mm
++++ b/vendor/dolphin/Source/Core/InputCommon/ControllerInterface/Quartz/QuartzKeyboardAndMouse.mm
+@@ -4,6 +4,8 @@
+ #include "InputCommon/ControllerInterface/Quartz/QuartzKeyboardAndMouse.h"
+ 
+ #include <map>
++#include <array>
++#include <atomic>
+ #include <mutex>
+ 
+ #include <Carbon/Carbon.h>
+@@ -76,6 +78,7 @@
+ 
+ namespace ciface::Quartz
+ {
++static std::array<std::atomic<bool>, 128> event_keys{}, pending_keys{};
+ std::string KeycodeToName(const CGKeyCode keycode)
+ {
+   static const std::map<CGKeyCode, std::string> named_keys = {
+@@ -191,7 +194,9 @@
+ 
+ ControlState KeyboardAndMouse::Key::GetState() const
+ {
+-  return CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, m_keycode) != 0;
++  const bool pending = m_keycode < 128 && pending_keys[m_keycode].exchange(false);
++  return pending || (m_keycode < 128 && event_keys[m_keycode].load()) ||
++         CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, m_keycode) != 0;
+ }
+ 
+ std::string KeyboardAndMouse::Key::GetName() const
+@@ -201,6 +206,25 @@
+ 
+ KeyboardAndMouse::KeyboardAndMouse(void* view)
+ {
++  // Preserve brief foreground key events between game input polls. This also
++  // supports accessibility-generated key events that do not change HID state.
++  static dispatch_once_t installed;
++  dispatch_once(&installed, ^{
++    [NSEvent addLocalMonitorForEventsMatchingMask:NSEventMaskKeyDown | NSEventMaskKeyUp
++        handler:^NSEvent*(NSEvent* event) {
++          unsigned code = event.keyCode;
++          if (code < 128) {
++            bool down = event.type == NSEventTypeKeyDown;
++            event_keys[code].store(down);
++            if (down) pending_keys[code].store(true);
++          }
++          return event;
++        }];
++    [[NSNotificationCenter defaultCenter] addObserverForName:NSApplicationDidResignActiveNotification
++        object:nil queue:nil usingBlock:^(NSNotification*) {
++          for (unsigned i=0;i<128;i++) {event_keys[i].store(false);pending_keys[i].store(false);}
++        }];
++  });
+   // All keycodes in <HIToolbox/Events.h> are 0x7e or lower. If you notice
+   // keys that aren't being recognized, bump this number up!
+   for (int keycode = 0; keycode < 0x80; ++keycode)

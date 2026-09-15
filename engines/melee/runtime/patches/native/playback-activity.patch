@@ -1,0 +1,37 @@
+--- a/vendor/dolphin/Source/Core/DolphinNoGUI/PlatformMacos.mm
++++ b/vendor/dolphin/Source/Core/DolphinNoGUI/PlatformMacos.mm
+@@ -195,6 +195,7 @@
+   NSRect m_window_rect;
+   NSWindow* m_window;
+   NSMenu* menuBar;
++  id m_playback_activity = nil;
+   AppDelegate* m_app_delegate;
+   WindowDelegate* m_window_delegate;
+ 
+@@ -207,6 +208,12 @@
+ 
+ PlatformMacOS::~PlatformMacOS()
+ {
++  if (m_playback_activity) {
++    [NSProcessInfo.processInfo endActivity:m_playback_activity];
++#if !__has_feature(objc_arc)
++    [m_playback_activity release];
++#endif
++  }
+   [m_window close];
+   if (s_application_platform == this)
+     s_application_platform = nullptr;
+@@ -241,6 +248,13 @@
+     [m_window center];
+   }
+   if (fixed_panel) {
++    // Utility windows can remain behind the main app; gameplay must not nap.
++    m_playback_activity = [NSProcessInfo.processInfo
++        beginActivityWithOptions:(NSActivityUserInitiated | NSActivityLatencyCritical)
++        reason:@"Melee gameplay"];
++#if !__has_feature(objc_arc)
++    [m_playback_activity retain];
++#endif
+     [(NSPanel*)m_window setFloatingPanel:YES];
+     [(NSPanel*)m_window setHidesOnDeactivate:NO];
+     [m_window setLevel:NSFloatingWindowLevel];

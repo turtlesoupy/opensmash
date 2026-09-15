@@ -1,0 +1,128 @@
+--- a/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore_Run.cpp
++++ b/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore_Run.cpp
+@@ -14,9 +14,60 @@
+ #include "Core/HW/SystemTimers.h"
+ #include "Common/FramePhaseTiming.h"
+ 
++#include <algorithm>
+ #include <cstdio>
+ #include <cstdlib>
+ #include <ctime>
++
++#ifdef __EMSCRIPTEN__
++#ifndef DOLRECOMP_C_LOOP_CYCLE_BUDGET
++#define DOLRECOMP_C_LOOP_CYCLE_BUDGET 256
++#endif
++extern "C" {
++// Defined by the generated game archive (tools/chain_browser_chunks.py).
++extern CPUState* opensmash_chain_ctx;
++extern const u8* opensmash_chain_chunk_state;
++extern const u8* opensmash_chain_chunk_forced;
++extern const u32 opensmash_chain_chunk_count;
++extern const u32 opensmash_chain_chunk_base[];
++extern s64 opensmash_chain_mark;
++extern s64 opensmash_chain_budget;
++extern u64 opensmash_chain_tb_base, opensmash_chain_tb_cycles;
++static_assert(SystemTimers::TIMER_RATIO == 12, "Keep generated chain timebase conversion in sync");
++extern u64* opensmash_chain_hook_bits;
++}
++
++// The run loop must observe idle-loop addresses to skip idle time.
++static void ChainStopAt(u32 address)
++{
++  const u32 offset = address - 0x80000000u;
++  if (opensmash_chain_hook_bits && address != 0 && offset < 0x00400000u && !(offset & 3u))
++    opensmash_chain_hook_bits[offset >> 8] |= u64{1} << ((offset >> 2) & 63u);
++}
++
++bool StaticRecompCore::ChainTablesMatch()
++{
++  if (m_chain_tables_state == 0)
++  {
++    bool match = m_module && opensmash_chain_chunk_count == m_module->num_chunk_ranges;
++    for (u32 i = 0; match && i < opensmash_chain_chunk_count; ++i)
++      match = opensmash_chain_chunk_base[i] == m_module->chunk_ranges[i].start;
++    m_chain_tables_state = match ? 1 : -1;
++    if (!match)
++      std::fprintf(stderr, "[staticrecomp] region chaining disabled: table mismatch\n");
++    // Regions the chassis interprets (host-call regions) are never chained into.
++    m_chain_forced_chunks.assign(m_module ? m_module->num_chunk_ranges : 0, 0);
++    for (u32 i = 0; match && i < m_module->num_chunk_ranges; ++i)
++    {
++      const auto& chunk = m_module->chunk_ranges[i];
++      for (const StaticRecompRange& range : m_forced_fallback_ranges)
++        if (range.start < chunk.end && chunk.start < range.end)
++          m_chain_forced_chunks[i] = 1;
++    }
++  }
++  return m_chain_tables_state == 1;
++}
++#endif
+ 
+ namespace
+ {
+@@ -102,6 +153,31 @@
+ 
+   const std::string initial_game_id = SConfig::GetInstance().GetGameID();
+   m_module_active = m_module && (initial_game_id.empty() || initial_game_id == m_module->game_id);
++
++#ifdef __EMSCRIPTEN__
++  // Region chaining continues cross-region transfers inside generated code
++  // under this loop's own dispatch conditions (cycle budget, host-call
++  // addresses, verified regions). It applies to this guest context only, so
++  // diagnostics, lockstep and other dispatcher users keep per-region returns.
++  opensmash_chain_ctx = nullptr;
++  if (!Diagnostics && !has_rel_modules && m_module_active && ChainTablesMatch())
++  {
++    opensmash_chain_chunk_state = m_chunk_state.data();
++    opensmash_chain_chunk_forced = m_chain_forced_chunks.data();
++    ChainStopAt(idle_pc);
++    ChainStopAt(secondary_idle_pc);
++    ChainStopAt(m_caller_idle_pc);
++    opensmash_chain_ctx = &m_guest;
++  }
++  if (!m_chain_logged)
++  {
++    m_chain_logged = true;
++    std::fprintf(stderr, "[staticrecomp] region chaining %s (%zu regions, %zu forced fallback)\n",
++                 opensmash_chain_ctx ? "enabled" : "disabled", m_chunk_state.size(),
++                 static_cast<size_t>(std::count(m_chain_forced_chunks.begin(),
++                                                m_chain_forced_chunks.end(), u8{1})));
++  }
++#endif
+ 
+   if (!m_module_active && m_fallback_jit && !m_guest.host_call)
+   {
+@@ -195,6 +271,15 @@
+           m_guest.pc = linked_dispatch_address;
+           const TimePoint dispatch_time_start =
+               selected_dispatch && sample_dispatch_time ? Clock::now() : TimePoint{};
++#ifdef __EMSCRIPTEN__
++          opensmash_chain_mark = m_guest.downcount;
++          opensmash_chain_tb_base = m_burst_tb_base;
++          opensmash_chain_tb_cycles = m_burst_tb_cycles;
++          // A chain may run until this slice expires, so it ends at the first
++          // transfer after expiry: the same boundary per-region dispatch used,
++          // where CoreTiming then delivers pending external interrupts.
++          opensmash_chain_budget = std::min<s64>(DOLRECOMP_C_LOOP_CYCLE_BUDGET, ppc.downcount);
++#endif
+           m_module->dispatch(&m_guest, linked_dispatch_address);
+           if (has_rel_modules)
+             m_guest.pc = TranslateRelAddress(m_guest.pc);
+--- a/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore.h
++++ b/vendor/dolphin/Source/Core/Core/PowerPC/StaticRecomp/StaticRecompCore.h
+@@ -148,6 +148,14 @@
+   };
+ 
+   void OnICacheInvalidate(u32 address, u32 length);
++#ifdef __EMSCRIPTEN__
++  // Generated regions may continue into each other (tools/chain_browser_chunks.py).
++  // Their region table must be the module's before the run loop allows that.
++  bool ChainTablesMatch();
++  int m_chain_tables_state = 0;
++  std::vector<u8> m_chain_forced_chunks;
++  bool m_chain_logged = false;
++#endif
+   int ChunkIndexOf(u32 address);
+   bool IsForcedFallbackAddress(u32 address) const;
+   bool ChunkContainsHostCall(u32 index) const;

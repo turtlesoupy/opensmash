@@ -19,6 +19,8 @@ import {
 } from "./launch-options.js";
 
 export default function SettingsModal({
+  engineSettings = null,
+  engineControls = null,
   accountConnected = false,
   authorized,
   debugMode,
@@ -155,7 +157,7 @@ export default function SettingsModal({
             <button className="launch-flow-action settings-menu-button" type="button" onClick={() => setPage("controllers")}>
               <span>Players &amp; Controllers</span>
             </button>
-            {authorized ? (
+            {!engineSettings && (authorized ? (
               <button
                 className="launch-flow-action settings-menu-button advanced-handoff-action"
                 type="button"
@@ -171,8 +173,8 @@ export default function SettingsModal({
               >
                 <span>Get ROM from another device</span>
               </button>
-            )}
-            {authorized && (
+            ))}
+            {authorized && !engineSettings && (
               <button
                 className="launch-flow-action settings-menu-button reset-rom-button"
                 type="button"
@@ -224,7 +226,8 @@ export default function SettingsModal({
             />
           </div>
 
-          <div className="advanced-form settings-subpage" hidden={page !== "gameplay"}>
+          {engineSettings && page==='gameplay' && <div className="settings-subpage">{engineSettings}<BackButton onClick={()=>setPage('main')}/></div>}
+          <div className="advanced-form settings-subpage" hidden={page !== "gameplay" || Boolean(engineSettings)}>
             <div className="advanced-selects">
               <label className="advanced-field">
                 <span className="advanced-field-label">Character Mesh</span>
@@ -347,7 +350,8 @@ export default function SettingsModal({
               )}
             </section>
 
-            {gamepads.length > 0 && (
+            {engineControls}
+            {!engineControls && gamepads.length > 0 && (
               <section className="controller-profile-list" aria-label="Controller mappings">
                 {gamepads.map((pad) => {
                   const mappingSource = window.openSmashControllerRemap?.profileSource?.(pad.id) || "default";

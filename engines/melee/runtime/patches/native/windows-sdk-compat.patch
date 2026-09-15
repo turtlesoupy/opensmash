@@ -1,0 +1,68 @@
+--- a/vendor/dolphin/Source/Core/DolphinNoGUI/PlatformWin32.cpp
++++ b/vendor/dolphin/Source/Core/DolphinNoGUI/PlatformWin32.cpp
+@@ -184,10 +184,13 @@
+   {
+     if (hwnd)
+     {
+-      // Remove rounded corners from the render window on Windows 11
++#if defined(NTDDI_WIN10_CO)
++      // Remove rounded corners when building with Windows 11 SDK declarations.
++      // Older SDKs retain the default decoration; embedded rendering is unchanged.
+       constexpr DWM_WINDOW_CORNER_PREFERENCE corner_preference = DWMWCP_DONOTROUND;
+       DwmSetWindowAttribute(hwnd, DWMWA_WINDOW_CORNER_PREFERENCE, &corner_preference,
+                             sizeof(corner_preference));
++#endif
+     }
+   }
+   break;
+--- a/vendor/dolphin/Source/Core/Common/Timer.cpp
++++ b/vendor/dolphin/Source/Core/Common/Timer.cpp
+@@ -10,6 +10,9 @@
+ #ifdef _WIN32
+ #include <windows.h>
+ #include <timeapi.h>
++#ifndef PROCESS_POWER_THROTTLING_IGNORE_TIMER_RESOLUTION
++#define PROCESS_POWER_THROTTLING_IGNORE_TIMER_RESOLUTION 0x4
++#endif
+ #endif
+ 
+ #include "Common/CommonTypes.h"
+--- a/vendor/dolphin/Source/Core/Common/x64CPUDetect.cpp
++++ b/vendor/dolphin/Source/Core/Common/x64CPUDetect.cpp
+@@ -70,21 +70,11 @@
+ {
+   // Starting with win11, arm64 windows can run x64 processes under emulation.
+   // This detects such a scenario and informs the user they probably want to run a native build.
+-  PROCESS_MACHINE_INFORMATION info{};
+-  if (!GetProcessInformation(GetCurrentProcess(), ProcessMachineTypeInfo, &info, sizeof(info)))
+-  {
+-    // Possibly we are running on version of windows which doesn't support ProcessMachineTypeInfo.
++  USHORT process_machine = 0, native_machine = 0;
++  if (!IsWow64Process2(GetCurrentProcess(), &process_machine, &native_machine) ||
++      native_machine == IMAGE_FILE_MACHINE_AMD64)
+     return;
+-  }
+-  if (info.MachineAttributes & MACHINE_ATTRIBUTES::KernelEnabled)
+-  {
+-    // KernelEnabled will be set if process arch matches the kernel arch - how we want people to run
+-    // dolphin.
+-    return;
+-  }
+-
+-  // The process is not native; could use IsWow64Process2 to get native machine type, but for now
+-  // we can assume it is arm64.
++
+   PanicAlertFmtT("This build of Dolphin is not natively compiled for your CPU.\n"
+                  "Please run the ARM64 build of Dolphin for a better experience.");
+ }
+--- a/vendor/dolphin/Source/Core/InputCommon/ControllerInterface/ForceFeedback/ForceFeedbackDevice.cpp
++++ b/vendor/dolphin/Source/Core/InputCommon/ControllerInterface/ForceFeedback/ForceFeedbackDevice.cpp
+@@ -79,7 +79,7 @@
+   // We just use the X axis (for wheel left/right).
+   // Gamepads seem to not care which axis you use.
+   // These are temporary for creating the effect:
+-  std::array<DWORD, 1> rgdwAxes = {DIJOFS_X};
++  std::array<DWORD, 1> rgdwAxes = {static_cast<DWORD>(DIJOFS_X)};
+   std::array<LONG, 1> rglDirection = {-200};
+ 
+   DIEFFECT eff{};
