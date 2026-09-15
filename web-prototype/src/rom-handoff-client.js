@@ -514,7 +514,35 @@ export function receiveRomHandoff({ code, onState = () => {}, signal } = {}) {
   return { promise, cancel() { controller.abort(); } };
 }
 
-export { holdScreenAwake } from "../shared/screen-awake.js";
+/**
+ * Keep the screen on while a handoff is pending. Both ends need a live tab:
+ * a locked phone or a closed laptop lid suspends the page and drops the data
+ * channel. Best effort (Chromium, Safari 16.4+); returns a release function.
+ */
+export function holdScreenAwake() {
+  let sentinel = null;
+  let released = false;
+  const acquire = async () => {
+    try {
+      if (released || document.visibilityState !== "visible" || !navigator.wakeLock?.request) return;
+      const lock = await navigator.wakeLock.request("screen");
+      // Released while the request was in flight: let it go now, or it stays held.
+      if (released) { lock.release().catch(() => {}); return; }
+      sentinel = lock;
+    } catch {
+      sentinel = null;
+    }
+  };
+  const onVisible = () => { if (document.visibilityState === "visible") acquire(); };
+  document.addEventListener("visibilitychange", onVisible);
+  acquire();
+  return () => {
+    released = true;
+    document.removeEventListener("visibilitychange", onVisible);
+    sentinel?.release().catch(() => {});
+    sentinel = null;
+  };
+}
 
 export function isHandoffSupported() {
   return typeof RTCPeerConnection === "function";

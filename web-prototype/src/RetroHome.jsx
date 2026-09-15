@@ -1,5 +1,4 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { holdScreenAwake } from "../shared/screen-awake.js";
 import { mountFullscreenOverlay } from "../shared/fullscreen-overlay.js";
 import logoFallbackUrl from "../visual/assets/smash-the-weights-logo.png?url";
 import FlameAction from "./FlameAction.jsx";
@@ -459,10 +458,6 @@ export default function RetroHome({
     return () => document.body.classList.remove("is-game-running");
   }, [engine]);
 
-  useEffect(() => {
-    if (engine && matchMedia("(pointer:coarse)").matches) return holdScreenAwake();
-  }, [engine]);
-
   // The YouTube iframe ignores API commands until its player reports ready,
   // which happens after the iframe's own load event. Subscribe to its events
   // and only drive it once ready (re-sent on every reload of the iframe).
@@ -643,7 +638,7 @@ export default function RetroHome({
               className={`intro-video-frame ${engine ? "is-game-running" : ""}`}
               ref={gameFrameRef}
             >
-              {!engine && <iframe
+              <iframe
                 ref={introVideoRef}
                 id="intro-video"
                 // Melee needs cross-origin isolation for WASM threads. Load the
@@ -661,10 +656,10 @@ export default function RetroHome({
                   disableEmbeddedTrailerCaptions(event.currentTarget);
                   subscribeEmbeddedTrailer(event.currentTarget);
                 }}
-              />}
+              />
               <canvas className="intro-video-rule-layer" aria-hidden="true" />
               {engineContent && <div className="melee-surface">{engineContent}</div>}
-              {!engineContent && <iframe ref={engineRef} id="intro-game-frame" className="intro-game-frame" src={engineContent?"about:blank":engine?.src || "about:blank"} title={engine ? "Smash.fun game engine" : "Smash.fun game"} allow="autoplay; gamepad; fullscreen" />}
+              <iframe ref={engineRef} id="intro-game-frame" className="intro-game-frame" src={engineContent?"about:blank":engine?.src || "about:blank"} title={engine ? "Smash.fun game engine" : "Smash.fun game"} allow="autoplay; gamepad; fullscreen" />
               {engine && <button
                 className="game-fullscreen-control"
                 type="button"
