@@ -25,7 +25,7 @@ function ControllerCallouts() {
   return (
     <div id="controller-callouts" className="controller-callouts" aria-label="Keyboard controls">
       <svg id="controller-callout-lines" className="controller-callout-lines" aria-hidden="true">
-        {['stick', 'dpad', 'a', 'b', 'c-buttons', 'z', 'left-bumper', 'right-bumper'].map((control) => (
+        {['stick', 'dpad', 'a', 'b', 'c-buttons', 'z', 'left-bumper', 'right-bumper', 'x', 'y', 'start'].map((control) => (
           <g data-control-line={control} key={control}><line /><circle r="3" /></g>
         ))}
       </svg>
@@ -50,6 +50,9 @@ function ControllerCallouts() {
         </div>
       ))}
       {[
+        ['x', 'x', 'X: jump', ''],
+        ['y', 'y', 'Y: jump', ''],
+        ['start', 'start', 'Start / pause', ''],
         ['a', 'j', 'J or Ctrl: A button', 'or Ctrl'],
         ['b', 'k', 'K or Alt: B button', 'or Alt'],
         ['z', 'l', 'L or Shift: Z button', 'or Shift'],

@@ -36,3 +36,6 @@ __pycache__/
 /desktop/dist/
 /desktop/native/build/
 *.node
+
+# Launcher models are distributable source assets, not engine dump output.
+!launcher/assets/fun-gamecube-controller.glb
