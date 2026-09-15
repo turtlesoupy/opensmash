@@ -91,6 +91,20 @@ self.onmessage = async ({data}) => {
     const {inspectDisc, ISO_SHA256} = await import('./disc.mjs');
     const {mountSizedFile, mountSystemBundle, costumeSlot, COSTUME_SLOTS} = await import('./local-files.mjs');
     report('status', {message: 'Loading Melee…'});
+    // Native hashing and disc reads can run while the browser compiles Wasm.
+    // The mount below still waits for every byte to be authenticated.
+    const discInspection = data.localGame ? null : (async () => {
+      if (!data.discVerified) {
+        const {verifyDisc} = await import('./verify-disc.mjs');
+        const verifyStarted = performance.now();
+        await verifyDisc(data.iso, bytes => report('status', {message: `Checking your game… ${Math.floor(bytes / data.iso.size * 100)}%`}));
+        report('disc-verification-performance', {durationMs: performance.now() - verifyStarted, bytes: data.iso.size, method: 'native-sha256-chunks'});
+      }
+      return inspectDisc(data.iso);
+    })();
+    // Preserve a rejected verification until the mount awaits it, even if
+    // compilation takes longer. No unhandled rejection may escape meanwhile.
+    void discInspection?.catch(() => {});
     const runtimeUrl=path=>new URL(path+'?v='+(build.cacheId||build.id),self.location.href).href;
     importScripts('./webgl-compat.js');
     importScripts(runtimeUrl('./opensmash-web.js'));
@@ -183,14 +197,7 @@ self.onmessage = async ({data}) => {
     } else {
     FS.mkdir('/disc');
     FS.mount(WORKERFS, {blobs: [{name: 'game.iso', data: data.iso}]}, '/disc');
-    report('status', {message: 'Checking your game…'});
-    if(!data.discVerified){
-      const {verifyDisc} = await import('./verify-disc.mjs');
-      const verifyStarted = performance.now();
-      await verifyDisc(data.iso, bytes => report('status', {message: `Checking your game… ${Math.floor(bytes / data.iso.size * 100)}%`}));
-      report('disc-verification-performance', {durationMs: performance.now() - verifyStarted, bytes: data.iso.size, method: 'native-sha256-chunks'});
-    }
-    const {blobs} = await inspectDisc(data.iso);
+    const {blobs} = await discInspection;
     report('disc-verified',{});
     if (data.costume) {
       if (!/^Pl[A-Za-z0-9]+\.dat$/.test(data.costume.filename)) throw Error('Invalid costume filename.');

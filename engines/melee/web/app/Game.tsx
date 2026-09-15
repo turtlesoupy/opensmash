@@ -98,7 +98,9 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true}:{fig
    worker.postMessage({type:'select',requestedAt,warmReadyBeforeClick:session.readyAt<=requestedAt,character:fighter.slug,skin,fighter:launchPlan.ports[0].fighter,launch:launchPlan,costumes,cssAssets});
    raf=requestAnimationFrame(()=>send());
   }catch(e){if(!closed)setError((e as Error).message);}}
-  start();
+  // StrictMode replays setup/cleanup synchronously. Claim the warmed engine
+  // only after that replay so the discarded effect cannot terminate it.
+  queueMicrotask(()=>{if(!closed)void start();});
   return()=>{closed=true;abort.abort();cancelAnimationFrame(raf);if(worker)releaseMelee(worker);audioNode?.disconnect();window.removeEventListener('keydown',keydown);window.removeEventListener('keyup',keyup);window.removeEventListener('blur',blur);touch.current.clear();};
  },[fighter,settings,roster,attempt]);
  const control=(label:string,code:string)=><button key={code} onPointerDown={e=>{e.currentTarget.setPointerCapture(e.pointerId);touch.current.add(code);}} onPointerUp={()=>touch.current.delete(code)} onPointerCancel={()=>touch.current.delete(code)}>{label}</button>;

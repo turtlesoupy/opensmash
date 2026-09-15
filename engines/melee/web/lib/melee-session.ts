@@ -8,6 +8,21 @@ const verifiedDiscs=new WeakSet<File>();
 type DiscSetup={state:string;ready:boolean;message:string};
 let discSetup:DiscSetup={state:'missing',ready:false,message:'Choose your Melee disc.'};
 const discListeners=new Set<(status:DiscSetup)=>void>();
+let consumers=0;
+let suspendTimer:ReturnType<typeof setTimeout>|undefined;
+/** Effect replay must not discard a disc that is already warming. */
+export function retainMelee(){
+ consumers++;
+ clearTimeout(suspendTimer);suspendTimer=undefined;
+ let released=false;
+ return()=>{
+  if(released)return;released=true;
+  if(--consumers===0)suspendTimer=setTimeout(()=>{
+   suspendTimer=undefined;
+   if(consumers===0)suspendMelee();
+  },0);
+ };
+}
 function updateDisc(status:DiscSetup){discSetup=status;for(const listener of discListeners)listener(status);}
 export function subscribeLocalDisc(listener:(status:DiscSetup)=>void){
  discListeners.add(listener);listener(discSetup);return()=>{discListeners.delete(listener);};

@@ -6,7 +6,7 @@ import {applyLauncherSelection} from './launch-plan.mjs';
 import {schema} from '../web/lib/launch';
 import {loadSettings,type Settings} from '../web/lib/launch';
 import {desktop,preferences} from '../web/lib/desktop';
-import {suspendMelee,selectLocalDisc,subscribeLocalDisc,clearLocalDisc} from '../web/lib/melee-session';
+import {retainMelee,selectLocalDisc,subscribeLocalDisc,clearLocalDisc} from '../web/lib/melee-session';
 import {pollService} from '../web/lib/service-poll';
 import {resolveFighters} from './resolve';
 import catalog from '../web/public/catalog.json';
@@ -65,7 +65,7 @@ export default function MeleeExperience({action,onClose,soundOn=true}:{action:an
   }
   return subscribeLocalDisc(s=>{setReady(s.ready);setStatus(s.message);});
  },[]);
- useEffect(()=>()=>suspendMelee(),[]);
+ useEffect(()=>retainMelee(),[]);
  async function choose(file?:File){
   setError('');
   try{
