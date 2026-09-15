@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { holdScreenAwake } from "../shared/screen-awake.js";
 import { mountFullscreenOverlay } from "../shared/fullscreen-overlay.js";
 import logoFallbackUrl from "../visual/assets/smash-the-weights-logo.png?url";
 import FlameAction from "./FlameAction.jsx";
@@ -456,6 +457,10 @@ export default function RetroHome({
   useEffect(() => {
     document.body.classList.toggle("is-game-running", Boolean(engine));
     return () => document.body.classList.remove("is-game-running");
+  }, [engine]);
+
+  useEffect(() => {
+    if (engine && matchMedia("(pointer:coarse)").matches) return holdScreenAwake();
   }, [engine]);
 
   // The YouTube iframe ignores API commands until its player reports ready,
