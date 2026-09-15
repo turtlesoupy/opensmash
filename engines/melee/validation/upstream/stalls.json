@@ -1,0 +1,151 @@
+{
+  "date": "2026-09-15",
+  "scope": "Focused 60-second three custom CPU fighter match on Brinstar Depths, normal audio; Chrome 152 / Apple M5. OS/driver caches not purged.",
+  "wasmSha256": "e89c370fdeb3c599c83daf2c19b7f6ddbac64c475bd787b4b4f8a28b1a8194f8",
+  "measurements": {
+    "stall-phases-returning": [
+      {
+        "type": "startup-performance",
+        "clickToMatchMs": 4011,
+        "receivedAt": 1789500687833
+      },
+      {
+        "type": "combat-performance",
+        "profile": "upstream",
+        "durationMs": 30004.620000123978,
+        "frames": 1799,
+        "combatFrames": 1800,
+        "fps": 59.95743322170274,
+        "presentedBitmapFps": 59.95743322170274,
+        "p95": 19.795000076293945,
+        "p99": 23.30999994277954,
+        "maxFrameMs": 36.829999923706055,
+        "over33ms": 4,
+        "audioPeak": 1,
+        "audioUnderrunSamples": 0,
+        "audioRenderedSamples": 1440768,
+        "audioOverrunSamples": 0,
+        "targetFps": 60,
+        "receivedAt": 1789500717819
+      },
+      {
+        "type": "combat-performance",
+        "profile": "upstream",
+        "durationMs": 30001.825000047684,
+        "frames": 1716,
+        "combatFrames": 3517,
+        "fps": 57.196520544909276,
+        "presentedBitmapFps": 57.196520544909276,
+        "p95": 19.740000009536743,
+        "p99": 23.890000104904175,
+        "maxFrameMs": 607.960000038147,
+        "over33ms": 6,
+        "audioPeak": 1,
+        "audioUnderrunSamples": 20513,
+        "audioRenderedSamples": 1439744,
+        "audioOverrunSamples": 0,
+        "targetFps": 60,
+        "receivedAt": 1789500747840
+      }
+    ],
+    "stall-direct-surface": [
+      {
+        "type": "startup-performance",
+        "clickToMatchMs": 4037,
+        "receivedAt": 1789501015425
+      },
+      {
+        "type": "combat-performance",
+        "profile": "upstream",
+        "durationMs": 30002.569999933243,
+        "frames": 1797,
+        "combatFrames": 1798,
+        "fps": 59.89486900635507,
+        "presentedBitmapFps": 59.89486900635507,
+        "p95": 18.954999923706055,
+        "p99": 20.175000190734863,
+        "maxFrameMs": 46.125,
+        "over33ms": 2,
+        "audioPeak": 0.988416314125061,
+        "audioUnderrunSamples": 0,
+        "audioRenderedSamples": 1439744,
+        "audioOverrunSamples": 0,
+        "targetFps": 60,
+        "receivedAt": 1789501045409
+      },
+      {
+        "type": "combat-performance",
+        "profile": "upstream",
+        "durationMs": 30015.644999980927,
+        "frames": 1801,
+        "combatFrames": 3600,
+        "fps": 60.00204226832855,
+        "presentedBitmapFps": 60.00204226832855,
+        "p95": 17.93499994277954,
+        "p99": 18.490000009536743,
+        "maxFrameMs": 19.549999952316284,
+        "over33ms": 0,
+        "audioPeak": 0.9920638799667358,
+        "audioUnderrunSamples": 0,
+        "audioRenderedSamples": 1440768,
+        "audioOverrunSamples": 0,
+        "targetFps": 60,
+        "receivedAt": 1789501075442
+      }
+    ],
+    "stall-direct-fresh": [
+      {
+        "type": "startup-performance",
+        "clickToMatchMs": 4052,
+        "receivedAt": 1789501110878
+      },
+      {
+        "type": "presentation-validation",
+        "direct": true
+      },
+      {
+        "type": "combat-performance",
+        "profile": "upstream",
+        "durationMs": 30010.634999990463,
+        "frames": 1800,
+        "combatFrames": 1801,
+        "fps": 59.978737537562004,
+        "presentedBitmapFps": 59.978737537562004,
+        "p95": 19.360000133514404,
+        "p99": 25.375,
+        "maxFrameMs": 40.88000011444092,
+        "over33ms": 1,
+        "audioPeak": 1,
+        "audioUnderrunSamples": 0,
+        "audioRenderedSamples": 1440768,
+        "audioOverrunSamples": 0,
+        "targetFps": 60,
+        "receivedAt": 1789501140871
+      },
+      {
+        "type": "combat-performance",
+        "profile": "upstream",
+        "durationMs": 30001.019999980927,
+        "frames": 1800,
+        "combatFrames": 3602,
+        "fps": 59.99796006939579,
+        "presentedBitmapFps": 59.99796006939579,
+        "p95": 19.230000019073486,
+        "p99": 21.109999895095825,
+        "maxFrameMs": 34.85000014305115,
+        "over33ms": 1,
+        "audioPeak": 1,
+        "audioUnderrunSamples": 0,
+        "audioRenderedSamples": 1439744,
+        "audioOverrunSamples": 0,
+        "targetFps": 60,
+        "receivedAt": 1789501170889
+      },
+      {
+        "type": "startup-performance",
+        "clickToMatchMs": 4557,
+        "receivedAt": 1789501176564
+      }
+    ]
+  }
+}

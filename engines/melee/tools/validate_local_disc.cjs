@@ -95,7 +95,13 @@ const fs=require('node:fs'),path=require('node:path');
    if(alert.length)throw Error(alert.join(' '));
    if(events.slice(runStarted).some(e=>e.type==='error'))throw Error(events.slice(runStarted).find(e=>e.type==='error').message);
    const windows=events.filter(e=>e.type==='combat-performance');
-   if(!captured&&await page.locator('.fps').textContent()) {captured=true;await page.getByRole('button',{name:'Enable sound',exact:true}).click();await page.screenshot({path:path.join(output,'first-playable.png')});}
+   if(!captured&&await page.locator('.fps').textContent()) {
+    if(await page.evaluate(()=>typeof document.body.moveBefore==='function'&&(!new URLSearchParams(location.search).get('engine')||new URLSearchParams(location.search).get('engine')==='upstream')&&!new URLSearchParams(location.search).has('presentation'))){
+     const direct=await page.evaluate(()=>!!document.querySelector('.game-screen iframe[aria-hidden="true"]'));
+     if(!direct)throw Error('Expected live upstream canvas presentation');
+     events.push({type:'presentation-validation',direct:true});
+    }
+    captured=true;await page.getByRole('button',{name:'Enable sound',exact:true}).click();await page.screenshot({path:path.join(output,'first-playable.png')});}
    if(!captured)await page.getByRole('button',{name:'Confirm · A',exact:true}).click();
    if(captured&&process.env.MELEE_INPUT_ONLY){
     const engine=page.frames().find(frame=>frame.url().includes('/engine/upstream/runtime.html'));
@@ -124,6 +130,11 @@ const fs=require('node:fs'),path=require('node:path');
   if(cacheWorker) {
    const cache=await cacheWorker.evaluate(()=>Array.from(engine.FS.readFile('/user/Cache/GALE01.uidcache')));
    fs.writeFileSync(path.join(output,'GALE01.uidcache'),Buffer.from(cache));
+  }
+  const upstreamFrame=page.frames().find(frame=>frame.url().includes('/engine/upstream/runtime.html'));
+  if(upstreamFrame&&process.env.MELEE_EXPORT_PIPELINES){
+   const files=await upstreamFrame.evaluate(()=>Module.FS.readdir('/cache').filter(n=>n.startsWith('pipeline_cache.db')).map(n=>[n,Array.from(Module.FS.readFile('/cache/'+n))]));
+   for(const [name,bytes] of files)fs.writeFileSync(path.join(output,name),Buffer.from(bytes));
   }
   await saveTrace();
   const windows=events.filter(e=>e.type==='combat-performance');

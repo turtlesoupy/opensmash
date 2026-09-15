@@ -7,6 +7,8 @@ export class MeleeFrameWorker extends EventTarget {
   listener: (event: MessageEvent) => void;
   connected = false;
   closed = false;
+  resize?: ResizeObserver;
+  surface?: HTMLCanvasElement;
   constructor(url: string) {
     super();
     this.frame = document.createElement('iframe');
@@ -25,6 +27,23 @@ export class MeleeFrameWorker extends EventTarget {
     this.frame.src=url;
     document.body.append(this.frame);
   }
+  attachSurface(canvas: HTMLCanvasElement){
+    const parent=canvas.parentElement as (HTMLElement & {moveBefore?: (node:Node,child:Node|null)=>void})|null;
+    // moveBefore preserves the warmed iframe's browsing context. appendChild
+    // would reload it and discard the verified disc and initialized WASM module.
+    if(!parent?.moveBefore||new URLSearchParams(location.search).get('presentation')==='bitmap')return;
+    parent.moveBefore(this.frame,canvas);
+    this.surface=canvas;
+    canvas.style.opacity='0';
+    Object.assign(this.frame.style,{position:'absolute',pointerEvents:'none',transformOrigin:'top left'});
+    this.frame.setAttribute('aria-hidden','true');
+    const fit=()=>{
+      const scale=Math.min(parent.clientWidth/960,parent.clientHeight/720);
+      Object.assign(this.frame.style,{left:`${(parent.clientWidth-960*scale)/2}px`,top:`${(parent.clientHeight-720*scale)/2}px`,transform:`scale(${scale})`});
+    };
+    this.resize=new ResizeObserver(fit);this.resize.observe(parent);fit();
+    this.postMessage({type:'surface',direct:true});
+  }
   postMessage(data: unknown){if(this.closed)return;if(!this.connected){this.pending.push(data);return;}this.frame.contentWindow?.postMessage(data,location.origin);}
-  terminate(){if(this.closed)return;this.closed=true;window.removeEventListener('message',this.listener);this.frame.remove();this.pending=[];}
+  terminate(){if(this.closed)return;this.closed=true;window.removeEventListener('message',this.listener);this.resize?.disconnect();if(this.surface)this.surface.style.opacity='';this.frame.remove();this.pending=[];}
 }

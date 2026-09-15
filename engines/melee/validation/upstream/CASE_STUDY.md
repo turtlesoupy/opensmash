@@ -1,6 +1,22 @@
 # Custom fighter quality and stalls: September 15 case study
 
-## Result
+## Follow-up: startup and high-action stalls
+
+The longer case study reproduced a 608 ms gameplay frame: 585 ms was spent uploading roughly 2 MiB to WebGPU, while game simulation took under 5 ms. The ordinary upload scratch buffer alone did not resolve it.
+
+The launcher now displays the live GPU canvas, preserving the initialized iframe with `Element.moveBefore`, instead of copying every frame through `createImageBitmap` and a second canvas. Browsers without state-preserving iframe moves retain bitmap presentation. Returning visits also compile cached pipeline states cooperatively before simulation starts, with loading progress; previously five cached pipelines were compiled at each gameplay frame end. Phase diagnostics now identify upload, shader, simulation, and pacing costs in long-frame events.
+
+| 60-second case | FPS range across 30-second windows | Worst frame | Frames over 33 ms | Audio underruns |
+|---|---:|---:|---:|---:|
+| Copy presentation, returning profile | 57.20–59.96 | 607.96 ms | See raw report | 20,513 samples |
+| Direct presentation, returning profile | 59.89–60.00 | 46.13 ms | 2 | 0 |
+| Direct presentation, fresh profile | 59.98–60.00 | 40.88 ms | 2 | 0 |
+
+Both direct runs passed the focused performance gate. Fresh-profile means new browser storage, not cleared OS/driver caches. These runs support removing the copy path as the remedy for this reproduced stall; they do not establish that all GPUs or matches are stall-free. Full-quality custom textures remain enabled. The fresh run also passed return-to-roster/replay without rehashing the disc. Keyboard movement, attack, and release passed on the default launcher; the browser session unit test and TypeScript/Vite build also passed. Click-to-match was 4.04 s returning and 4.05 s fresh. Live presentation was asserted in the fresh run and inspected in screenshots.
+
+Raw measurements: [stalls.json](stalls.json). Local runs: `build/stall-direct-surface`, `build/stall-direct-fresh`, and the failing baseline `build/stall-phases-returning`. Use the reproduction command below with `MELEE_WINDOWS=2`; add `MELEE_BROWSER_PROFILE=/path/to/profile` for returning visits and `MELEE_REPLAY=1` for replay. `?benchmark=1&presentation=bitmap` selects the comparison path.
+
+## Earlier texture result
 
 Ichiro (Roy), Donald Trump (Falco), and Michelangelo (Link), on Brinstar Depths, now use 512×512 RGBA8 body textures. The previous three-custom-fighter shortcut selected 256×256 CMPR textures. Comparing the same assets in the old and upstream renderers reproduced the blocky eyes and face detail in both. Restoring the larger, uncompressed assets visibly removes those artifacts.
 

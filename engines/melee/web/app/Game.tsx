@@ -1,3 +1,4 @@
+import {MeleeFrameWorker} from '@/lib/melee-frame-worker';
 import {gameInputBlocked} from '../lib/controls';
 import {meleePath} from '../lib/paths.ts';
 import {useEffect,useRef,useState} from 'react';
@@ -51,6 +52,7 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true}:{fig
   async function start(){try{
    if(!crossOriginIsolated||!canvas.current?.transferControlToOffscreen)throw Error('This browser needs shared memory and OffscreenCanvas support. Open the local game in Chrome.');
    const session=claimMelee();worker=session.worker;gameWorker.current=worker;
+   if(worker instanceof MeleeFrameWorker&&canvas.current)worker.attachSurface(canvas.current);
    launchPlan=plan(settings,fighter,roster);
    if(new URLSearchParams(location.search).get('benchmark')==='1') {
     launchPlan.packedPorts=launchPlan.packedPorts.map((p:number,i:number)=>i<2?(p&~0xff00)|256:p);
@@ -81,7 +83,7 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true}:{fig
    worker.onerror=e=>{if(!closed)setError(e.message||'The game worker stopped.');};
    worker.onmessage=({data})=>{
     if(closed)return;
-    if(data.type==='frame'){canvas.current?.getContext('bitmaprenderer')?.transferFromImageBitmap(data.bitmap);if(firstFrame){firstFrame=false;canvas.current?.focus();}}
+    if(data.type==='frame'){if(data.bitmap)canvas.current?.getContext('bitmaprenderer')?.transferFromImageBitmap(data.bitmap);if(firstFrame){firstFrame=false;canvas.current?.focus();}}
     if(data.type==='session' && data.launch)selectionAcknowledged=true;
     if(data.type==='frame' && settings.mode===4 && selectionAcknowledged && !fullBootVisible){fullBootVisible=true;setStatus('');}
     if(data.type==='status' && !fullBootVisible)setStatus(data.message);
