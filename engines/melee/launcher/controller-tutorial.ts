@@ -1,7 +1,7 @@
 import {loadBindings, eventCode, keyLabel, connectedGamepads, gamepadBindings, gamepadAxes, padActions, padFamily, padLabel, type Action} from '../web/lib/controls.ts';
 // Keep the launcher's animation IDs stable; resolve every caption/input through
 // the same saved bindings used by the browser and native engine.
-export const tutorialActions:Record<string,Action>={w:'up',a:'left',s:'down',d:'right',j:'a',k:'b',x:'x',y:'y',l:'z',i:'l',o:'r',start:'start',cup:'cup',cdown:'cdown',cleft:'cleft',cright:'cright'};
+export const tutorialActions:Record<string,Action>={w:'up',a:'left',s:'down',d:'right',j:'a',k:'b',x:'x',l:'z',i:'l'};
 export const meleeRequiredControls=Object.keys(tutorialActions);
 export function meleeControlForEvent(event:KeyboardEvent){
  const code=eventCode(event),bindings=loadBindings();
@@ -36,10 +36,6 @@ export const meleeCalloutLayout={
  a:{anchor:[.78,.36],label:[1.12,.39]},
  b:{anchor:[.68,.43],label:[.94,.65]},
  x:{anchor:[.89,.33],label:[1.14,.20]},
- y:{anchor:[.76,.24],label:[.81,.06]},
- start:{anchor:[.50,.36],label:[.50,.04]},
- 'c-buttons':{anchor:[.66,.63],label:[.66,.94]},
  z:{anchor:[.86,.18],label:[1.06,.02]},
  'left-bumper':{anchor:[.18,.18],label:[-.04,.02]},
- 'right-bumper':{anchor:[.82,.18],label:[.98,-.12]},
 };

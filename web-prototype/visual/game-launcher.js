@@ -296,7 +296,7 @@ function applyControlLabels() {
   controllerCallouts?.classList.toggle('is-melee', usesDisc());
   controllerCallouts?.querySelectorAll('[data-control-callout], [data-control-line]').forEach(el => {
     const id=el.dataset.controlCallout || el.dataset.controlLine;
-    el.hidden=usesDisc() ? id==='dpad' : ['x','y','start'].includes(id);
+    el.hidden=usesDisc() ? !Object.hasOwn(meleeCalloutLayout,id) : ['x','y','start'].includes(id);
     if(el.tagName.toLowerCase()==='g')el.style.display=el.hidden?'none':'';
   });
   if (usesDisc() && !pad && !meleeKeyboardLabelsLoad) {

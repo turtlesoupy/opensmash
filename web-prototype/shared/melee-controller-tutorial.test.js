@@ -7,14 +7,14 @@ let pads=[];
 Object.defineProperty(globalThis,'navigator',{configurable:true,value:{getGamepads:()=>pads}});
 const {defaults,saveBindings,rebindKey,rebindButton}=await import('../../engines/melee/web/lib/controls.ts');
 const {loadMeleeKeycapLayout,meleeControlForEvent,meleeControlLabels,meleePadControls,meleeRequiredControls}=await import('../../engines/melee/launcher/controller-tutorial.ts');
-test('Melee tutorial uses actual keyboard bindings, including remaps and every action',()=>{
+test('Melee tutorial uses actual keyboard bindings, including remaps and essential actions',()=>{
  saveBindings(defaults());
  for(const [id,label] of Object.entries(meleeControlLabels()))assert.ok(label,id);
- assert.equal(meleeRequiredControls.length,16);
+ assert.deepEqual(meleeRequiredControls,['w','a','s','d','j','k','x','l','i']);
  assert.equal(meleeControlForEvent({code:'KeyU'}),'l');
  assert.equal(meleeControlForEvent({code:'KeyQ'}),'i');
  assert.equal(meleeControlForEvent({code:'Space'}),'x');
- assert.equal(meleeControlForEvent({code:'ArrowUp'}),'cup');
+ for(const code of ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyI','KeyE','Enter']) assert.equal(meleeControlForEvent({code}),undefined);
  saveBindings(rebindKey(defaults(),'a','KeyF'));
  assert.equal(meleeControlLabels().j,'F');
  assert.equal(meleeControlForEvent({code:'KeyF'}),'j');

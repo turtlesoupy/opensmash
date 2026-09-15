@@ -18,13 +18,17 @@ positions and completion preference. The disc insertion leads into the tutorial;
 a verified disc also receives the tutorial until completed or skipped this visit.
 Touch devices keep the existing tutorial bypass.
 
-`controller-tutorial.ts` resolves all 16 actions from the same persisted keyboard,
+`controller-tutorial.ts` resolves the nine essential inputs (four movement directions, attack,
+special, jump, shield, and grab) from the same persisted keyboard,
 per-controller button, and axis bindings as the Melee engine. Controls opens the
 animated preview; Players & Controllers in Settings retains the remapping editor.
 The Z shoulder is on the front edge, so it does not use N64's rear-trigger flip.
 
-Validation: real ISO verification → disc insertion → all 16 tutorial inputs → live
+Validation: real ISO verification → disc insertion → the required tutorial inputs → live
 Melee gameplay; return/relaunch skips the completed tutorial. N64 preview completion
 still passes. Keyboard-remap, physical-layout captions, per-device button/axis
 tests, the 288-test website suite, and production bundle pass. Physical
 controller and native executable testing require those devices/runtimes.
+
+The hint and completion check omit alternate jump/shield, Start, and C-stick.
+Those inputs remain playable and remappable in Settings.
