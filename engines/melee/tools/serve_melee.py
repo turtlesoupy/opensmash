@@ -46,6 +46,21 @@ TOKEN = os.environ.get("OPENSMASH_DESKTOP_TOKEN", "")
 DIST = Path(os.environ["OPENSMASH_WEB_DIST"]) if os.environ.get("OPENSMASH_WEB_DIST") else None
 
 
+def upstream_root(name):
+    """Where the pinned Melee PC browser runtime lives for one requested file.
+
+    Developers build the fork into the sibling melee-pc checkout (or MELEE_PC_ROOT).
+    Hosted deployments have no checkout: publish_web_inputs.py ships the same files
+    inside the browser input pack under build/hosted-browser/upstream/.
+    """
+    built = name.startswith('melee_browser.')
+    configured = os.environ.get('MELEE_PC_ROOT')
+    checkout = Path(configured) if configured else (ROOT.parents[2] / 'melee-pc' if len(ROOT.parents) > 2 else None)
+    if checkout and checkout.is_dir():
+        return checkout / ('build/browser/runtime/platforms/browser' if built else 'platforms/browser')
+    return BUILD / 'upstream' / ('runtime' if built else 'platforms')
+
+
 def descendant(root, relative):
     path = (root / relative).resolve()
     if not path.is_relative_to(root.resolve()) or not path.is_file():
@@ -200,9 +215,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.file(descendant(SYS, route[len('/engine/sys/'):]))
             if route.startswith('/engine/upstream/'):
                 name = route[len('/engine/upstream/'):]
-                upstream = Path(os.environ.get('MELEE_PC_ROOT', str(ROOT.parents[2] / 'melee-pc')))
-                root = upstream / ('build/browser/runtime/platforms/browser' if name.startswith('melee_browser.') else 'platforms/browser')
-                return self.file(descendant(root, name))
+                return self.file(descendant(upstream_root(name), name))
             if route.startswith('/engine/direct-c/'):
                 name=route[len('/engine/direct-c/'):]
                 root=ROOT/'build/direct-c' if name.startswith('melee-') else ROOT/'runtime/direct-c/web'
