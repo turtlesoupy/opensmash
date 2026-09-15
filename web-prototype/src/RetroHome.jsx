@@ -71,12 +71,13 @@ export function LaunchFlow() {
 
   useEffect(() => () => window.clearTimeout(copyToastTimerRef.current), []);
 
-  async function copyRomFilename() {
+  async function copyRomFilename(event) {
+    const filename = event.currentTarget.querySelector("code").textContent;
     try {
-      await navigator.clipboard.writeText(ROM_FILENAME);
+      await navigator.clipboard.writeText(filename);
     } catch {
       const fallback = document.createElement("textarea");
-      fallback.value = ROM_FILENAME;
+      fallback.value = filename;
       fallback.setAttribute("readonly", "");
       fallback.style.position = "fixed";
       fallback.style.opacity = "0";

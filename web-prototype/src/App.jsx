@@ -349,8 +349,12 @@ export default function App() {
     if (meleeDesktop()) return pollMeleeService('/melee/api/setup',s=>setMeleeDiscReady(s.ready),()=>setMeleeDiscReady(false));
     return subscribeLocalDisc(s=>setMeleeDiscReady(s.ready));
   }, []);
-  async function validateMeleeDisc(file) {
-    if (!meleeDesktop()) return selectLocalDisc(file);
+  async function validateMeleeDisc(file, onStatus) {
+    if (!meleeDesktop()) {
+      const unsubscribe = subscribeLocalDisc(status => onStatus?.(status.message));
+      try { return await selectLocalDisc(file); }
+      finally { unsubscribe(); }
+    }
     const result = await meleeDesktop().chooseDisc();
     if (result.cancelled) throw Error('No disc selected.');
   }

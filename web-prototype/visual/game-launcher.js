@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import {createDisc,createGameCube} from '../../engines/melee/launcher/disc-hardware.js';
+import {discDockPose,DISC_DOCK_MS,DISC_SEATED_MS} from '../../engines/melee/launcher/disc-motion.js';
+import {createDisc,createGameCube,GAMECUBE_LID_OPEN} from '../../engines/melee/launcher/disc-hardware.js';
 import { compileSceneAsync } from '../shared/shader-compilation.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import {
@@ -1739,7 +1740,17 @@ async function beginConsoleDockTransition(completion) {
   consoleDockModel.scale.setScalar(consoleDockConsoleScale);
 
   if (consoleDockModel.userData.isGameCube) {
-    consoleDockModel.userData.lid.rotation.z = 1.32;
+    consoleDockModel.userData.lid.rotation.z = GAMECUBE_LID_OPEN;
+    // Approach the spindle along the console's own up axis, so the rim
+    // never sweeps diagonally through the well or the open lid.
+    const trayUp = new THREE.Vector3(0, 1, 0)
+      .applyQuaternion(consoleDockConsoleTargetQuaternion);
+    consoleDockCartridgeReadyPosition.copy(consoleDockCartridgeTargetPosition)
+      .addScaledVector(trayUp, 0.5 * consoleDockConsoleScale);
+    consoleDockCartridgeWindupPosition.copy(consoleDockCartridgeTargetPosition)
+      .addScaledVector(trayUp, 0.7 * consoleDockConsoleScale);
+    consoleDockCartridgeInsertionVector.copy(consoleDockCartridgeTargetPosition)
+      .sub(consoleDockCartridgeReadyPosition);
     // The disc arrives face-on, then lies flat over the top-loading spindle.
     consoleDockCartridgeTargetQuaternion.multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0,0,Math.PI/2)));
     consoleDockCartridgeWindupQuaternion.copy(consoleDockCartridgeTargetQuaternion);
@@ -1755,7 +1766,9 @@ async function beginConsoleDockTransition(completion) {
 
 function updateConsoleDockTransition(now, reducedMotion) {
   if (!consoleDockAssembly || !consoleDockModel || !activeModel) return 1;
-  const elapsed = reducedMotion ? CONSOLE_DOCK_MS : Math.max(0, now - visualStartedAt);
+  const isDisc = consoleDockModel.userData.isGameCube;
+  const duration = isDisc ? DISC_DOCK_MS : CONSOLE_DOCK_MS;
+  const elapsed = reducedMotion ? duration : Math.max(0, now - visualStartedAt);
   const approach = springArrivalProgress(elapsed / CONSOLE_APPROACH_MS);
   consoleDockModel.position.lerpVectors(
     consoleDockConsoleStartPosition,
@@ -1840,7 +1853,7 @@ function updateConsoleDockTransition(now, reducedMotion) {
     ));
   } else {
     const settle = (slam - impactPoint) / (1 - impactPoint);
-    const rebound = Math.sin(settle * Math.PI * 2.2) *
+    const rebound = (consoleDockModel.userData.isGameCube ? 0 : 1) * Math.sin(settle * Math.PI * 2.2) *
       Math.exp(-settle * 4.5) * 0.22;
     activeModel.position.copy(consoleDockCartridgeTargetPosition)
       .addScaledVector(consoleDockCartridgeInsertionVector, rebound);
@@ -1855,7 +1868,20 @@ function updateConsoleDockTransition(now, reducedMotion) {
     activeModel.scale.setScalar(consoleDockCartridgeTargetScale);
   }
 
-  const retreat = easeInOutCubic(
+  // Optical media stays rigid, floats into alignment, then glides down with
+  // zero arrival velocity. Spin finishes above the spindle; no cartridge slam.
+  const discPose = isDisc ? discDockPose(elapsed) : null;
+  if (isDisc && elapsed >= CONSOLE_APPROACH_MS) {
+    consoleDockModel.position.copy(consoleDockConsoleTargetPosition);
+    consoleDockModel.quaternion.copy(consoleDockConsoleTargetQuaternion);
+    activeModel.position.copy(consoleDockCartridgeTargetPosition)
+      .addScaledVector(new THREE.Vector3(0,1,0).applyQuaternion(consoleDockConsoleTargetQuaternion), discPose.height * consoleDockConsoleScale);
+    activeModel.quaternion.copy(consoleDockCartridgeTargetQuaternion)
+      .multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1,0,0), discPose.spin));
+    activeModel.scale.setScalar(consoleDockCartridgeTargetScale);
+  }
+
+  const retreat = isDisc ? discPose.retreat : easeInOutCubic(
     (elapsed - CONSOLE_RETREAT_START_MS) /
       (CONSOLE_DOCK_MS - CONSOLE_RETREAT_START_MS)
   );
@@ -1871,17 +1897,16 @@ function updateConsoleDockTransition(now, reducedMotion) {
   );
   consoleDockAssembly.scale.setScalar(THREE.MathUtils.lerp(1, 0.54, retreat));
 
-  const impactAt = slamStartedAt + CONSOLE_SLAM_MS * impactPoint;
+  const impactAt = isDisc ? DISC_SEATED_MS : slamStartedAt + CONSOLE_SLAM_MS * impactPoint;
   if (consoleDockModel.userData.isGameCube) {
-    const close = easeOutCubic(THREE.MathUtils.clamp((elapsed-impactAt-80)/350,0,1));
-    consoleDockModel.userData.lid.rotation.z = 1.32*(1-close);
+    consoleDockModel.userData.lid.rotation.z = GAMECUBE_LID_OPEN * discPose.lid;
   }
   if (!consoleDockImpactSoundPlayed && elapsed >= impactAt) {
     consoleDockImpactSoundPlayed = true;
     playLaunchSound(LAUNCH_SOUNDS.cartridgeChunk);
   }
   const shakeElapsed = elapsed - impactAt;
-  if (shakeElapsed >= 0 && shakeElapsed < 360) {
+  if (!isDisc && shakeElapsed >= 0 && shakeElapsed < 360) {
     const shakeEnvelope = Math.exp(-shakeElapsed / 105) * (1 - shakeElapsed / 360);
     consoleDockAssembly.position.x += Math.sin(shakeElapsed * 0.12) *
       0.055 * shakeEnvelope;
@@ -1892,7 +1917,7 @@ function updateConsoleDockTransition(now, reducedMotion) {
     );
   }
 
-  if (elapsed >= CONSOLE_DOCK_MS) finishConsoleDockTransition();
+  if (elapsed >= duration) finishConsoleDockTransition();
   return 1 - retreat;
 }
 
@@ -2112,7 +2137,14 @@ function resetRomPrompt() {
   if (fileInput) fileInput.accept = usesDisc() ? '.iso,.gcm' : '.z64,.n64,.v64,.rom,.zip,application/octet-stream,application/zip';
   if (uploadButton && usesDisc()) uploadButton.textContent = 'Choose disc';
   const hint = document.getElementById('rom-filename-hint');
-  if (hint) hint.hidden = usesDisc();
+  if (hint) {
+    hint.hidden = false;
+    const filename = usesDisc()
+      ? 'Super Smash Bros. Melee (USA) (En,Ja) (v1.02).iso'
+      : 'Super Smash Bros. (USA).z64';
+    hint.querySelector('code').textContent = filename;
+    hint.querySelector('button').setAttribute('aria-label', `Copy ${filename} to clipboard`);
+  }
   if (moreOptionsButton) moreOptionsButton.hidden = usesDisc();
 }
 
@@ -2617,7 +2649,7 @@ async function validateRom(file) {
   if (cancelButton) cancelButton.disabled = true;
   if (uploadButton) {
     uploadButton.disabled = true;
-    uploadButton.textContent = 'Checking ROM…';
+    uploadButton.textContent = usesDisc() ? 'Checking disc…' : 'Checking ROM…';
   }
   if (receivedFromHandoff) {
     setAlternativesDisabled(true);
@@ -2637,7 +2669,7 @@ async function validateRom(file) {
           hashing: 'Checking ROM…',
           validating: 'Checking ROM…',
           storing: 'Storing ROM…',
-        })[status] || 'Checking ROM…';
+        })[status] || (usesDisc() ? status : 'Checking ROM…');
       });
     } else {
       const buffer = await file.arrayBuffer();

@@ -1,6 +1,6 @@
 import {meleePath} from './paths.ts';
 /** One initialized engine waits at the game boundary while the roster is open. */
-type Session={worker:Worker;audio:SharedArrayBuffer;ready:Promise<void>;readyAt:number;cancel:()=>void};
+type Session={worker:Worker;audio:SharedArrayBuffer;ready:Promise<void>;verified:Promise<void>;readyAt:number;cancel:()=>void};
 let standby:Session|undefined;
 const currentSession=():Session|undefined=>standby;
 let localDisc:File|undefined;
@@ -34,7 +34,7 @@ export async function selectLocalDisc(file:File){
    if(data.type==='status'&&currentSession()===session)updateDisc({state:'checking',ready:false,message:data.message});
   };
   session.worker.addEventListener('message',listener);
-  await session.ready;
+  await session.verified;
   if(currentSession()===session)updateDisc({state:'ready',ready:true,message:'Ready to play.'});
  }catch(error){
   if(localDisc===file&&currentSession()===session){
@@ -51,17 +51,21 @@ export function warmMelee(){
  const disc=localDisc;
  const worker=new Worker(meleePath('/engine/engine-worker.js')),audio=new SharedArrayBuffer(16+8192*2*4);
  let resolve!:()=>void,reject!:(reason:Error)=>void;
+ let verify!:()=>void,rejectVerify!:(reason:Error)=>void;
+ const verified=new Promise<void>((ok,fail)=>{verify=ok;rejectVerify=fail;});
+ void verified.catch(()=>{});
  const ready=new Promise<void>((ok,fail)=>{resolve=ok;reject=fail;});
  void ready.catch(()=>{});
- const session={worker,audio,ready,readyAt:0,cancel:()=>reject(Error('Game closed'))};
+ const fail=(error:Error)=>{reject(error);rejectVerify(error);};
+ const session={worker,audio,ready,verified,readyAt:0,cancel:()=>fail(Error('Game closed'))};
  standby=session;sessions.set(worker,session);
  worker.addEventListener('message',({data})=>{
   if(data.type==='ready-for-selection'){session.readyAt=Date.now();resolve();}
-  if(data.type==='disc-verified'&&disc)verifiedDiscs.add(disc);
-  if(data.type==='error')reject(Error(data.message));
+  if(data.type==='disc-verified'&&disc){verifiedDiscs.add(disc);verify();}
+  if(data.type==='error')fail(Error(data.message));
   if(data.type==='frame'&&!worker.onmessage)data.bitmap.close();
  });
- worker.addEventListener('error',e=>reject(Error(e.message||'The engine could not start.')));
+ worker.addEventListener('error',e=>fail(Error(e.message||'The engine could not start.')));
  const query=new URLSearchParams(location.search);
  worker.postMessage({type:'start',warm:true,character:'pending',skin:'host',localGame:!usesLocalDisc(),
   iso:disc,discVerified:!!disc&&verifiedDiscs.has(disc),
