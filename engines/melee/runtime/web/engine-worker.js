@@ -86,7 +86,7 @@ self.onmessage = async ({data}) => {
     const build=await buildResponse.json();
     runtimeBuild=build;startOptions=data;
     report('session',{browser:navigator.userAgent,hardwareConcurrency:navigator.hardwareConcurrency,build,mode:data.warm?'warming':data.benchmark==='1'?'cpu-benchmark':'human',skin:data.skin||'gx',character:data.character,fighter:data.fighter,profile:data.profile||'0',resolution:[960,720]});
-    const {inspectDisc} = await import('./disc.mjs');
+    const {inspectDisc, ISO_SHA256} = await import('./disc.mjs');
     const {mountSizedFile, mountSystemBundle, costumeSlot, COSTUME_SLOTS} = await import('./local-files.mjs');
     report('status', {message: 'Loading Melee…'});
     const runtimeUrl=path=>new URL(path+'?v='+(build.cacheId||build.id),self.location.href).href;
