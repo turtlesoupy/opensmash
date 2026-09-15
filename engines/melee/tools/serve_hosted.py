@@ -6,7 +6,7 @@ ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
 from opensmash_melee.service_access import Access,route_allowed
 
-def handler(base,access):
+def handler(base,access,cache=None):
     class Hosted(base.Handler):
         def authorize(self):
             route=unquote(urlsplit(self.path).path)
@@ -17,10 +17,12 @@ def handler(base,access):
             if self.command=='POST':
                 try:
                     length=int(self.headers.get('Content-Length','0'))
-                    if not 0<length<=16384:return False
-                    raw=self.rfile.read(length);self.post_body=json.loads(raw);self.rfile=io.BytesIO(raw)
+                    if not 0<=length<=16384:return False
+                    if not length and not route.startswith('/api/prepare/'):return False
+                    raw=self.rfile.read(length);self.post_body=json.loads(raw) if raw else {};self.rfile=io.BytesIO(raw)
                 except (ValueError,TypeError):return False
                 if not isinstance(self.post_body,dict):return False
+            if cache:cache.before_authorize(self,access)
             def fighter(slug):return isinstance(slug,str) and slug in base.CATALOG and (not base.CATALOG[slug].get('imported') or access.allows(self.owner,'fighter:'+slug))
             for prefix in ['/api/prepare/','/api/costume/','/api/announcer/']:
                 if route.startswith(prefix):return fighter(route[len(prefix):])
@@ -33,14 +35,25 @@ def handler(base,access):
             return True
         def local_ui_request(self):return True # authorize() has verified the private gateway token and owner.
         def do_GET(self):
-            if not self.authorize():return self.send_error(404)
-            return super().do_GET()
+            return self.dispatch(super().do_GET)
         def do_HEAD(self):return self.do_GET()
         def do_POST(self):
-            if not self.authorize():return self.send_error(404)
-            return super().do_POST()
+            return self.dispatch(super().do_POST)
+        def dispatch(self,action):
+            from contextlib import nullcontext
+            try:
+                if not self.authorize():return self.send_error(404)
+                with cache.request_lock(self) if cache else nullcontext():
+                    if cache:cache.before_request(self)
+                    if getattr(self,'cached_value',None):return self.json(self.cached_value)
+                    if getattr(self,'remote_job',None):return self.json(self.remote_job)
+                    return action()
+            except (OSError,ValueError,KeyError) as error:
+                print('Melee preparation failed:',type(error).__name__,flush=True)
+                return self.json({'error':'Melee preparation is unavailable. Please retry.'},503)
         def do_DELETE(self):return self.send_error(404)
         def json(self,value,status=200):
+            if cache:cache.response(self,value,status)
             if isinstance(value,list) and urlsplit(self.path).path=='/api/imports':value=[r for r in value if access.allows(self.owner,'fighter:'+r['slug'])]
             if isinstance(value,dict) and status<300:
                 if value.get('id'):access.grant(self.owner,'job:'+value['id'])

@@ -26,6 +26,19 @@ def fixture(thickness=.1):
 
 
 class HeadShapeTests(unittest.TestCase):
+    def test_reused_fit_matches_final_profile_exactly(self):
+        for scale in (2.,2.2,3.,5.):
+            with self.subTest(scale=scale):
+                mesh,skeleton,profile=fixture()
+                profile['bone_corrections']['Body']=np.diag([scale,scale,scale,1]).tolist()
+                expected_profile=source_head_fit(mesh,skeleton,profile)
+                actual_profile,fitted=source_head_fit(mesh,skeleton,profile,return_fitted=True)
+                self.assertEqual(expected_profile,actual_profile)
+                expected=conform(mesh,skeleton,expected_profile)
+                for key in ('positions','normals'):
+                    self.assertEqual(expected[key].tobytes(),fitted[key].tobytes())
+                self.assertEqual(expected['envelopes'],fitted['envelopes'])
+
     def test_proportion_refinement_accounts_for_non_head_top(self):
         mesh,skeleton,profile=fixture()
         result=source_head_fit(mesh,skeleton,profile)

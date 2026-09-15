@@ -43,7 +43,8 @@ def digest(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def import_character(source, out):
+def import_character(source, out, *, return_mesh=False):
+    """Import validated assets; optionally retain the parsed mesh for this build."""
     source, out = Path(source).resolve(),Path(out).resolve()
     if source == out or source in out.parents or out in source.parents:
         raise ValueError('Import destination must be separate from its source')
@@ -72,7 +73,7 @@ def import_character(source, out):
     finally:
         if staging.exists():
             shutil.rmtree(staging)
-    return manifest
+    return (manifest, mesh) if return_mesh else manifest
 
 
 def doctor():

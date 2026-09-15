@@ -46,3 +46,13 @@ pipeline/web-prototype/docs/
 !pipeline/engines/melee/runtime/launch-options.json
 !pipeline/engines/melee/runtime/web/
 !pipeline/engines/melee/runtime/web/launch-options.mjs
+
+# Embedded Python converter code only. Inputs and lazy caches use the private bucket.
+!pipeline/engines/melee/requirements.txt
+!pipeline/engines/melee/tools/
+!pipeline/engines/melee/tools/**
+!pipeline/engines/melee/opensmash_melee/
+!pipeline/engines/melee/opensmash_melee/**
+!pipeline/engines/melee/runtime/**
+**/__pycache__/
+**/*.pyc

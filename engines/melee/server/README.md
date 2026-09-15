@@ -1,50 +1,78 @@
-# Hosted Melee conversion service
+# Melee in the website deployment
 
-The website remains the public API and authentication authority. Configure its
-`MELEE_SERVICE_ORIGIN` to the private service's HTTPS origin and supply the same
-random secret (at least 32 characters) as `MELEE_SERVICE_TOKEN` on both services.
-Never put that secret in Vite/browser configuration. `MELEE_LOCAL_ORIGIN` remains
-a development-only alternative; do not set both origins.
+Melee runs in the **existing website container**, alongside Node as a loopback-only
+Python child. It starts lazily on the first Melee asset/preparation request. The
+existing website API owns authentication, routes and guest identities. No new
+Cloud Run service, service account, queue or mounted volume is needed.
 
-The gateway strips website cookies and client-supplied service headers, then
-supplies the verified account identity (or a signed guest identity). The service
-allows engine assets, conversion jobs, costumes and character-select assets.
-Disc setup, game-file access, debug and native-process routes are unavailable.
-Imported fighters, jobs and selection assets require persistent owner grants.
-Generated public fighters can be exported for play; private fighters require their
-owner's current account. Source exports contain generated art, never source
-photos or prompts.
+A costume is converted on demand, then stored in the existing **private** object
+bucket. Other web instances reuse it. Their local `/tmp` workspace is disposable.
+Character-select assets are also cached; imported source art, job results and
+owner grants survive instance changes. Inputs and converter source hashes version
+the conversion cache, so updates do not serve stale costumes. Existing per-fighter
+locks and conversion behavior are retained; there is no new scheduling layer.
 
-## Run
+## Publish inputs once, then use the normal website deploy
 
-Build from the public repository root:
+Use the verified conversion workspace, matching WASM build, and original character
+library already used locally. Install the engine requirements and
+`google-cloud-storage` in the publishing Python environment. From the repository root:
 
 ```sh
-docker build -f engines/melee/server/Dockerfile -t opensmash-melee-service .
+python3 engines/melee/tools/publish_web_inputs.py \
+  --workspace /path/to/verified-melee-workspace \
+  --browser /path/to/moderngekko-wasm \
+  --characters /path/to/play/ui \
+  --bucket YOUR_EXISTING_PRIVATE_BUCKET
 ```
 
-Provision a **private, durable, writable POSIX volume** at `/data`, using your
-existing verified conversion workspace (`assets/game` and
-`build/web-game/verified.json`). Mount the matching browser runtime at
-`/inputs/browser`, source character library at `/inputs/characters`, and Dolphin
-Sys files at `/inputs/sys`, all read-only. These inputs are intentionally absent
-from the container build context/image and source control. The API does not
-accept discs or expose the provisioned game files.
+The last line is the immutable `melee/inputs/<sha256>.json` object key. Export it as
+`MELEE_INPUT_MANIFEST` when running the ordinary `web-prototype/infra/deploy.sh`.
+That script enables `MELEE_EMBEDDED=1`, preserves the pinned manifest on subsequent
+deploys, and uses the website's existing bucket permissions and cookie secret.
+Without a pinned input release Melee stays unconfigured; the rest of the site
+still deploys as before. The Docker build includes Python and converter code.
 
-Run one service process per workspace, with port 8782 behind your TLS/private
-network proxy. Supply `MELEE_SERVICE_TOKEN` through a secret store/environment
-file. Do not use an ephemeral filesystem or multiple replicas sharing the same
-workspace: conversion caches, queued jobs and owner grants are local. A restarted
-process retains completed imports/grants; in-flight jobs fail and can be retried.
-The queue is bounded to 16 jobs and the existing importer validates source origin,
-manifest checksums and file sizes. `MELEE_SOURCE_ORIGINS` is a comma-separated
-allowlist and defaults to the two smash.fun origins.
+Publishing copies input files, **not prebuilt conversions**. Original character
+sources are fetched one fighter at a time on first use. The boot inputs contain
+the browser runtime plus a verified subset of private conversion templates; no
+full ISO, original disc executable, stages or match audio is published by this command.
+Template files remain private and are unavailable through the HTTP API. Existing
+input object keys are content-addressed and can be reused across website deploys.
 
-For a local smoke test, run `tools/serve_hosted.py --workspace /private/workspace`
-from the engine Python environment, with `MELEE_BROWSER_BUILD`,
-`OPENSMASH_CHARACTER_ROOT`, `MELEE_SYS_ROOT`, and `MELEE_SERVICE_TOKEN` set.
-The same headers used by the gateway are required even on localhost. Check a
-known `/api/prepare/<slug>` and `/engine/sys-manifest.json`; `/api/setup`,
-`/api/game/...` and `/api/native/status` must return 404.
+The gateway allows only runtime assets, character preparation/imports, and their
+outputs. It strips website credentials before forwarding and derives an internal
+token from `COOKIE_SECRET`. Disc setup, raw game files, debug and native-process
+routes remain inaccessible. User ISO/GCM files stay in the browser.
 
-No production service or website deployment is performed by these scripts.
+## Local checks
+
+`publish_web_inputs.py --local-store /path/to/objects` uses a local directory with
+the same storage protocol, without contacting cloud services. Point
+`MELEE_OBJECT_ROOT` there, set `MELEE_INPUT_MANIFEST` to the published object key,
+and use `MELEE_EMBEDDED=1` with a local-only `COOKIE_SECRET`. `MELEE_WORKSPACE` can
+select an isolated disposable workspace. Leave `MELEE_LOCAL_ORIGIN` and
+`MELEE_SERVICE_ORIGIN` unset in embedded mode.
+
+`tools/smoke_embedded.mjs` starts two independent website gateways/converter
+processes against a local fixture. It checks a real costume conversion, asset
+fetches, character-select output, second-instance cache reuse, and forbidden raw
+game routes. The fixture directory contains `objects/` and `manifest-key.txt`.
+Unit tests additionally cover gateway startup/restart,
+empty prepare POSTs, owner isolation, archive traversal rejection, and cache
+invalidation.
+
+The older `serve_hosted.py` / `MELEE_SERVICE_ORIGIN` configuration remains available
+for compatibility. It is not used by the integrated website deployment. Desktop
+and local `MELEE_LOCAL_ORIGIN` launch paths are unchanged.
+
+## Validation for this integration
+
+The production website Docker image builds successfully. The two-instance smoke
+also passes inside that image as a non-root user with a cold local object-store
+fixture: Donald Trump/Falco conversion took approximately 2.3 seconds; the next
+instance returned its cached preparation metadata in 5 ms and fetched the costume
+and character-select binaries. These are local-container timings, not cloud
+benchmarks. The website suite has 290 passing tests; six Python cache/access tests
+cover persistence and isolation. Live GCS publication/deployment is a release step,
+not performed by the smoke test.

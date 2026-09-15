@@ -6,6 +6,36 @@ SURFACE_VERSION = 1
 TEXTURE_SIZE = 512
 
 
+# This cache exists only during one build; no cross-request invalidation/state.
+from contextlib import contextmanager
+from contextvars import ContextVar
+import hashlib
+_smoothing_cache = ContextVar('melee_build_smoothing', default=None)
+
+@contextmanager
+def smoothing_scope():
+    token = _smoothing_cache.set({})
+    try:
+        yield
+    finally:
+        _smoothing_cache.reset(token)
+
+def prepared_normals(mesh, angle_degrees):
+    cache = _smoothing_cache.get()
+    if cache is None:
+        return smooth_normals(mesh, angle_degrees)
+    digest = hashlib.sha256()
+    for name in ('positions', 'normals', 'triangles'):
+        array = mesh[name]
+        digest.update(str((array.dtype.str, array.shape)).encode())
+        digest.update(array.tobytes())
+    key = (digest.digest(), angle_degrees)
+    if key not in cache:
+        cache[key] = smooth_normals(mesh, angle_degrees)['normals']
+    # Callers can change a fitted mesh without modifying this build's copy.
+    return dict(mesh, normals=cache[key].copy())
+
+
 def smooth_normals(mesh, angle_degrees=55):
     """Filter authored normals over connected shallow-angle neighborhoods.
 
@@ -24,18 +54,23 @@ def smooth_normals(mesh, angle_degrees=55):
         while parent[v]!=v:
             parent[v]=parent[parent[v]];v=parent[v]
         return v
-    for tri in tris:
-        for k,v in enumerate(tri):
-            u=tri[(k+1)%3]
-            edge=tuple(sorted((int(welded[v]),int(welded[u]))))
-            edges.setdefault(edge,[]).append((int(v),int(u)))
+    # Python ints avoid thousands of NumPy scalar indexing/conversion calls.
+    # Preserve triangle/corner order: union order affects floating-point means.
+    corners=[(a,b) for tri in tris.tolist() for a,b in
+             ((tri[0],tri[1]),(tri[1],tri[2]),(tri[2],tri[0]))]
+    welded=welded.tolist()
+    original_rows=list(original)
+    for v,u in corners:
+        a,b=welded[v],welded[u]
+        edge=(a,b) if a<=b else (b,a)
+        edges.setdefault(edge,[]).append((v,u))
     # UV duplicate corners must share their complete normal neighborhood, not
     # merely become neighbors: otherwise filtering introduces visible seams.
     for pairs in edges.values():
         if len(pairs)!=2:continue
         for v in pairs[0]:
             for u in pairs[1]:
-                if welded[v]==welded[u] and original[v]@original[u]>=limit:
+                if welded[v]==welded[u] and original_rows[v]@original_rows[u]>=limit:
                     parent[root(v)]=root(u)
     groups={}
     for v in range(len(positions)):groups.setdefault(root(v),[]).append(v)
@@ -44,16 +79,30 @@ def smooth_normals(mesh, angle_degrees=55):
     normals=np.array([original[groups[k]].mean(axis=0) for k in keys])
     normals/=np.linalg.norm(normals,axis=1)[:,None]
     adjacency=[set() for _ in keys]
-    for tri in tris:
-        for k,v in enumerate(tri):
-            a,b=ids[v],ids[tri[(k+1)%3]]
-            if a!=b and normals[a]@normals[b]>=limit:
-                adjacency[a].add(b);adjacency[b].add(a)
+    group_ids=ids.tolist()
+    normal_rows=list(normals)
+    checked=set()
+    for v,u in corners:
+        a,b=group_ids[v],group_ids[u]
+        if a==b or (a,b) in checked:continue
+        checked.add((a,b))
+        if normal_rows[a]@normal_rows[b]>=limit:
+            adjacency[a].add(b);adjacency[b].add(a)
+    neighbors_by_vertex=[sorted(neighbors) for neighbors in adjacency]
+    # Batch equal-sized neighborhoods, retaining each sorted reduction order.
+    by_size={}
+    for v,neighbors in enumerate(neighbors_by_vertex):
+        if neighbors:by_size.setdefault(len(neighbors),[]).append(v)
+    batches=[(np.asarray(vertices),np.asarray([neighbors_by_vertex[v] for v in vertices]))
+             for vertices in by_size.values()]
     for _ in range(2):
         result=normals.copy()
-        for v,neighbors in enumerate(adjacency):
+        means=np.empty_like(normals)
+        for vertices,neighbors in batches:
+            means[vertices]=normals[neighbors].mean(axis=1)
+        for v,neighbors in enumerate(neighbors_by_vertex):
             if not neighbors:continue
-            mean=normals[sorted(neighbors)].mean(axis=0)
+            mean=means[v]
             n=.5*normals[v]+.5*mean
             if np.linalg.norm(n)>1e-10:result[v]=n/np.linalg.norm(n)
         normals=result

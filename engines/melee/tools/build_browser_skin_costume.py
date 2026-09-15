@@ -12,22 +12,25 @@ from opensmash_melee.retarget import conform
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def build(ident, compact=False):
+def build(ident, compact=False, prepared=None):
     out = ROOT / "build/characters" / ident
     profile = json.loads((out / "profile.json").read_text())
     original = next(out.glob("Pl*Nr.dat"))
     filename = original.name
-    archive = Archive.read(ROOT / "assets/game/files" / filename)
-    skel = joints(archive, profile["symbol"])
-    mesh = GLB(ROOT / "assets/characters" / ident / "rigged.glb").mesh()
-    fitted = conform(mesh, skel, profile)
-    from opensmash_melee.presentation import panel
-
-    fitted["presentation"] = panel(ROOT / "assets/characters" / ident)
+    if prepared is None:
+        archive = Archive.read(ROOT / "assets/game/files" / filename)
+        skel = joints(archive, profile["symbol"])
+        mesh = GLB(ROOT / "assets/characters" / ident / "rigged.glb").mesh()
+        fitted = conform(mesh, skel, profile)
+        from opensmash_melee.presentation import panel
+        fitted["presentation"] = panel(ROOT / "assets/characters" / ident)
+        original_bytes = archive.serialize()
+    else:
+        original_bytes, skel, fitted = prepared
     from opensmash_melee.browser_skin import build_costume
 
     raw, stats = build_costume(
-        archive.serialize(),
+        original_bytes,
         fitted,
         skel,
         dict(profile, texture_size=256, compressed_body_texture=True) if compact else profile,

@@ -7,8 +7,8 @@ def conform(mesh, skeleton, profile):
         from .ball_fit import conform_ball
         return conform_ball(mesh,skeleton,profile)
     if profile.get('normal_smoothing_degrees'):
-        from .surfaces import smooth_normals
-        mesh = smooth_normals(mesh, profile['normal_smoothing_degrees'])
+        from .surfaces import prepared_normals
+        mesh = prepared_normals(mesh, profile['normal_smoothing_degrees'])
     mapping = profile['joint_map']
     missing = [name for i, name in enumerate(mesh['names'])
                if np.any(mesh['weights'][mesh['joints'] == i] > 0) and name not in mapping]

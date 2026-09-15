@@ -5,7 +5,7 @@ from .retarget import conform
 
 ORIENTATION=np.array([[0,0,-1],[0,1,0],[1,0,0]],float)
 
-def source_head_fit(mesh,skeleton,profile):
+def source_head_fit(mesh,skeleton,profile, *, return_fitted=False):
     """Uniform source head scale from ground-to-head-anchor body scale."""
     p=copy.deepcopy(profile);base=conform(mesh,skeleton,p)
     i=mesh['names'].index('Head');origin=mesh['bind'][i][:3,3]
@@ -25,10 +25,12 @@ def source_head_fit(mesh,skeleton,profile):
     # The highest point can belong to an ear, tail, or blended neck rather
     # than the head. Anchor distance alone then misses the authored ratio.
     # Refine only failing fits, keeping the head uniform and its anchor fixed.
+    fitted=None
     core=weights>.99
     if core.sum()>=4:
         source_fraction=np.ptp(mesh['positions'][core,1])/np.ptp(mesh['positions'][:,1])
-        fitted_y=conform(mesh,skeleton,p)['positions'][:,1]
+        fitted=conform(mesh,skeleton,p)
+        fitted_y=fitted['positions'][:,1]
         slope=weights*(mesh['positions'][:,1]-origin[1])
         def fraction_error(candidate):
             y=fitted_y+(candidate-scale)*slope
@@ -52,4 +54,7 @@ def source_head_fit(mesh,skeleton,profile):
                 p['fit_scales']['Head']={'length':float(corrected),'width':float(corrected)}
                 p['head_reference']['anchor_scale']=float(scale)
                 p['head_reference']['proportion_refinement_version']=2
+                fitted=None # The correction changed after the measured fit.
+    if return_fitted:
+        return p, fitted if fitted is not None else conform(mesh,skeleton,p)
     return p

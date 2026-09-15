@@ -28,6 +28,7 @@ class HostedAccessTests(unittest.TestCase):
     self.assertEqual(get('/api/costume/'+slug,two),404)
     self.assertEqual(get('/api/costume/public',two),200)
     self.assertEqual(get('/api/prepare/public',data=b'{}'),200)
+    self.assertEqual(get('/api/prepare/public',data=b''),200)
     self.assertEqual(get('/api/character-select',data=b'{"costumes":[{"character":{}}]}'),404)
     self.assertEqual(get('/api/costume/public',token='wrong'),404)
     for path in ['/api/native/status','/api/setup','/api/game/sys/main.dol','/api/debug','/api/character-select/'+'a'*64+'/0.bin']:self.assertEqual(get(path),404,path)

@@ -314,3 +314,13 @@ Only API images built after the bucket-served roster (tag `20260902-223754`
 or later) understand `BAKED_ASSET_SOURCE=remote`; an older image ignores the
 variable, finds no fighters on disk, and serves an empty roster. Rolling back
 further means also restoring the previous `deploy.sh` and its image contents.
+
+## Melee
+
+Melee preparation runs as a lazy Python child in this same API container. It uses
+the existing private bucket for source inputs, cached costumes and owner grants;
+no additional service or queue is deployed. Publish its private input manifest
+once using `engines/melee/tools/publish_web_inputs.py`, then pass the returned
+object key as `MELEE_INPUT_MANIFEST` to `deploy.sh`. Later deploys preserve the
+configured release automatically. See `engines/melee/server/README.md` for the
+input publisher and local two-instance conversion smoke test.

@@ -343,7 +343,9 @@ class Handler(BaseHTTPRequestHandler):
                     return self.json({'error':'Character source is missing. Reinstall the character library or import the character again.'},422)
                 try:
                     source=archive_previous_build(ROOT,ident,source)
-                    run_stage(['tools/build_character.py',str(source),'--id',ident,'--target',target],
+                    run_stage(['tools/build_character.py',str(source),'--id',ident,'--target',target,
+                               *(['--prepare-web'] if query.get('skin') == ['host'] else []),
+                               *(['--compact'] if query.get('compact') == ['1'] else [])],
                               ROOT,ROOT/'build/character-imports'/(ident+'.log'),'Fitting character',target)
                 except (ValueError,OSError) as error:
                     return self.json({'error':str(error)},422)

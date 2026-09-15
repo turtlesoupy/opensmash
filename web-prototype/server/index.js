@@ -7,7 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { gzip as gzipCallback } from "node:zlib";
-import { createMeleeHandler } from "../../engines/melee/server/handler.mjs";
+import { createEmbeddedMeleeHandler } from "../../engines/melee/server/embedded.mjs";
 import { createFighterJobs } from "./fighter-jobs.js";
 import { createTurnstileVerifier } from "./turnstile.js";
 import { HandoffError, createHandoffRoomsFromEnv } from "./handoff-rooms.js";
@@ -32,7 +32,7 @@ import { bakedRosterEntries } from "../shared/baked-roster.js";
 import { ROMS_BY_SHA1, UNSUPPORTED_ROMS_BY_SHA1 } from "../shared/rom-catalog.js";
 import { ACTIVE_JOB_STATUSES } from "./job-protocol.js";
 
-const handleMelee = createMeleeHandler();
+const handleMelee = createEmbeddedMeleeHandler();
 const APP_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const {
   pipelineProjectRoot: PIPELINE_PROJECT_ROOT,
