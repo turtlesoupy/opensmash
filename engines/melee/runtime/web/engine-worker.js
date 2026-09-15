@@ -83,6 +83,7 @@ self.onmessage = async ({data}) => {
   if (data.type !== 'start' || engine) return;
   try {
     const {sceneReady}=await import('./scene-preparation.mjs');
+    const {frameRates}=await import('./frame-rates.mjs');
     const buildResponse=await fetch('./opensmash-web-build.json');
     if(!buildResponse.ok)throw Error('The local engine build is incomplete. Finish the browser build first.');
     const build=await buildResponse.json();
@@ -321,7 +322,7 @@ self.onmessage = async ({data}) => {
     },50);
     let lastFrame = 0, lastTime = performance.now(), batchStart = lastTime, samples = [];
     let earlyCombatIntervals = 0;
-    let combatStart=0,combatFirstFrame=0,lastCombat=0,combatSamples=[],combatUnderruns=0,combatAudioSamples=0,combatProfile=data.profile||'0';
+    let combatStart=0,combatFirstFrame=0,combatFirstTick=0,lastCombat=0,combatSamples=[],combatUnderruns=0,combatAudioSamples=0,combatProfile=data.profile||'0';
     setInterval(() => {
       const count = engine._opensmash_frame_count(), now = performance.now();
       const combatFrames=engine._opensmash_combat_frames?.()||0;
@@ -330,13 +331,16 @@ self.onmessage = async ({data}) => {
       const activeProfile=data.profile==='skin'&&skinVerificationComplete?'0':data.profile||'0';
       const frameTimes = [];
       for (let i = Math.max(lastFrame, count - 4096); i < count; i++) frameTimes.push(engine._opensmash_frame_interval(i) / 1000);
-      report('metrics', {combatFrames:engine._opensmash_combat_frames?.() || 0,frames: count, fps: (count - lastFrame) * 1000 / (now - lastTime), completeCombatInterval:!firstPlayableAt || lastTime>=firstPlayableAt, frameTimes});
+      const rates=frameRates(count-lastFrame,combatFrames-lastCombat,now-lastTime);
+      const completeCombatInterval=lastCombat>0 && combatFrames>lastCombat &&
+        Boolean(firstPlayableAt) && lastTime>=firstPlayableAt;
+      report('metrics', {combatFrames,frames:count,...rates,completeCombatInterval,frameTimes});
       // Keep the first 30 one-second combat intervals: a long-window average
       // hides cold-start stalls and cannot explain brief audio breakup.
-      if(combatFrames>0 && firstPlayableAt && lastTime>=firstPlayableAt && earlyCombatIntervals<30) {
+      if(completeCombatInterval && earlyCombatIntervals<30) {
         earlyCombatIntervals++;
         report('startup-frame-performance', {interval:earlyCombatIntervals,
-          combatFrames, fps:(count-lastFrame)*1000/(now-lastTime),
+          combatFrames,...rates,
           longestFrameMs:Math.max(0,...frameTimes),
           audioUnderrunSamples:audioIndices?Atomics.load(audioIndices,2):0});
       }
@@ -344,7 +348,7 @@ self.onmessage = async ({data}) => {
       if(combatFrames===lastCombat&&combatStart){combatStart=0;combatSamples=[];}
       if(combatFrames>lastCombat&&(!combatStart||activeProfile!==combatProfile)){
         // Skip the interval spanning loading and the first combat frame.
-        combatStart=now;combatFirstFrame=count;
+        combatStart=now;combatFirstFrame=count;combatFirstTick=combatFrames;
         combatSamples=[];combatProfile=activeProfile;
         combatUnderruns=audioIndices?Atomics.load(audioIndices,2):0;
         combatAudioSamples=audioIndices?Atomics.load(audioIndices,3):0;
@@ -352,16 +356,18 @@ self.onmessage = async ({data}) => {
         combatSamples.push(...frameTimes);
         if(now-combatStart>=30000){
           const ordered=[...combatSamples].sort((a,b)=>a-b), durationMs=now-combatStart;
-          const fps=(count-combatFirstFrame)*1000/durationMs;
+          const combatFrameDelta=combatFrames-combatFirstTick;
+          const rates=frameRates(count-combatFirstFrame,combatFrameDelta,durationMs);
+          const {fps}=rates;
           const p95=ordered[Math.floor(ordered.length*.95)]||0,p99=ordered[Math.floor(ordered.length*.99)]||0;
           const underruns=audioIndices?Atomics.load(audioIndices,2):0;
           const renderedAudioSamples=audioIndices?Atomics.load(audioIndices,3):0;
           report('combat-performance',{profile:combatProfile,frames:count-combatFirstFrame,
-            combatFrames,durationMs,fps,p95,p99,over33ms:combatSamples.filter(n=>n>33.34).length,
+            combatFrames,combatFrameDelta,durationMs,...rates,p95,p99,over33ms:combatSamples.filter(n=>n>33.34).length,
             audioPeak,audioUnderrunSamples:underruns-combatUnderruns,
             audioRenderedSamples:renderedAudioSamples-combatAudioSamples,
             targetFps:60,passes:combatProfile==='0'&&fps>=58.5&&p95<=20&&p99<=33.34&&underruns===combatUnderruns&&renderedAudioSamples-combatAudioSamples>=durationMs*48*.95});
-          combatSamples=[];combatStart=now;combatFirstFrame=count;combatUnderruns=underruns;combatAudioSamples=renderedAudioSamples;
+          combatSamples=[];combatStart=now;combatFirstFrame=count;combatFirstTick=combatFrames;combatUnderruns=underruns;combatAudioSamples=renderedAudioSamples;
         }
       }
       lastCombat=combatFrames;
