@@ -13,6 +13,8 @@ let combatReached = false, startupReported = false, firstPlayableAt=0;
 let introSamples=[],introLastFrame=0,introStarted=0,introReported=false;
 let preparationSamples=[], preparationLastFrame=0, preparationReleased=false, preparationStarted=0, preparationFailed=false;
 const costumeSizes=new Map();
+const mobile = /Android|iPhone|iPad/.test(navigator.userAgent);
+const renderSize = mobile ? [640,480] : [960,720];
 let runtimeBuild, startOptions, activeSelection, readyForSelection = false;
 const report = (type, data) => {
   postMessage({type, sessionId, ...data});
@@ -43,7 +45,7 @@ self.onmessage = async ({data}) => {
       }
       report('session',{build:runtimeBuild,mode:startOptions.benchmark==='1'?'cpu-benchmark':'human',
         skin:data.skin||'host',character:data.character,fighter:data.fighter,profile:startOptions.profile||'0',
-        resolution:[960,720],warm:true,launch:data.launch});
+        resolution:renderSize,warm:true,launch:data.launch});
       report('status',{message:'Opening Melee…'});
       COSTUME_SLOTS.forEach((name,i)=>engine._opensmash_costume_size(i,costumeSizes.get(name)));
       const s=data.launch;
@@ -85,15 +87,16 @@ self.onmessage = async ({data}) => {
     if(!buildResponse.ok)throw Error('The local engine build is incomplete. Finish the browser build first.');
     const build=await buildResponse.json();
     runtimeBuild=build;startOptions=data;
-    report('session',{browser:navigator.userAgent,hardwareConcurrency:navigator.hardwareConcurrency,build,mode:data.warm?'warming':data.benchmark==='1'?'cpu-benchmark':'human',skin:data.skin||'gx',character:data.character,fighter:data.fighter,profile:data.profile||'0',resolution:[960,720]});
+    report('session',{browser:navigator.userAgent,hardwareConcurrency:navigator.hardwareConcurrency,build,mode:data.warm?'warming':data.benchmark==='1'?'cpu-benchmark':'human',skin:data.skin||'gx',character:data.character,fighter:data.fighter,profile:data.profile||'0',resolution:renderSize});
     const {inspectDisc, ISO_SHA256} = await import('./disc.mjs');
     const {mountSizedFile, mountSystemBundle, costumeSlot, COSTUME_SLOTS} = await import('./local-files.mjs');
     report('status', {message: 'Loading Melee…'});
     const runtimeUrl=path=>new URL(path+'?v='+(build.cacheId||build.id),self.location.href).href;
+    importScripts('./webgl-compat.js');
     importScripts(runtimeUrl('./opensmash-web.js'));
     phase = 'loading WebAssembly and threads';
     engine = await createMelee({
-      canvas: new OffscreenCanvas(960, 720),
+      canvas: new OffscreenCanvas(...renderSize),
       onFrame: bitmap => {
         const intro=engine?._opensmash_intro_state?.()||0;
         if(intro===1){introReported=false;bitmap.close();return;}
@@ -110,7 +113,7 @@ self.onmessage = async ({data}) => {
             clickToMatchMs:Number.isFinite(selected.requestedAt)?Date.now()-selected.requestedAt:null});
         }
       },
-      mainScriptUrlOrBlob: runtimeUrl('./opensmash-web.js'),
+      mainScriptUrlOrBlob: runtimeUrl('./runtime-thread.js') + (['presentation','adreno'].includes(data.profile) ? '&debug-present=1' : '') + (data.profile === 'adreno' ? '&debug-adreno=1' : ''),
       locateFile: runtimeUrl,
       print: text => report('log', {text}),
       printErr: text => {
@@ -218,7 +221,9 @@ self.onmessage = async ({data}) => {
     await new Promise((resolve,reject)=>FS.syncfs(true,error=>error?reject(error):resolve()));
     // Compile known pipelines before the first game frame. The engine validates
     // the portable UID cache version; Chrome compiles it for this user's GPU.
-    const shaderCache='/user/Cache/GALE01.uidcache';
+    const userDirectory=mobile?'/user/mobile':'/user';
+    FS.mkdirTree(userDirectory);
+    const shaderCache=userDirectory+'/Cache/GALE01.uidcache';
     {
       report('status',{message:'Preparing graphics for your first match…'});
       const response=await fetch('./shader-warmup.json');
@@ -229,11 +234,14 @@ self.onmessage = async ({data}) => {
       if(seed.version!==1 || digest!==seed.sha256)throw Error('Invalid graphics preparation data.');
       const {mergePipelineCaches}=await import('./shader-warmup.mjs');
       const existing=FS.analyzePath(shaderCache).exists?FS.readFile(shaderCache):null;
-      const merged=mergePipelineCaches(bytes,existing,seed.uidRecordBytes);
+      // Phones compile the pipelines their matches use. The broad desktop seed
+      // otherwise links thousands of unrelated pipelines before the first frame.
+      const selectedSeed=mobile?bytes.subarray(0,8):bytes;
+      const merged=mergePipelineCaches(selectedSeed,existing,seed.uidRecordBytes);
       if(!existing || existing.length!==merged.length || !existing.every((byte,i)=>merged[i]===byte)) {
-        FS.mkdirTree('/user/Cache');FS.writeFile(shaderCache,merged);
+        FS.mkdirTree(userDirectory+'/Cache');FS.writeFile(shaderCache,merged);
       }
-      report('shader-warmup',{bytes:merged.length,seedBytes:bytes.length,seedSha256:digest});
+      report('shader-warmup',{bytes:merged.length,seedBytes:selectedSeed.length,seedSha256:digest,policy:mobile?'learned-mobile':'desktop-seed'});
     }
 
     FS.mkdir('/sys');
@@ -247,7 +255,8 @@ self.onmessage = async ({data}) => {
     const identityBytes = new TextEncoder().encode(ISO_SHA256 + (data.warm?'warm-slots-v8-roster-css':data.costume ?
       Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', await data.costume.blob.arrayBuffer())), b => b.toString(16).padStart(2, '0')).join('') : ''));
     const identity = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', identityBytes)), b => b.toString(16).padStart(2, '0')).join('');
-    engine.callMain(['/game', data.renderer || 'OGL', '/user', String(data.fighter ?? 8), identity, data.profile || '0',data.benchmark||'0',data.warm?'1':'0']);
+    const runtimeProfile = ['presentation','adreno'].includes(data.profile) ? '0' : (data.profile || '0');
+    engine.callMain(['/game', data.renderer || 'OGL', userDirectory, String(data.fighter ?? 8), identity, runtimeProfile,data.benchmark||'0',data.warm?'1':'0']);
     report('started', {});
     if (data.audio) {
       const indices = new Int32Array(data.audio, 0, 4), ring = new Float32Array(data.audio, 16);
@@ -364,7 +373,7 @@ self.onmessage = async ({data}) => {
             samples:rows.length,entries:[...entries.values()].sort((a,b)=>b.netNs-a.netNs).slice(0,100)});
         }
         const ordered = [...samples].sort((a,b) => a-b), total = samples.reduce((a,b) => a+b,0);
-        report('performance', {discReads:discReadCache.stats,combatFrames:engine._opensmash_combat_frames?.() || 0,audioPeak,audioBlocks,audioUnderrunSamples:audioIndices?Atomics.load(audioIndices,2):0,frames: samples.length, fps: total ? samples.length*1000/total : 0,
+        report('performance', {discReads: {...discReadCache.stats},combatFrames:engine._opensmash_combat_frames?.() || 0,audioPeak,audioBlocks,audioUnderrunSamples:audioIndices?Atomics.load(audioIndices,2):0,frames: samples.length, fps: total ? samples.length*1000/total : 0,
           p95: ordered[Math.floor(ordered.length*.95)] || 0, p99: ordered[Math.floor(ordered.length*.99)] || 0,
           over33ms: samples.filter(n=>n>33.34).length, durationMs: now-batchStart,
           phases: FS.analyzePath('/tmp/frame-phases.csv').exists ? FS.readFile('/tmp/frame-phases.csv',{encoding:'utf8'}).split('\n').slice(-65).join('\n') : ''});

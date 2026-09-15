@@ -638,7 +638,7 @@ export default function RetroHome({
               className={`intro-video-frame ${engine ? "is-game-running" : ""}`}
               ref={gameFrameRef}
             >
-              <iframe
+              {!engine && <iframe
                 ref={introVideoRef}
                 id="intro-video"
                 // Melee needs cross-origin isolation for WASM threads. Load the
@@ -656,10 +656,10 @@ export default function RetroHome({
                   disableEmbeddedTrailerCaptions(event.currentTarget);
                   subscribeEmbeddedTrailer(event.currentTarget);
                 }}
-              />
+              />}
               <canvas className="intro-video-rule-layer" aria-hidden="true" />
               {engineContent && <div className="melee-surface">{engineContent}</div>}
-              <iframe ref={engineRef} id="intro-game-frame" className="intro-game-frame" src={engineContent?"about:blank":engine?.src || "about:blank"} title={engine ? "Smash.fun game engine" : "Smash.fun game"} allow="autoplay; gamepad; fullscreen" />
+              {!engineContent && <iframe ref={engineRef} id="intro-game-frame" className="intro-game-frame" src={engineContent?"about:blank":engine?.src || "about:blank"} title={engine ? "Smash.fun game engine" : "Smash.fun game"} allow="autoplay; gamepad; fullscreen" />}
               {engine && <button
                 className="game-fullscreen-control"
                 type="button"
