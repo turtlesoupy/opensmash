@@ -1,0 +1,244 @@
+{
+  "suites": {
+    "coverage-final": {
+      "total": 56,
+      "passed": 56,
+      "reportSha256": "63e641dab9609b8c6183039692160f1ee657288ab2d71452269820f8561eea51"
+    },
+    "coverage-release": {
+      "total": 56,
+      "passed": 56,
+      "reportSha256": "26e62a173a7f08929381f4cdf2fccdd19dfc08232c20f0b0f70dd97006c050f6"
+    },
+    "render-release": {
+      "total": 55,
+      "passed": 55,
+      "reportSha256": "43d24d503edef38b07c31e1f555f2de47dbbecfd2aa1d53c7fd244c5ed6b1e72"
+    },
+    "custom-matrix": {
+      "total": 26,
+      "passed": 26,
+      "reportSha256": "354adf81f32001ccec8f618900dc7e83ac1685bc1701451df4b1091af99537e9"
+    },
+    "flows": {
+      "total": 7,
+      "passed": 7,
+      "reportSha256": "ae7473350f3f5723531433bbacf7836c2602784c75f49f28a6689153920e8247",
+      "cases": [
+        {
+          "case": "vs-menu",
+          "passed": true,
+          "scenes": [
+            42,
+            1,
+            8,
+            9,
+            2,
+            32
+          ],
+          "errors": []
+        },
+        {
+          "case": "character-select",
+          "passed": true,
+          "scenes": [
+            42,
+            8,
+            9,
+            2,
+            32,
+            5,
+            8,
+            9,
+            2,
+            32,
+            5,
+            8,
+            9,
+            2,
+            32,
+            5,
+            8,
+            9,
+            2,
+            32,
+            5,
+            8,
+            9,
+            2,
+            32
+          ],
+          "errors": []
+        },
+        {
+          "case": "classic",
+          "passed": true,
+          "scenes": [
+            42,
+            8,
+            32,
+            2,
+            34,
+            1,
+            8,
+            32,
+            2
+          ],
+          "errors": []
+        },
+        {
+          "case": "full-boot",
+          "passed": true,
+          "scenes": [
+            42,
+            28,
+            0,
+            1,
+            8
+          ],
+          "errors": []
+        },
+        {
+          "case": "custom-results",
+          "passed": true,
+          "scenes": [
+            42,
+            8,
+            9,
+            2,
+            32,
+            5
+          ],
+          "errors": []
+        },
+        {
+          "case": "input-idle",
+          "passed": true,
+          "scenes": [
+            42,
+            8,
+            9,
+            2,
+            32
+          ],
+          "errors": []
+        },
+        {
+          "case": "input-right",
+          "passed": true,
+          "scenes": [
+            42,
+            8,
+            9,
+            2,
+            32,
+            5
+          ],
+          "errors": []
+        }
+      ]
+    },
+    "ui-flows": {
+      "total": 2,
+      "passed": 2,
+      "reportSha256": "dc2650329a86d921494dcd9eed09587e026a3aa9c8b900fb6e169a7360465862",
+      "cases": [
+        {
+          "case": "custom-results",
+          "passed": true
+        },
+        {
+          "case": "classic",
+          "passed": true
+        }
+      ]
+    }
+  },
+  "audio": [
+    {
+      "quantum": 128,
+      "stallMs": 200,
+      "queuedMs": 122.66666666666667,
+      "overruns": 0,
+      "underruns": 0,
+      "rendered": 378368,
+      "frequencies": [
+        440,
+        660
+      ],
+      "rms": [
+        0.3535345588710803,
+        0.353533489444748
+      ]
+    },
+    {
+      "quantum": 1024,
+      "stallMs": 200,
+      "queuedMs": 186,
+      "overruns": 0,
+      "underruns": 0,
+      "rendered": 377856,
+      "frequencies": [
+        440.32579787234044,
+        660.2393617021277
+      ],
+      "rms": [
+        0.3535514462994167,
+        0.3535274006829489
+      ]
+    }
+  ],
+  "support": {
+    "sha1Vectors": 6,
+    "sha256Vectors": 6,
+    "audio": [
+      {
+        "speed": 0.9,
+        "inputFrames": 64000,
+        "outputFrames": 71044,
+        "peakFrequencies": [
+          440.0842961994041,
+          660.4171208487755
+        ]
+      },
+      {
+        "speed": 1.0,
+        "inputFrames": 64000,
+        "outputFrames": 64000,
+        "peakFrequencies": [
+          440.0,
+          660.0
+        ]
+      },
+      {
+        "speed": 1.05,
+        "inputFrames": 64000,
+        "outputFrames": 60693,
+        "peakFrequencies": [
+          439.62141722417385,
+          660.1481216297855
+        ]
+      }
+    ],
+    "passed": true
+  },
+  "build": {
+    "audioWasmSha256": "155278ced0e72b2a9b6c77abd0419754671d9f07d54149a418e8862c584bd210",
+    "audioWasmBytes": 11536,
+    "backend": "direct-c",
+    "upstream": {
+      "url": "https://github.com/avak1an/MeleeRecomp.git",
+      "revision": "b99e9eac893197b867425f83d95397e6ff866cf6"
+    },
+    "wasmSha256": "37cb910687d1253d965e68d2c22eac18af5f280639888227c9cc325d048c1ebe",
+    "wasmBytes": 87495678,
+    "patchSha256": "ab9ffa22e67a317569c14b4d377d157034eeae290e7c1659b9528ad8df5d5c6e",
+    "gameOptimization": "O0",
+    "runtimeOptimization": "O2",
+    "resolution": [
+      960,
+      720
+    ],
+    "sonicRevision": "b93885dcb70aae50c6f76b0fe4e0868f029a077e"
+  }
+}

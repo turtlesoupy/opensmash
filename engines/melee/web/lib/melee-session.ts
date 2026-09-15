@@ -49,7 +49,8 @@ const sessions=new WeakMap<Worker,Session>();
 export function warmMelee(){
  if(standby||!crossOriginIsolated||typeof SharedArrayBuffer==='undefined'||(usesLocalDisc()&&!localDisc))return;
  const disc=localDisc;
- const worker=new Worker(meleePath('/engine/engine-worker.js')),audio=new SharedArrayBuffer(16+8192*2*4);
+ const direct=new URLSearchParams(location.search).get('engine')==='direct-c';
+ const worker=new Worker(meleePath(direct?'/engine/direct-c/worker.mjs':'/engine/engine-worker.js'),direct?{type:'module'}:{}),audio=new SharedArrayBuffer(16+(direct?32768:8192)*2*4);
  let resolve!:()=>void,reject!:(reason:Error)=>void;
  let verify!:()=>void,rejectVerify!:(reason:Error)=>void;
  const verified=new Promise<void>((ok,fail)=>{verify=ok;rejectVerify=fail;});

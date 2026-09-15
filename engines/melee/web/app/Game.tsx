@@ -17,7 +17,7 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true}:{fig
  const touch=useRef(new Set<string>());
  const bindings=loadBindings(),kb=bindings.keyboard;
  useEffect(()=>{
-  let worker:Worker|undefined,audioNode:AudioWorkletNode|undefined,raf=0,closed=false;const abort=new AbortController(),keys=new Set<string>(),requestedAt=Date.now();
+  let worker:Worker|undefined,audioNode:AudioNode|undefined,raf=0,closed=false;const abort=new AbortController(),keys=new Set<string>(),requestedAt=Date.now();
   let playable=settings.mode!==0, audioConnecting=false;
   let running=false,firstFrame=true,selectionAcknowledged=false,fullBootVisible=false,frameSamples:number[]=[],launchPlan:any;
   const skin=new URLSearchParams(location.search).get('skin')==='gx'?'gx':'host';
@@ -75,7 +75,7 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true}:{fig
    setStatus('Loading Melee…');if(closed)return;
    const audio=session.audio;
    const startAudio=()=>{if(audioConnecting)return;audioConnecting=true;connectAudio(audio).then(node=>{if(closed)node.disconnect();else audioNode=node;}).catch(()=>{audioConnecting=false;});};
-   if(playable)startAudio();
+   startAudio();
    worker.onerror=e=>{if(!closed)setError(e.message||'The game worker stopped.');};
    worker.onmessage=({data})=>{
     if(closed)return;

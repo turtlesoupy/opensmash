@@ -5,7 +5,7 @@ const {chromium}=require('playwright');
 const fs=require('node:fs'),path=require('node:path');
 (async()=>{
  const iso=path.resolve(process.argv[2]),output=path.resolve(process.argv[3]||'build/local-disc-validation');
- const passes=w=>w.fps>=58.5&&w.p95<=20&&w.p99<=33.34&&w.audioUnderrunSamples===0&&w.audioRenderedSamples>=w.durationMs*48*.95;
+ const passes=w=>w.fps>=58.5&&w.p95<=20&&w.p99<=33.34&&w.audioUnderrunSamples===0&&(w.audioOverrunSamples===undefined||w.audioOverrunSamples===0)&&w.audioRenderedSamples>=w.durationMs*48*.95;
  const players=Number(process.argv[4]||2),events=[],requests=[],errors=[],samples=[];
  const measuredWindows=Number(process.env.MELEE_WINDOWS||0);
  const lineup=process.env.MELEE_LINEUP||'stock';
@@ -39,11 +39,11 @@ const fs=require('node:fs'),path=require('node:path');
  };
  await page.exposeFunction('recordMeleeEvent',data=>{events.push({...data,receivedAt:Date.now()});if(data.type==='combat-performance')console.log(JSON.stringify(data));});
  await page.addInitScript(({players,lineup,stage,stockCharacters})=>{
-  window.testAudioContexts=[];window.testMeleeError='';
+  window.testAudioContexts=[];window.testMeleeError='';window.testPresentedFrames=0;
   const AudioBase=window.AudioContext;
   window.AudioContext=class extends AudioBase {constructor(...args){super(...args);window.testAudioContexts.push(this);}};
   const WorkerBase=window.Worker;
-  window.Worker=class extends WorkerBase {constructor(...args){super(...args);this.addEventListener('message',({data})=>{if(data.type==='error')window.testMeleeError=data.message;if(!['frame','metrics','pad'].includes(data.type))window.recordMeleeEvent(data);});}};
+  window.Worker=class extends WorkerBase {constructor(...args){super(...args);this.addEventListener('message',({data})=>{if(data.type==='frame')window.testPresentedFrames++;if(data.type==='error')window.testMeleeError=data.message;if(!['frame','metrics','pad'].includes(data.type))window.recordMeleeEvent(data);});}};
   const launch={mode:0,stage,level:9,stocks:20,minutes:8,ports:[{device:'keyboard',character:lineup==='all-stock'?'vanilla:8':'selected',target:'mario'},{device:'cpu',character:lineup==='custom'?'donaldtrump':'vanilla:2'}, {device:players===4?'cpu':'off',target:!['stock','all-stock'].includes(lineup)?'captain-falcon':'auto',character:lineup==='all-stock'?'vanilla:0':lineup!=='stock'?'abrahamlincoln':'vanilla:9'},{device:players===4?'cpu':'off',target:!['stock','all-stock'].includes(lineup)?'link':'auto',character:lineup==='all-stock'?'vanilla:6':lineup!=='stock'?'barackobama':'vanilla:12'}]};
   if(lineup==='all-stock')launch.ports.forEach((port,index)=>{port.character='vanilla:'+stockCharacters[index];});
   localStorage.setItem('melee-launch-v1',JSON.stringify(launch));
@@ -64,6 +64,7 @@ const fs=require('node:fs'),path=require('node:path');
    try{await input.setInputFiles(invalid);await page.getByRole('alert').filter({hasText:'known USA 1.02 Melee disc hash'}).waitFor({timeout:120000});}
    finally{fs.unlinkSync(invalid);}
   }
+  await page.evaluate(()=>{window.testMeleeError='';});
   await page.getByLabel('Choose Melee ISO, GCM or ZIP').setInputFiles(iso);
   await page.waitForFunction(()=>window.testMeleeError||document.querySelector('.boot-disc [role="status"]')?.textContent==='Ready to play.',null,{timeout:120000});
   const bootError=await page.evaluate(()=>window.testMeleeError);if(bootError)throw Error(bootError);
@@ -73,7 +74,7 @@ const fs=require('node:fs'),path=require('node:path');
   const deadline=Date.now()+Math.max(250000,measuredWindows*31000+120000);let captured=false;
   while(Date.now()<deadline){
    await page.waitForTimeout(1000);
-   samples.push(await page.evaluate(()=>({time:Date.now(),visible:document.visibilityState,focused:document.hasFocus(),fps:window.meleePerformance?.fps,audio:window.testAudioContexts.map(c=>({state:c.state,time:c.currentTime}))})));
+   samples.push(await page.evaluate(()=>({time:Date.now(),visible:document.visibilityState,presentedFrames:window.testPresentedFrames,focused:document.hasFocus(),fps:window.meleePerformance?.fps,audio:window.testAudioContexts.map(c=>({state:c.state,time:c.currentTime}))})));
    const alert=await page.locator('.game-message[role="alert"]').allTextContents();
    if(alert.length)throw Error(alert.join(' '));
    if(events.slice(runStarted).some(e=>e.type==='error'))throw Error(events.slice(runStarted).find(e=>e.type==='error').message);

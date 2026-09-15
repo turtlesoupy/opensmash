@@ -198,6 +198,10 @@ class Handler(BaseHTTPRequestHandler):
                 return self.file(BUILD / 'sys-bundle.bin')
             if route.startswith('/engine/sys/'):
                 return self.file(descendant(SYS, route[len('/engine/sys/'):]))
+            if route.startswith('/engine/direct-c/'):
+                name=route[len('/engine/direct-c/'):]
+                root=ROOT/'build/direct-c' if name.startswith('melee-') else ROOT/'runtime/direct-c/web'
+                return self.file(descendant(root,name))
             if route.startswith('/engine/'):
                 name = route[len('/engine/'):]
                 root = BUILD if name.startswith('opensmash-web') else WEB
@@ -401,6 +405,7 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--desktop', action='store_true')
+    parser.add_argument('--direct-c', action='store_true', help='Serve the direct-C backend without Dolphin system assets')
     parser.add_argument('--iso', type=Path, help='Optional existing ISO; otherwise choose a disc in the web boot screen')
     parser.add_argument('--port', type=int, default=8781)
     parser.add_argument('--characters', type=Path, default=CHARACTERS, help='Exported character library (one directory per roster slug)')
@@ -422,7 +427,7 @@ if __name__ == '__main__':
         SETUP.use_existing(args.iso)
     else:
         threading.Thread(target=SETUP.restore, daemon=True).start()
-    if not args.desktop:
+    if not args.desktop and not args.direct_c:
         from pack_browser_sys import pack
         pack(SYS, BUILD / 'sys-bundle.bin')
     startup_log('Loading character import service')
@@ -437,7 +442,8 @@ if __name__ == '__main__':
     startup_log('Binding localhost HTTP server')
     server=ThreadingHTTPServer(('127.0.0.1', args.port), Handler)
     startup_log(f'Localhost HTTP server ready on port {server.server_port}')
-    print(f'Local game setup and asset server: http://127.0.0.1:{server.server_port}', flush=True)
+    suffix='/?engine=direct-c' if args.direct_c else ''
+    print(f'Local game setup and asset server: http://127.0.0.1:{server.server_port}{suffix}', flush=True)
     if args.desktop:print(json.dumps({'port':server.server_port,'protocol':1}),flush=True)
     try:server.serve_forever()
     finally:

@@ -20,7 +20,7 @@ export function meleeControlLabels(){
  const bindings=loadBindings(),pad=connectedGamepads()[0];
  const mapping=gamepadBindings(bindings,pad?.id);
  return Object.fromEntries(Object.entries(tutorialActions).map(([key,action])=>[key,
-  pad ? (action in mapping ? padLabel(mapping[action as keyof typeof mapping],padFamily(pad.id)) : ({up:'↑',left:'←',down:'↓',right:'→',cup:'↑',cleft:'←',cdown:'↓',cright:'→'}[action]||action)) : tutorialKeyLabel(bindings.keyboard[action])
+  pad ? (action in mapping ? padLabel(mapping[action as keyof typeof mapping],padFamily(pad.id)) : (({up:'↑',left:'←',down:'↓',right:'→',cup:'↑',cleft:'←',cdown:'↓',cright:'→'} as Partial<Record<Action,string>>)[action]||action)) : tutorialKeyLabel(bindings.keyboard[action])
  ]));
 }
 export function meleePadControls(){
