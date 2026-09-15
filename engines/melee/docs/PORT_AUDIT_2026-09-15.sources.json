@@ -1,0 +1,228 @@
+{
+  "audit_date": "2026-09-15",
+  "note": "Selected pinned repository snapshots; runtime claims not independently rerun in this audit. Other candidates are linked and qualified in the report.",
+  "snapshots": [
+    {
+      "repo": "999sian/melee-pc",
+      "sha": "adaf840577ec24e63861d97fdf6a6a85d40e28bf",
+      "date": "2026-09-15T04:30:11Z",
+      "created_at": "2026-09-14T03:42:52Z",
+      "pushed_at": "2026-09-15T04:30:23Z",
+      "license": {
+        "key": "other",
+        "name": "Other",
+        "spdx_id": "NOASSERTION",
+        "url": null,
+        "node_id": "MDc6TGljZW5zZTA="
+      },
+      "releases": [
+        {
+          "tag": "v0.1.4-beta",
+          "date": "2026-09-15T02:49:15Z"
+        },
+        {
+          "tag": "v0.1.3-beta",
+          "date": "2026-09-15T00:13:07Z"
+        },
+        {
+          "tag": "v0.1.2-beta",
+          "date": "2026-09-14T13:07:42Z"
+        }
+      ]
+    },
+    {
+      "repo": "GurekamDhillon/melee",
+      "sha": "4d9ca79c769ada8ee0dd5818b6d1377cb81793d6",
+      "date": "2026-09-14T04:45:14Z",
+      "created_at": "2026-09-14T04:29:39Z",
+      "pushed_at": "2026-09-14T04:45:17Z",
+      "license": null,
+      "releases": []
+    },
+    {
+      "repo": "avak1an/MeleeRecomp",
+      "sha": "b99e9eac893197b867425f83d95397e6ff866cf6",
+      "date": "2026-09-13T20:57:45Z",
+      "created_at": "2026-09-09T00:04:05Z",
+      "pushed_at": "2026-09-13T21:00:16Z",
+      "license": null,
+      "releases": []
+    },
+    {
+      "repo": "jonrosner/melee-native",
+      "sha": "76e6bb95fc85538fddc3f4910adfb79d40c283a7",
+      "date": "2026-09-09T08:18:13Z",
+      "created_at": "2026-09-08T21:07:05Z",
+      "pushed_at": "2026-09-09T08:18:15Z",
+      "license": null,
+      "releases": [
+        {
+          "tag": "v0.1.0-linux.1",
+          "date": "2026-09-08T23:35:42Z"
+        },
+        {
+          "tag": "v0.1.0-alpha.1",
+          "date": "2026-09-08T21:15:25Z"
+        },
+        {
+          "tag": "v0.1.0",
+          "date": "2026-09-08T22:21:21Z"
+        }
+      ]
+    }
+  ],
+  "evidence_files": [
+    {
+      "file": "999-cmake.txt",
+      "sha256": "e2efa8a306c5d1ff6d00c20bd1f1076999682c6ad300f06d53b615355d514f06"
+    },
+    {
+      "file": "Hero88go--melee-unlocked.md",
+      "sha256": "4bd433e7764e108fb5f51fa0f191a1a99c7bcb1a5279e122ffe749fdd3ab2c8e"
+    },
+    {
+      "file": "JRickey--BattleShip.md",
+      "sha256": "2ecc0397779f906db97aafba26c8c093e229ef36a7bda0c22ab92ddf003000c1"
+    },
+    {
+      "file": "MarkMcCaskey--melee-runtime-audits.md",
+      "sha256": "120cfb909e02f467749e45fc786d695ba9e3bbb9bc287c3f5e8c8922f497cfde"
+    },
+    {
+      "file": "McDandle--melee-macos-recomp.md",
+      "sha256": "90c52a8936cac0d377128824afe7ebdd230081f604141a27301a5f0d214d1b9c"
+    },
+    {
+      "file": "Robert-Liam-Walker--online-weekly-tournaments-browser.md",
+      "sha256": "3bd1788d2666115e5a5e6db180040c5b88d8fb935f0e2f85ad04e9ec1ee7f3d6"
+    },
+    {
+      "file": "TheAndersMadsen--dashdance.md",
+      "sha256": "e4170b940ecbbdc3a2829bb0496c884c66819d13b793c7a01604a8a9b28fa90f"
+    },
+    {
+      "file": "VibingSticks--melee-web.md",
+      "sha256": "c25cc0e6f572f94f7e827f13baed3323fa7ad5eb83cda438d3fe52f337aa0a6a"
+    },
+    {
+      "file": "YTReviveMe--melee-uwp.md",
+      "sha256": "c25cc0e6f572f94f7e827f13baed3323fa7ad5eb83cda438d3fe52f337aa0a6a"
+    },
+    {
+      "file": "astelmach20--meleexr.md",
+      "sha256": "ea70453f892c087d8c5d91a98be8c942fa4e97698ea9f7adda9f9f947316221c"
+    },
+    {
+      "file": "battle-issues.txt",
+      "sha256": "a33ad0dd175a6f4ab796e83917270543c13ce1fb16663bbcbd0cc7c373c05e24"
+    },
+    {
+      "file": "battle-tree.txt",
+      "sha256": "369d75fa10cc2a9d6cbfdf17ca7d030be531094229870288f2bfd51aacc714aa"
+    },
+    {
+      "file": "benstrumeyer--100-man-melee.md",
+      "sha256": "d1075de2f6c8be760c601b9b27fd30b10bd5176532e33c68cf93bbdf4da05a70"
+    },
+    {
+      "file": "cornerian--skirmish.md",
+      "sha256": "079f295168eb36616ece8935fb4a8ed1a94c68dff73c89f4f980c2d8663f2b90"
+    },
+    {
+      "file": "dash-cmake.txt",
+      "sha256": "0e8a733440639cc8e674afde3891f3b3e7620d3c3e91c82339707aeb4f0aa8e4"
+    },
+    {
+      "file": "dash-perf.txt",
+      "sha256": "0a94069f79b4887d614b302e8dce71ca3f1b59ae21857b04e1d144f6e3a8fa58"
+    },
+    {
+      "file": "dash-tech.txt",
+      "sha256": "82982d2ecfaa6054ae76f33afa1ba56b1bcec2dad4ffeed88ef8d5ad2a75030b"
+    },
+    {
+      "file": "fork-search.txt",
+      "sha256": "961bb393048e5b9d839b438fd86772f228d3167a9b8c4c4f60bed63bb9a4a460"
+    },
+    {
+      "file": "goodtripith--meleehtml.md",
+      "sha256": "c25cc0e6f572f94f7e827f13baed3323fa7ad5eb83cda438d3fe52f337aa0a6a"
+    },
+    {
+      "file": "gurekam-readme.txt",
+      "sha256": "0ee91a9c14b5741308a5386592ddc94c0720c265702df21f903efd581618bb55"
+    },
+    {
+      "file": "gurekam.txt",
+      "sha256": "f111d1de6174249b3be082c5ebdca5df09eff7634712685b6ef5dca92f46c1aa"
+    },
+    {
+      "file": "gwtool.txt",
+      "sha256": "fc778cbd8d995427963601e02885e163e99162879a2b4e4f77c3f304f3b06aa7"
+    },
+    {
+      "file": "ioncodes--gecko.md",
+      "sha256": "c38b37ce29b7167af31214fcd54eed8e5a832a00b0622e6ff4437d9989e0963f"
+    },
+    {
+      "file": "jakeschaeffer--melee-native.md",
+      "sha256": "a8967820db6ed7cf1e1d4d0769af6c74411f699d19d495ae20f0a3a0efa66fc2"
+    },
+    {
+      "file": "jon-cmake.txt",
+      "sha256": "d991be13b36406cea197da03ebb838025f812c75589277ec84d5182e3c284f64"
+    },
+    {
+      "file": "jonrosner-meta.txt",
+      "sha256": "4fe9892d41606449dc8591902433b9c27f468899cc9321194d16cd7261a04dfe"
+    },
+    {
+      "file": "jonrosner-readme.txt",
+      "sha256": "bfb6c76868413660c10e544bee4a39afa6fe48a065e01bdffff3ac77422aec2c"
+    },
+    {
+      "file": "lammmab--momentum.md",
+      "sha256": "e48318c17ace6ec3a5165e071581c21a7a610b299cd9dc86bc423a306033f912"
+    },
+    {
+      "file": "robin994--SmashMeleeVita.md",
+      "sha256": "c25cc0e6f572f94f7e827f13baed3323fa7ad5eb83cda438d3fe52f337aa0a6a"
+    },
+    {
+      "file": "royale-browser.txt",
+      "sha256": "bff3ff0175a8702add2220a7f406a6dd87b73805557d92fbeef5c763f9ae40f0"
+    },
+    {
+      "file": "royale-crowd.txt",
+      "sha256": "3ddaef8208a8e76cff011395a1a6b3513d08bf9ada9524b4f2df5eea370e046c"
+    },
+    {
+      "file": "royale-js.txt",
+      "sha256": "7235c4b24091adfae895e9d78d035d69ed56bfb7840ccb05778080409f66daf6"
+    },
+    {
+      "file": "royale-site.txt",
+      "sha256": "85841e854b6def1399b028b91bb6c57935f792f902db4740089fd5a48def262d"
+    },
+    {
+      "file": "schmooblidon--meleelight.md",
+      "sha256": "fe11e673190c7f03941d78bf9bcdea2e33abdfe92194fa2dd3fa042a94e1ccea"
+    },
+    {
+      "file": "siphon.txt",
+      "sha256": "5b5f39e76284d0bafcdebdc8b698ed39c64b0abd40e96bd3ea2387b115d9d226"
+    },
+    {
+      "file": "unlocked-recomp.txt",
+      "sha256": "03d4fa368d7468d2a00950caed14399f3dffcd91702532ec458f7acc4df6042a"
+    },
+    {
+      "file": "unlocked-status.txt",
+      "sha256": "034043c387341dcbd18f3cb0e09fa1f6f00c7db32c04cc13d27cb07925f7a938"
+    },
+    {
+      "file": "weekly-engine.txt",
+      "sha256": "f70fea3336d266fd1091a0eeb9a295bb7876cba7e6328d17cf3fc92c5d232717"
+    }
+  ]
+}
