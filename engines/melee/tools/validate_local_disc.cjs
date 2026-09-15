@@ -10,6 +10,8 @@ const fs=require('node:fs'),path=require('node:path');
  const measuredWindows=Number(process.env.MELEE_WINDOWS||0);
  const lineup=process.env.MELEE_LINEUP||'stock';
  const caseStudy=process.env.MELEE_CASE_STUDY==='1';
+ const maxCaseFrameMs=Number(process.env.MELEE_MAX_FRAME_MS||100);
+ if(!Number.isFinite(maxCaseFrameMs)||maxCaseFrameMs<=0)throw Error('MELEE_MAX_FRAME_MS must be positive');
  const launchOptions=require('../runtime/launch-options.json');
  const stage=Number(process.env.MELEE_STAGE||31);
  const stockCharacters=(process.env.MELEE_STOCK_CHARACTERS||'8,2,0,6').split(',').map(Number);
@@ -101,7 +103,7 @@ const fs=require('node:fs'),path=require('node:path');
      if(!direct)throw Error('Expected live upstream canvas presentation');
      events.push({type:'presentation-validation',direct:true});
     }
-    captured=true;await page.getByRole('button',{name:'Enable sound',exact:true}).click();await page.screenshot({path:path.join(output,'first-playable.png')});}
+    captured=true;await page.getByRole('button',{name:'Enable sound',exact:true}).click();if(!process.env.MELEE_TIMING_ONLY)await page.screenshot({path:path.join(output,'first-playable.png')});}
    if(!captured)await page.getByRole('button',{name:'Confirm · A',exact:true}).click();
    if(captured&&process.env.MELEE_INPUT_ONLY){
     const engine=page.frames().find(frame=>frame.url().includes('/engine/upstream/runtime.html'));
@@ -153,10 +155,10 @@ const fs=require('node:fs'),path=require('node:path');
   }
   if(measuredWindows&&windows.length<measuredWindows)throw Error('Missing requested combat windows');
   if(!(strictWindows?windows:windows.slice(-3)).every(passes))throw Error('60 FPS gate failed');
-  if(caseStudy&&windows.some(w=>w.maxFrameMs>100))throw Error('Case study still has a frame stall over 100 ms');
+  if(caseStudy&&windows.some(w=>w.maxFrameMs>maxCaseFrameMs))throw Error(`Case study still has a frame stall over ${maxCaseFrameMs} ms`);
  }finally{
   try{await saveTrace();}catch(error){console.error(error);}
-  fs.writeFileSync(path.join(output,'run.json'),JSON.stringify({players,lineup,caseStudy,stage,stockCharacters:lineup==='all-stock'?stockCharacters:null,measuredWindows,strictWindows,chromeArgs},null,2));
+  fs.writeFileSync(path.join(output,'run.json'),JSON.stringify({players,lineup,caseStudy,maxCaseFrameMs,stage,stockCharacters:lineup==='all-stock'?stockCharacters:null,measuredWindows,strictWindows,chromeArgs},null,2));
   fs.writeFileSync(path.join(output,'events.json'),JSON.stringify(events,null,2));
   fs.writeFileSync(path.join(output,'network.json'),JSON.stringify(requests,null,2));
   fs.writeFileSync(path.join(output,'samples.json'),JSON.stringify(samples,null,2));

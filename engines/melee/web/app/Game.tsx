@@ -24,10 +24,13 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true}:{fig
   const skin=new URLSearchParams(location.search).get('skin')==='gx'?'gx':'host';
   const send=(schedule=true)=>{
    if(worker&&running){
+    // Modal visibility is constant for this input sample. Querying layout for
+    // every button and axis multiplies main-thread work during gameplay.
+    const blocked=gameInputBlocked();
     for(let port=0;port<4;port++){
     const device=launchPlan?.ports[port]?.device;
     if(device==='off'||device==='cpu') {worker.postMessage({type:'pad',values:[port,0,0x80808080,0,0]});continue;}
-    const held=(action:Action)=>!gameInputBlocked()&&device==='keyboard'&&(keys.has(kb[action])||touch.current.has(kb[action]));
+    const held=(action:Action)=>!blocked&&device==='keyboard'&&(keys.has(kb[action])||touch.current.has(kb[action]));
     let buttons=0;for(const [action,bit] of Object.entries(bits))if(held(action as Action))buttons|=bit;
     let x=128+((held('right')?1:0)-(held('left')?1:0))*100;
     let y=128+((held('up')?1:0)-(held('down')?1:0))*100;
@@ -35,7 +38,7 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true}:{fig
     let cy=128+((held('cup')?1:0)-(held('cdown')?1:0))*100;
     let l=0,r=0;
     const pad=device?.startsWith('gamepad')?rawGamepads().find(p=>p?.index===Number(device.slice(7))):null;
-    if(pad&&!gameInputBlocked()){
+    if(pad&&!blocked){
      const sample=sampleMeleePad(pad);
      buttons|=sample[2];x=128+sample[3];y=128+sample[4];cx=128+sample[5];cy=128+sample[6];l=sample[7];r=sample[8];
     }

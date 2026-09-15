@@ -5,6 +5,7 @@ export class MeleeFrameWorker extends EventTarget {
   frame: HTMLIFrameElement;
   pending: unknown[];
   listener: (event: MessageEvent) => void;
+  private pads = new Map<number, number[]>();
   connected = false;
   closed = false;
   resize?: ResizeObserver;
@@ -44,6 +45,18 @@ export class MeleeFrameWorker extends EventTarget {
     this.resize=new ResizeObserver(fit);this.resize.observe(parent);fit();
     this.postMessage({type:'surface',direct:true});
   }
-  postMessage(data: unknown){if(this.closed)return;if(!this.connected){this.pending.push(data);return;}this.frame.contentWindow?.postMessage(data,location.origin);}
+  postMessage(data: unknown){
+    if(this.closed)return;
+    if(!this.connected){this.pending.push(data);return;}
+    const message=data as {type?:string;values?:number[]};
+    if(message?.type==='pad'&&Array.isArray(message.values)){
+      const values=message.values,previous=this.pads.get(values[0]);
+      // The engine reapplies held state every VI. Only changes need a browser
+      // task; repeated neutral CPU ports otherwise dominate bridge traffic.
+      if(previous&&previous.length===values.length&&values.every((value,i)=>value===previous[i]))return;
+      this.pads.set(values[0],values.slice());
+    }else if(['select','confirm','input'].includes(message?.type||''))this.pads.clear();
+    this.frame.contentWindow?.postMessage(data,location.origin);
+  }
   terminate(){if(this.closed)return;this.closed=true;window.removeEventListener('message',this.listener);this.resize?.disconnect();if(this.surface)this.surface.style.opacity='';this.frame.remove();this.pending=[];}
 }

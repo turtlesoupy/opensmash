@@ -1,5 +1,29 @@
 # Custom fighter quality and stalls: September 15 case study
 
+## Residual stalls: final results
+
+| Two-minute case | FPS across 30-second windows | Worst frame | Frames over 33 ms | Audio underrun samples |
+|---|---:|---:|---:|---:|
+| Before, direct presentation | 59.43–60.00 | 162.64 ms | 12 | 0 |
+| Final, fresh browser storage | 59.98–60.00 | 30.03 ms | 0 | 0 |
+| Final, returning browser storage | 60.00 | 21.93 ms | 0 | 0 |
+
+Both final runs pass the normal FPS/p95/p99/audio checks and a stricter **33.34 ms maximum-frame gate**. The returning run checks every window. Click-to-match was 4.43 seconds fresh and 4.10 seconds returning; replay passed without rehashing the disc. Screenshots after measurement confirm rendering and replay. Default-launcher keyboard movement, attack, and release passed, along with the staging, frame transport, and browser session unit tests and the TypeScript/Vite build. Browser storage was fresh for the fresh run; OS/GPU caches were not purged. These are measured results for the focused lineup on this machine, not a guarantee for all browsers, stages, or system loads.
+
+Raw measurements and final artifact hash: [residual-stalls.json](residual-stalls.json). Failed intermediate runs remain in `build/residual-*`; the report includes the pre-remapping version that eliminated large stalls but narrowly failed p95, rather than treating it as a passing result.
+
+To reproduce the stricter check, add `MELEE_WINDOWS=4 MELEE_TIMING_ONLY=1 MELEE_MAX_FRAME_MS=33.34` to the command below. Add `MELEE_BROWSER_PROFILE=/path/to/profile MELEE_STRICT_WINDOWS=1` for returning visits. No diagnostic Chrome flags are used in either final run.
+
+## Residual stalls: implementation
+
+The longer two-minute reproduction found additional 163 ms frames beyond the previous one-minute window. The browser now uses one set of separate GPU staging buffers, preserving all native pool capacities while mapping only the per-pool high-water ranges. Remapping starts after submission and completes during normal VI pacing. Ready buffers copy synchronously; a larger frame grows its mapping safely. Quiet frames retain the established mapping capacity so a later effect burst does not have to remap behind shader compilation. This replaces synchronous queue uploads and removes the five combined 87 MiB staging allocations from the browser path.
+
+Two large effect dispatchers also perform a guarded, side-effect-free call during loading to trigger their first-use WASM compilation. The guards return before particle creation, RNG access, or game state changes. Native builds keep their original behavior. A diagnostic Chrome run disabling lazy compilation reduced the first effect frame's CPU work from roughly 35 ms to 7 ms; production runs use normal browser flags. The mechanism is consistent with [V8's description of blocking first-use baseline compilation](https://chromium.googlesource.com/v8/v8/+/main/docs/wasm/architecture.md).
+
+The launcher queries modal visibility once per input sample and sends controller state only when it changes. The engine still reapplies held state each VI. Regression tests cover press/release, confirmation invalidation, independent ports, mapping growth, retained burst capacity, and the synchronous reuse path.
+
+Timing-only runs omit the first-playable screenshot; visual capture occurs after timing. Removing that screenshot alone did not remove the startup spike. The harness now accepts `MELEE_MAX_FRAME_MS` for an explicit worst-frame gate.
+
 ## Follow-up: startup and high-action stalls
 
 The longer case study reproduced a 608 ms gameplay frame: 585 ms was spent uploading roughly 2 MiB to WebGPU, while game simulation took under 5 ms. The ordinary upload scratch buffer alone did not resolve it.
