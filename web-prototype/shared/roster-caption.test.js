@@ -10,6 +10,21 @@ test('short captions keep the regular font and natural size', () => {
   assert.equal(caption.scale, 1);
 });
 
+test('Smash 64 fits with matching digits at the original cap height', () => {
+  const caption = fitCaption('Smash 64');
+  assert.equal(caption.text, 'SMASH 64');
+  assert.equal(caption.cut, 'condensed');
+  assert.equal(caption.scale, 1);
+  assert.equal(caption.squeeze, 0);
+  assert.deepEqual(caption.glyphs.slice(-2).map(glyph => glyph.text), ['6', '4']);
+  assert.ok(caption.originX + caption.width <= 43);
+  for (const cut of ['regular', 'condensed', 'narrow']) {
+    const digits = layoutCaption('64', cut);
+    assert.equal(digits.glyphs.length, 2);
+    assert.ok(Number.isFinite(digits.width) && digits.width > 0);
+  }
+});
+
 test('long captions fit the tile without reducing their cap height', () => {
   for (const name of ['EINSTEIN', 'JIGGLYPUFF', 'SCHWARZENEGGER', 'THE WINGED VICTORY OF SAMOTHRACE', 'WWWWWWWWWWWWWWWWWWWWWW']) {
     const caption = fitCaption(name);

@@ -9,12 +9,13 @@ from pathlib import Path
 from fontTools.fontBuilder import FontBuilder
 from fontTools.pens.ttGlyphPen import TTGlyphPen
 from fontTools.feaLib.builder import addOpenTypeFeaturesFromString
+from digits import digit_glyphs
 
 ROOT = Path(__file__).resolve().parents[2]
 raw = (ROOT / 'src/fonts/ssb-name-font-data.js').read_text().split('export const SSB_NAME_FONT = ', 1)[1]
 data, _ = json.JSONDecoder().raw_decode(raw)
 UNIT = 100
-CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ.'
+CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ.64'
 metrics = {}
 round_js = lambda x: math.floor(x + .5)
 
@@ -71,9 +72,9 @@ def edge_rows(g, side):
 
 for cut in ['regular', 'condensed', 'narrow']:
     face = data if cut == 'regular' else data[cut]
-    table = face['glyphs']
+    table = {**face['glyphs'], **digit_glyphs(cut)}
     fb = FontBuilder(1000, isTTF=True)
-    names = {ch: 'period' if ch == '.' else ch for ch in CHARS}
+    names = {ch: {'.': 'period', '6': 'six', '4': 'four'}.get(ch, ch) for ch in CHARS}
     order = ['.notdef', 'space', *names.values()]
     glyphs = {name: TTGlyphPen(None).glyph() for name in order}
     advances = {'.notdef': (500, 0), 'space': (round_js(face['spaceAdvance'] * UNIT), 0)}
@@ -118,8 +119,8 @@ for cut in ['regular', 'condensed', 'narrow']:
     fb.setupHorizontalMetrics(advances)
     fb.setupHorizontalHeader(ascent=800, descent=-200)
     fb.setupNameTable({'familyName': f'Smash Caption {cut.title()}', 'styleName': 'Regular',
-        'uniqueFontIdentifier': f'SmashCaption-{cut}-3', 'fullName': f'Smash Caption {cut.title()}',
-        'psName': f'SmashCaption-{cut.title()}', 'version': 'Version 3.000'})
+        'uniqueFontIdentifier': f'SmashCaption-{cut}-4', 'fullName': f'Smash Caption {cut.title()}',
+        'psName': f'SmashCaption-{cut.title()}', 'version': 'Version 4.000'})
     fb.setupOS2(sTypoAscender=800, sTypoDescender=-200, sTypoLineGap=0,
         usWinAscent=800, usWinDescent=200, sCapHeight=700, sxHeight=700)
     fb.setupPost()
