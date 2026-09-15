@@ -15,7 +15,9 @@ test('disc pickers share verification, replacement cancels old setup, and replay
   const {subscribeLocalDisc,selectLocalDisc,claimMelee,releaseMelee,usesLocalDisc}=await import('../web/lib/melee-session.ts');
   globalThis.location={hostname:'public.example',search:'?disc=server'};assert.equal(usesLocalDisc(),true);
   globalThis.location={hostname:'localhost',search:'?disc=server'};assert.equal(usesLocalDisc(),false);
-  globalThis.location={hostname:'localhost',search:''};
+  // Exercise the worker transport here; the upstream iframe transport is covered
+  // by the headed launcher replay test.
+  globalThis.location={hostname:'localhost',search:'?engine=direct-c'};
   const first=[],second=[],off1=subscribeLocalDisc(s=>first.push(s)),off2=subscribeLocalDisc(s=>second.push(s));
   const old=new File(['old'],'old.iso'),file=new File(['verified'],'melee.iso');
   const cancelled=selectLocalDisc(old).catch(e=>e);

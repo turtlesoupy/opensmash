@@ -198,6 +198,11 @@ class Handler(BaseHTTPRequestHandler):
                 return self.file(BUILD / 'sys-bundle.bin')
             if route.startswith('/engine/sys/'):
                 return self.file(descendant(SYS, route[len('/engine/sys/'):]))
+            if route.startswith('/engine/upstream/'):
+                name = route[len('/engine/upstream/'):]
+                upstream = Path(os.environ.get('MELEE_PC_ROOT', str(ROOT.parents[2] / 'melee-pc')))
+                root = upstream / ('build/browser/runtime/platforms/browser' if name.startswith('melee_browser.') else 'platforms/browser')
+                return self.file(descendant(root, name))
             if route.startswith('/engine/direct-c/'):
                 name=route[len('/engine/direct-c/'):]
                 root=ROOT/'build/direct-c' if name.startswith('melee-') else ROOT/'runtime/direct-c/web'
@@ -405,6 +410,7 @@ class Handler(BaseHTTPRequestHandler):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--desktop', action='store_true')
+    parser.add_argument('--upstream', action='store_true', help='Serve the pinned Melee PC browser backend')
     parser.add_argument('--direct-c', action='store_true', help='Serve the direct-C backend without Dolphin system assets')
     parser.add_argument('--iso', type=Path, help='Optional existing ISO; otherwise choose a disc in the web boot screen')
     parser.add_argument('--port', type=int, default=8781)
@@ -427,7 +433,7 @@ if __name__ == '__main__':
         SETUP.use_existing(args.iso)
     else:
         threading.Thread(target=SETUP.restore, daemon=True).start()
-    if not args.desktop and not args.direct_c:
+    if not args.desktop and not args.direct_c and not args.upstream:
         from pack_browser_sys import pack
         pack(SYS, BUILD / 'sys-bundle.bin')
     startup_log('Loading character import service')
@@ -442,7 +448,7 @@ if __name__ == '__main__':
     startup_log('Binding localhost HTTP server')
     server=ThreadingHTTPServer(('127.0.0.1', args.port), Handler)
     startup_log(f'Localhost HTTP server ready on port {server.server_port}')
-    suffix='/?engine=direct-c' if args.direct_c else ''
+    suffix='/?engine=upstream' if args.upstream else '/?engine=direct-c' if args.direct_c else ''
     print(f'Local game setup and asset server: http://127.0.0.1:{server.server_port}{suffix}', flush=True)
     if args.desktop:print(json.dumps({'port':server.server_port,'protocol':1}),flush=True)
     try:server.serve_forever()

@@ -1,0 +1,14 @@
+{
+  "revision": "8eafad34ef2205e6e6693584c64529654da553ec",
+  "wasmSha256": "5ce07eaa6a24c081157de1029d315ba460e9814e0b2abf86abd1a2aba4253058",
+  "players": 4,
+  "checks": [
+    {
+      "type": "input-validation",
+      "keyboardStick": true,
+      "keyboardAttack": true,
+      "release": true
+    }
+  ],
+  "errors": []
+}

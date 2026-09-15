@@ -1,0 +1,243 @@
+{
+  "run": {
+    "players": 2,
+    "lineup": "stock",
+    "stage": 31,
+    "stockCharacters": null,
+    "measuredWindows": 3,
+    "strictWindows": false,
+    "chromeArgs": []
+  },
+  "windows": [
+    {
+      "type": "combat-performance",
+      "profile": "0",
+      "presentedBitmapFps": 59.6817175004252,
+      "audioOverrunSamples": 0,
+      "maxFrameMs": 183.88499999046326,
+      "frames": 1791,
+      "combatFrames": 1792,
+      "durationMs": 30009.19000005722,
+      "fps": 59.6817175004252,
+      "p95": 19.789999961853027,
+      "p99": 23.200000047683716,
+      "over33ms": 3,
+      "audioPeak": 32768,
+      "audioUnderrunSamples": 0,
+      "audioRenderedSamples": 1439744,
+      "targetFps": 60,
+      "receivedAt": 1789464178537
+    },
+    {
+      "type": "combat-performance",
+      "profile": "0",
+      "presentedBitmapFps": 59.989331158699585,
+      "audioOverrunSamples": 0,
+      "maxFrameMs": 31.390000104904175,
+      "frames": 1801,
+      "combatFrames": 3594,
+      "durationMs": 30022.00500011444,
+      "fps": 59.989331158699585,
+      "p95": 19.71499991416931,
+      "p99": 22.039999961853027,
+      "over33ms": 0,
+      "audioPeak": 32768,
+      "audioUnderrunSamples": 0,
+      "audioRenderedSamples": 1441792,
+      "targetFps": 60,
+      "receivedAt": 1789464208576
+    },
+    {
+      "type": "combat-performance",
+      "profile": "0",
+      "presentedBitmapFps": 59.99918001103486,
+      "audioOverrunSamples": 0,
+      "maxFrameMs": 29.740000009536743,
+      "frames": 1800,
+      "combatFrames": 5395,
+      "durationMs": 30000.41000008583,
+      "fps": 59.99918001103486,
+      "p95": 19.59500002861023,
+      "p99": 21.87000012397766,
+      "over33ms": 0,
+      "audioPeak": 32768,
+      "audioUnderrunSamples": 0,
+      "audioRenderedSamples": 1439744,
+      "targetFps": 60,
+      "receivedAt": 1789464238589
+    }
+  ],
+  "startup": [
+    {
+      "type": "startup-performance",
+      "clickToMatchMs": 3951,
+      "receivedAt": 1789464148549
+    },
+    {
+      "type": "startup-performance",
+      "clickToMatchMs": 5459,
+      "receivedAt": 1789464245080
+    }
+  ],
+  "errors": [],
+  "sessions": [
+    {
+      "type": "session",
+      "backend": "direct-c",
+      "build": {
+        "audioWasmSha256": "155278ced0e72b2a9b6c77abd0419754671d9f07d54149a418e8862c584bd210",
+        "audioWasmBytes": 11536,
+        "backend": "direct-c",
+        "upstream": {
+          "url": "https://github.com/avak1an/MeleeRecomp.git",
+          "revision": "b99e9eac893197b867425f83d95397e6ff866cf6"
+        },
+        "wasmSha256": "37cb910687d1253d965e68d2c22eac18af5f280639888227c9cc325d048c1ebe",
+        "wasmBytes": 87495678,
+        "patchSha256": "ab9ffa22e67a317569c14b4d377d157034eeae290e7c1659b9528ad8df5d5c6e",
+        "gameOptimization": "O0",
+        "runtimeOptimization": "O2",
+        "resolution": [
+          960,
+          720
+        ],
+        "sonicRevision": "b93885dcb70aae50c6f76b0fe4e0868f029a077e"
+      },
+      "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+      "hardwareConcurrency": 10,
+      "launch": {
+        "mode": 0,
+        "stage": 31,
+        "level": 9,
+        "stocks": 20,
+        "minutes": 8,
+        "ports": [
+          {
+            "device": "keyboard",
+            "character": "alanturing",
+            "target": "mario",
+            "fighter": 8,
+            "color": 0,
+            "custom": true
+          },
+          {
+            "device": "cpu",
+            "character": "vanilla:2",
+            "fighter": 2,
+            "color": 0,
+            "custom": false
+          },
+          {
+            "device": "off",
+            "character": "vanilla:9",
+            "fighter": 9,
+            "color": 0,
+            "custom": false
+          },
+          {
+            "device": "off",
+            "character": "vanilla:12",
+            "fighter": 12,
+            "color": 0,
+            "custom": false
+          }
+        ],
+        "costumes": [
+          {
+            "character": "alanturing",
+            "target": "mario",
+            "fighter": 8,
+            "color": 0,
+            "filename": "PlMrNr.dat"
+          }
+        ],
+        "packedPorts": [
+          264,
+          258,
+          777,
+          780
+        ]
+      },
+      "receivedAt": 1789464144903
+    },
+    {
+      "type": "session",
+      "backend": "direct-c",
+      "build": {
+        "audioWasmSha256": "155278ced0e72b2a9b6c77abd0419754671d9f07d54149a418e8862c584bd210",
+        "audioWasmBytes": 11536,
+        "backend": "direct-c",
+        "upstream": {
+          "url": "https://github.com/avak1an/MeleeRecomp.git",
+          "revision": "b99e9eac893197b867425f83d95397e6ff866cf6"
+        },
+        "wasmSha256": "37cb910687d1253d965e68d2c22eac18af5f280639888227c9cc325d048c1ebe",
+        "wasmBytes": 87495678,
+        "patchSha256": "ab9ffa22e67a317569c14b4d377d157034eeae290e7c1659b9528ad8df5d5c6e",
+        "gameOptimization": "O0",
+        "runtimeOptimization": "O2",
+        "resolution": [
+          960,
+          720
+        ],
+        "sonicRevision": "b93885dcb70aae50c6f76b0fe4e0868f029a077e"
+      },
+      "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+      "hardwareConcurrency": 10,
+      "launch": {
+        "mode": 0,
+        "stage": 31,
+        "level": 9,
+        "stocks": 20,
+        "minutes": 8,
+        "ports": [
+          {
+            "device": "keyboard",
+            "character": "alanturing",
+            "target": "mario",
+            "fighter": 8,
+            "color": 0,
+            "custom": true
+          },
+          {
+            "device": "cpu",
+            "character": "vanilla:2",
+            "fighter": 2,
+            "color": 0,
+            "custom": false
+          },
+          {
+            "device": "off",
+            "character": "vanilla:9",
+            "fighter": 9,
+            "color": 0,
+            "custom": false
+          },
+          {
+            "device": "off",
+            "character": "vanilla:12",
+            "fighter": 12,
+            "color": 0,
+            "custom": false
+          }
+        ],
+        "costumes": [
+          {
+            "character": "alanturing",
+            "target": "mario",
+            "fighter": 8,
+            "color": 0,
+            "filename": "PlMrNr.dat"
+          }
+        ],
+        "packedPorts": [
+          264,
+          258,
+          777,
+          780
+        ]
+      },
+      "receivedAt": 1789464239758
+    }
+  ]
+}

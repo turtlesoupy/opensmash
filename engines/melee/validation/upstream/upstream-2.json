@@ -1,0 +1,207 @@
+{
+  "run": {
+    "players": 2,
+    "lineup": "stock",
+    "stage": 31,
+    "stockCharacters": null,
+    "measuredWindows": 3,
+    "strictWindows": true,
+    "chromeArgs": [
+      "--disable-audio-output"
+    ]
+  },
+  "windows": [
+    {
+      "type": "combat-performance",
+      "profile": "upstream",
+      "durationMs": 30009.68499994278,
+      "frames": 1798,
+      "combatFrames": 1799,
+      "fps": 59.9139910999875,
+      "presentedBitmapFps": 59.9139910999875,
+      "p95": 17.87000012397766,
+      "p99": 18.610000133514404,
+      "maxFrameMs": 61.639999866485596,
+      "over33ms": 1,
+      "audioPeak": 0.9912692904472351,
+      "audioUnderrunSamples": 0,
+      "audioRenderedSamples": 1439744,
+      "audioOverrunSamples": 0,
+      "targetFps": 60,
+      "receivedAt": 1789496453660
+    },
+    {
+      "type": "combat-performance",
+      "profile": "upstream",
+      "durationMs": 30016.019999980927,
+      "frames": 1801,
+      "combatFrames": 3601,
+      "fps": 60.001292643100065,
+      "presentedBitmapFps": 60.001292643100065,
+      "p95": 17.730000019073486,
+      "p99": 18.480000019073486,
+      "maxFrameMs": 19.305000066757202,
+      "over33ms": 0,
+      "audioPeak": 1,
+      "audioUnderrunSamples": 0,
+      "audioRenderedSamples": 1440768,
+      "audioOverrunSamples": 0,
+      "targetFps": 60,
+      "receivedAt": 1789496483695
+    },
+    {
+      "type": "combat-performance",
+      "profile": "upstream",
+      "durationMs": 30001.02499985695,
+      "frames": 1800,
+      "combatFrames": 5402,
+      "fps": 59.99795007032536,
+      "presentedBitmapFps": 59.99795007032536,
+      "p95": 17.759999990463257,
+      "p99": 18.40499997138977,
+      "maxFrameMs": 21.740000009536743,
+      "over33ms": 0,
+      "audioPeak": 1,
+      "audioUnderrunSamples": 0,
+      "audioRenderedSamples": 1439744,
+      "audioOverrunSamples": 0,
+      "targetFps": 60,
+      "receivedAt": 1789496513711
+    }
+  ],
+  "startup": [
+    {
+      "type": "startup-performance",
+      "clickToMatchMs": 4060,
+      "receivedAt": 1789496423665
+    },
+    {
+      "type": "startup-performance",
+      "clickToMatchMs": 4112,
+      "receivedAt": 1789496518888
+    }
+  ],
+  "errors": [],
+  "sessions": [
+    {
+      "type": "session",
+      "backend": "melee-pc-upstream",
+      "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+      "hardwareConcurrency": 10,
+      "launch": {
+        "mode": 0,
+        "stage": 31,
+        "level": 9,
+        "stocks": 20,
+        "minutes": 8,
+        "ports": [
+          {
+            "device": "keyboard",
+            "character": "alanturing",
+            "target": "mario",
+            "fighter": 8,
+            "color": 0,
+            "custom": true
+          },
+          {
+            "device": "cpu",
+            "character": "vanilla:2",
+            "fighter": 2,
+            "color": 0,
+            "custom": false
+          },
+          {
+            "device": "off",
+            "character": "vanilla:9",
+            "fighter": 9,
+            "color": 0,
+            "custom": false
+          },
+          {
+            "device": "off",
+            "character": "vanilla:12",
+            "fighter": 12,
+            "color": 0,
+            "custom": false
+          }
+        ],
+        "costumes": [
+          {
+            "character": "alanturing",
+            "target": "mario",
+            "fighter": 8,
+            "color": 0,
+            "filename": "PlMrNr.dat"
+          }
+        ],
+        "packedPorts": [
+          264,
+          258,
+          777,
+          780
+        ]
+      },
+      "receivedAt": 1789496419944
+    },
+    {
+      "type": "session",
+      "backend": "melee-pc-upstream",
+      "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36",
+      "hardwareConcurrency": 10,
+      "launch": {
+        "mode": 0,
+        "stage": 31,
+        "level": 9,
+        "stocks": 20,
+        "minutes": 8,
+        "ports": [
+          {
+            "device": "keyboard",
+            "character": "alanturing",
+            "target": "mario",
+            "fighter": 8,
+            "color": 0,
+            "custom": true
+          },
+          {
+            "device": "cpu",
+            "character": "vanilla:2",
+            "fighter": 2,
+            "color": 0,
+            "custom": false
+          },
+          {
+            "device": "off",
+            "character": "vanilla:9",
+            "fighter": 9,
+            "color": 0,
+            "custom": false
+          },
+          {
+            "device": "off",
+            "character": "vanilla:12",
+            "fighter": 12,
+            "color": 0,
+            "custom": false
+          }
+        ],
+        "costumes": [
+          {
+            "character": "alanturing",
+            "target": "mario",
+            "fighter": 8,
+            "color": 0,
+            "filename": "PlMrNr.dat"
+          }
+        ],
+        "packedPorts": [
+          264,
+          258,
+          777,
+          780
+        ]
+      },
+      "receivedAt": 1789496514885
+    }
+  ]
+}

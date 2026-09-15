@@ -1,3 +1,4 @@
+import {MeleeFrameWorker} from './melee-frame-worker.ts';
 import {meleePath} from './paths.ts';
 /** One initialized engine waits at the game boundary while the roster is open. */
 type Session={worker:Worker;audio:SharedArrayBuffer;ready:Promise<void>;verified:Promise<void>;readyAt:number;cancel:()=>void};
@@ -64,8 +65,9 @@ const sessions=new WeakMap<Worker,Session>();
 export function warmMelee(){
  if(standby||!crossOriginIsolated||typeof SharedArrayBuffer==='undefined'||(usesLocalDisc()&&!localDisc))return;
  const disc=localDisc;
- const direct=new URLSearchParams(location.search).get('engine')==='direct-c';
- const worker=new Worker(meleePath(direct?'/engine/direct-c/worker.mjs':'/engine/engine-worker.js'),direct?{type:'module'}:{}),audio=new SharedArrayBuffer(16+(direct?32768:8192)*2*4);
+ const engine=new URLSearchParams(location.search).get('engine')||'upstream';
+ const upstream=engine==='upstream',direct=upstream||engine==='direct-c';
+ const worker=(upstream?new MeleeFrameWorker(meleePath('/engine/upstream/runtime.html')):new Worker(meleePath(direct?'/engine/direct-c/worker.mjs':'/engine/engine-worker.js'),direct?{type:'module'}:{})) as Worker,audio=new SharedArrayBuffer(16+(direct?32768:8192)*2*4);
  let resolve!:()=>void,reject!:(reason:Error)=>void;
  let verify!:()=>void,rejectVerify!:(reason:Error)=>void;
  const verified=new Promise<void>((ok,fail)=>{verify=ok;rejectVerify=fail;});

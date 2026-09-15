@@ -33,17 +33,25 @@ const fs=require('node:fs'),path=require('node:path');
   const complete=new Promise(resolve=>cdp.once('Tracing.tracingComplete',resolve));await cdp.send('Tracing.end');const {stream}=await complete;let trace='';
   for(;;){const part=await cdp.send('IO.read',{handle:stream});trace+=part.data;if(part.eof)break;}
   fs.writeFileSync(path.join(output,'trace.json'),trace);
-  fs.copyFileSync(path.join(process.env.MELEE_BROWSER_BUILD||'build/moderngekko-wasm','opensmash-web.js.symbols'),path.join(output,'opensmash-web.js.symbols'));
+  const symbols=path.join(process.env.MELEE_BROWSER_BUILD||'build/moderngekko-wasm','opensmash-web.js.symbols');
+  if(fs.existsSync(symbols))fs.copyFileSync(symbols,path.join(output,'opensmash-web.js.symbols'));
   const worker=page.workers().find(w=>w.url().includes('engine-worker'));
   try{fs.writeFileSync(path.join(output,'phases.csv'),await worker.evaluate(()=>engine.FS.readFile('/tmp/frame-phases.csv',{encoding:'utf8'})));}catch{}
  };
  await page.exposeFunction('recordMeleeEvent',data=>{events.push({...data,receivedAt:Date.now()});if(data.type==='combat-performance')console.log(JSON.stringify(data));});
  await page.addInitScript(({players,lineup,stage,stockCharacters})=>{
+  if(window.parent!==window)return;
   window.testAudioContexts=[];window.testMeleeError='';window.testPresentedFrames=0;
   const AudioBase=window.AudioContext;
   window.AudioContext=class extends AudioBase {constructor(...args){super(...args);window.testAudioContexts.push(this);}};
+  const record=data=>{if(data.type==='frame')window.testPresentedFrames++;if(data.type==='error')window.testMeleeError=data.message;if(!['frame','metrics','pad'].includes(data.type))window.recordMeleeEvent(data);};
   const WorkerBase=window.Worker;
-  window.Worker=class extends WorkerBase {constructor(...args){super(...args);this.addEventListener('message',({data})=>{if(data.type==='frame')window.testPresentedFrames++;if(data.type==='error')window.testMeleeError=data.message;if(!['frame','metrics','pad'].includes(data.type))window.recordMeleeEvent(data);});}};
+  window.Worker=class extends WorkerBase {constructor(...args){super(...args);this.addEventListener('message',({data})=>record(data));}};
+  window.addEventListener('message',event=>{
+   if(event.origin!==location.origin)return;
+   const engine=Array.from(document.querySelectorAll('iframe')).find(frame=>frame.contentWindow===event.source&&new URL(frame.src).pathname.endsWith('/engine/upstream/runtime.html'));
+   if(engine)record(event.data);
+  });
   const launch={mode:0,stage,level:9,stocks:20,minutes:8,ports:[{device:'keyboard',character:lineup==='all-stock'?'vanilla:8':'selected',target:'mario'},{device:'cpu',character:lineup==='custom'?'donaldtrump':'vanilla:2'}, {device:players===4?'cpu':'off',target:!['stock','all-stock'].includes(lineup)?'captain-falcon':'auto',character:lineup==='all-stock'?'vanilla:0':lineup!=='stock'?'abrahamlincoln':'vanilla:9'},{device:players===4?'cpu':'off',target:!['stock','all-stock'].includes(lineup)?'link':'auto',character:lineup==='all-stock'?'vanilla:6':lineup!=='stock'?'barackobama':'vanilla:12'}]};
   if(lineup==='all-stock')launch.ports.forEach((port,index)=>{port.character='vanilla:'+stockCharacters[index];});
   localStorage.setItem('melee-launch-v1',JSON.stringify(launch));
@@ -81,8 +89,26 @@ const fs=require('node:fs'),path=require('node:path');
    const windows=events.filter(e=>e.type==='combat-performance');
    if(!captured&&await page.locator('.fps').textContent()) {captured=true;await page.getByRole('button',{name:'Enable sound',exact:true}).click();await page.screenshot({path:path.join(output,'first-playable.png')});}
    if(!captured)await page.getByRole('button',{name:'Confirm · A',exact:true}).click();
-   if(cdp&&!tracing&&(captured||events.some(e=>e.type==='log'&&/combat started|launch mode=/.test(e.text||'')))){tracing=true;await cdp.send('Tracing.start',{categories:'v8,disabled-by-default-v8.cpu_profiler',transferMode:'ReturnAsStream'});}
-   if(cdp?windows.length>=1:measuredWindows?windows.length>=measuredWindows:windows.length>=3&&windows.slice(-3).every(passes))break;
+   if(captured&&process.env.MELEE_INPUT_ONLY){
+    const engine=page.frames().find(frame=>frame.url().includes('/engine/upstream/runtime.html'));
+    if(!engine)throw Error('Upstream iframe was not found for keyboard validation');
+    for(const [key,index,mask] of [['d',5,0],['j',3,256]]){
+     await page.keyboard.down(key);
+     try{await engine.waitForFunction(({index,mask})=>{
+      const p=Module._direct_input_snapshot()/4,value=HEAPF32[p+index];
+      return mask?(value&mask)!==0:value>0;
+     },{index,mask},{timeout:5000});}finally{await page.keyboard.up(key);}
+     await engine.waitForFunction(({index,mask})=>{
+      const p=Module._direct_input_snapshot()/4,value=HEAPF32[p+index];
+      return mask?(value&mask)===0:value===0;
+     },{index,mask},{timeout:5000});
+    }
+    events.push({type:'input-validation',keyboardStick:true,keyboardAttack:true,release:true});
+    if(errors.length)throw Error(errors.join('\n'));
+    console.log('Default launcher keyboard → iframe → native controller checks passed.');return;
+   }
+   if(cdp&&!tracing&&(captured||events.some(e=>e.type==='log'&&/combat started|launch mode=/.test(e.text||'')))){tracing=true;await cdp.send('Tracing.start',{categories:'v8,devtools.timeline,disabled-by-default-v8.cpu_profiler',transferMode:'ReturnAsStream'});}
+   if(cdp?windows.length>=(measuredWindows||1):measuredWindows?windows.length>=measuredWindows:windows.length>=3&&windows.slice(-3).every(passes))break;
   }
   await page.screenshot({path:path.join(output,'combat.png')});
   // Capture portable render-state descriptions after timing, before replay
