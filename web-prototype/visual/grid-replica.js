@@ -519,6 +519,55 @@ if ('ResizeObserver' in window) {
   window.addEventListener('resize', () => advancedFrameCells.forEach(paintAdvancedFrame));
 }
 
+// A half-height row above the roster, using the same native pixel scale.
+const GAME_ROW_HEIGHT = 26;
+const gameCell = document.getElementById('game-switch-row');
+// Reuse Search's grain at its original scale, trimming the baked tile edges
+// so a wide toggle does not acquire extra vertical seams between repeats.
+const gameStaticImage = new Image();
+gameStaticImage.addEventListener('load', () => {
+  const texture = document.createElement('canvas');
+  texture.width = 82 * 8;
+  texture.height = 78;
+  const context = texture.getContext('2d');
+  for (let frame = 0; frame < 8; frame++) {
+    context.drawImage(gameStaticImage, frame * 90 + 4, 4, 82, 78, frame * 82, 0, 82, 78);
+  }
+  gameCell.style.setProperty('--game-static-texture', `url("${texture.toDataURL()}")`);
+}, { once: true });
+gameStaticImage.src = searchStaticUrl;
+const gameOptions = ['ssb64', 'melee'].map(experience => {
+  const option = document.createElement('button');
+  option.type = 'button';
+  option.className = 'replica-game-option';
+  option.dataset.experience = experience;
+  const caption = document.createElement('span');
+  caption.className = 'replica-caption-layer replica-game-name';
+  caption.dataset.cut = 'regular';
+  caption.setAttribute('aria-hidden', 'true');
+  option.append(caption);
+  option.addEventListener('click', () => APP_BRIDGE?.switchExperience?.(experience));
+  gameCell.append(option);
+  return option;
+});
+let currentExperience = APP_BRIDGE?.experience || 'ssb64';
+function syncExperience(experience) {
+  currentExperience = experience;
+  gameOptions.forEach(option => {
+    const selected = option.dataset.experience === experience;
+    const gameName = option.dataset.experience === 'ssb64' ? 'Smash 64' : 'Melee';
+    const label = selected ? gameName : `Play ${gameName}`;
+    option.setAttribute('aria-pressed', String(selected));
+    option.setAttribute('aria-label', label);
+    option.querySelector('.replica-game-name').textContent = label.toUpperCase();
+  });
+}
+syncExperience(currentExperience);
+const gameRule = document.createElement('canvas');
+gameRule.className = 'replica-game-rule';
+gameRule.setAttribute('aria-hidden', 'true');
+gameCell.append(gameRule);
+
 CELL_IDS.forEach((id, index) => {
   const isSearch = index === 0;
   const isCreate = index === 1;
@@ -578,7 +627,7 @@ CELL_IDS.forEach((id, index) => {
 });
 
 const actionCells = [...cells.values()].filter(button =>
-  button.dataset.kind === 'search' || button.dataset.kind === 'create'
+  ['search', 'create'].includes(button.dataset.kind)
 );
 const ruleCanvas = document.createElement('canvas');
 ruleCanvas.className = 'replica-rule-layer';
@@ -767,6 +816,12 @@ function applyGridLayout(columns = columnsForContainer(), force = false) {
   arenaShell.style.setProperty(
     '--shared-rule-overlap', `${100 * RULE / width}%`
   );
+  gameCell.style.aspectRatio = `${width} / ${GAME_ROW_HEIGHT}`;
+  gameCell.style.setProperty('--game-rule-width', `${100 * RULE / width}%`);
+  syncExperience(currentExperience);
+  if (gameRule.width !== width) {
+    paintPixels(gameRule, renderSharedPanelRules(width, GAME_ROW_HEIGHT, 2, 1), width, GAME_ROW_HEIGHT);
+  }
   // Filtering compacts the visible tiles, but keep the roster's original page
   // footprint so a focused search field does not trigger scroll anchoring.
   // Apply the percentage reserve before contracting the surface so sparse
@@ -1361,6 +1416,7 @@ window.characterGrid = Object.freeze({
   clearPicks,
   syncCharacters,
   syncJobs,
+  syncExperience,
   filter: filterRoster,
   randomize
 });

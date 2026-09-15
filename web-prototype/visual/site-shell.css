@@ -307,6 +307,7 @@
   .replica-cell:focus-visible { outline: none; }
   .replica-cell.is-search,
   .replica-cell.is-create,
+  .is-game-switch,
   .fighter-job-cell {
     background:
       radial-gradient(circle at 16% 23%, rgba(255,255,255,.05) 0 1px, transparent 1px),
@@ -315,6 +316,83 @@
     background-size: 9px 11px, 13px 15px, 100% 100%;
   }
   .replica-cell.is-search { cursor: text; }
+  .is-game-switch {
+    position: relative;
+    z-index: 3;
+    container-type: size;
+    width: 100%;
+    aspect-ratio: 378 / 26;
+    margin-top: calc(-1 * var(--shared-rule-overlap));
+    overflow: hidden;
+  }
+  .is-game-switch::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: .55;
+    background-image: var(--game-static-texture);
+    background-size: calc(328 * 100cqh / 26) calc(39 * 100cqh / 26);
+    animation: game-static-frames calc(8s / 12) steps(8, end) infinite;
+    pointer-events: none;
+  }
+  @keyframes game-static-frames {
+    to { background-position-x: calc(-328 * 100cqh / 26); }
+  }
+  .replica-game-option {
+    position: absolute;
+    top: calc(2 * 100% / 26);
+    left: var(--game-rule-width);
+    z-index: 1;
+    display: block;
+    width: calc(50% - var(--game-rule-width) * 1.5);
+    height: calc(22 * 100% / 26);
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    appearance: none;
+    background: rgba(0, 0, 0, .28);
+    color: #928b72;
+    cursor: pointer;
+  }
+  .replica-game-option[data-experience="melee"] {
+    left: calc(50% + var(--game-rule-width) / 2);
+  }
+  .replica-game-name {
+    position: absolute;
+    top: calc(2 * 100cqh / 26);
+    /* Match the regular Search/Create captions: 4 px left and 2 px top. */
+    left: calc(4 * 100cqh / 26);
+    font-size: calc(10 * 100cqh / 26);
+    white-space: nowrap;
+    opacity: .65;
+    transition: opacity 90ms linear, filter 90ms linear;
+  }
+  .replica-game-option[aria-pressed="true"] {
+    background: rgba(255, 153, 64, .06);
+  }
+  .replica-game-option[aria-pressed="true"] .replica-game-name {
+    opacity: 1;
+    filter: brightness(1.25);
+  }
+  .replica-game-option:hover { background: rgba(255, 128, 44, .16); }
+  .replica-game-option:hover .replica-game-name { opacity: 1; }
+  .replica-game-option:focus-visible { outline: none; }
+  .replica-game-option:focus-visible .replica-game-name {
+    text-decoration: underline;
+    text-underline-offset: .18em;
+  }
+  .replica-game-rule {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .replica-game-name { transition: none; }
+    .is-game-switch::before { animation: none; }
+  }
   /* Private fighters: a small padlock in the bottom-right corner of the tile.
      Generating tiles center it inside their spinner. */
   .replica-private-badge {

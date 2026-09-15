@@ -365,6 +365,15 @@ export default function App() {
     setImmersive(false);
     setIsMelee(/^\/melee(?:\/|$)/.test(window.location.pathname));
   }
+  function switchExperience(experience) {
+    if (experience === (isMelee ? 'melee' : 'ssb64')) return;
+    if (engine && !window.confirm('Leave the current game and switch experiences?')) return;
+    window.history.pushState({}, '', experience === 'melee' ? '/melee' : '/');
+    syncExperience();
+  }
+  useEffect(() => {
+    window.characterGrid?.syncExperience?.(isMelee ? 'melee' : 'ssb64');
+  }, [isMelee]);
   useEffect(() => {
     window.addEventListener('popstate', syncExperience);
     return () => window.removeEventListener('popstate', syncExperience);
@@ -1573,6 +1582,7 @@ export default function App() {
       fighterJobs,
       handlesGameSetup: isMelee||nativeSsb64,
       experience: isMelee ? 'melee' : 'ssb64',
+      switchExperience,
       nativeDiscPicker: isMelee && Boolean(meleeDesktop()),
       announceCharacter(slug) {
         const character = characters.find((candidate) => candidate.slug === slug);
@@ -1620,11 +1630,6 @@ export default function App() {
           <TrailerSetup characters={characters} loading={loadingCharacters || loadingSession}
             onBoot={setTrailerSetup} />
         )}
-        <label className="experience-selector">Experience<select aria-label="Experience" value={isMelee?'melee':'ssb64'} onChange={e=>{
-          if(engine && !window.confirm('Leave the current game and switch experiences?'))return;
-          window.history.pushState({}, '', e.target.value==='melee'?'/melee':'/');
-          syncExperience();
-        }}><option value="ssb64">Smash 64</option><option value="melee">Melee</option></select></label>
         <RetroHome
           engineContent={engine?.experience==='melee'?<Suspense fallback={<p>Loading Melee…</p>}><MeleeExperience key={engine.id} action={engine.action} onClose={()=>setEngine(null)} soundOn={soundOn}/></Suspense>:nativeSsb64&&engine?<Suspense fallback={<p>Loading Smash 64…</p>}><NativeSsb64 key={engine.src} src={engine.src} onClose={()=>setEngine(null)} soundOn={soundOn}/></Suspense>:null}
           aboutOpen={aboutOpen}

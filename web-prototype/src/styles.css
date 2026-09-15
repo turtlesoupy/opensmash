@@ -2090,9 +2090,6 @@ body.retro-home.show-native-cursor * {
 .trailer-setup .og-combobox-search input { font-size: 14px; }
 .trailer-setup .og-combobox-options small { font-size: 11px; }
 
-.experience-selector {position:fixed;top:12px;left:12px;z-index:50;background:#151515;color:#fff;padding:8px 12px;border:1px solid #777;border-radius:8px}
-.experience-selector select {color:inherit;background:inherit;margin-left:8px}
-
 .native-engine-status {display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100%;padding:24px;gap:16px;text-align:center;color:white;background:#111}
 
 /* Native and WASM adapters share the same game surface, including before a lazy engine loads. */
