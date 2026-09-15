@@ -1,3 +1,4 @@
+import {unlockAudio} from './audio.ts';
 import {MeleeFrameWorker} from './melee-frame-worker.ts';
 import {meleePath} from './paths.ts';
 /** One initialized engine waits at the game boundary while the roster is open. */
@@ -39,6 +40,9 @@ export function clearLocalDisc(){
 // The old upload/extraction path is a loopback-only comparison tool.
 export const usesLocalDisc=()=>!(['localhost','127.0.0.1','[::1]'].includes(location.hostname)&&new URLSearchParams(location.search).get('disc')==='server');
 export async function selectLocalDisc(file:File){
+ // Opening the audio device can block on some hosts. Do it during disc setup,
+ // before gameplay, and reuse the context when the match connects its ring.
+ void unlockAudio().catch(()=>{});
  standby?.cancel();standby?.worker.terminate();standby=undefined;
  localDisc=file;
  updateDisc({state:'checking',ready:false,message:'Checking your local disc…'});

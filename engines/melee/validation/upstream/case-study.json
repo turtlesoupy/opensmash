@@ -1,0 +1,127 @@
+{
+  "date": "2026-09-15",
+  "scope": "Ichiro/Roy, Donald Trump/Falco, Michelangelo/Link on Brinstar Depths (stage 15); targeted case study, not a full compatibility suite",
+  "wasmSha256": "8632a4fd1ac1c1208ba3b7eb409d65d66e75b099767943e1673d77823918a07c",
+  "audio": "Normal Chrome audio output; no --disable-audio-output flag. Underrun counters and rendered sample clock checked.",
+  "measurements": {
+    "ichiro-before": {
+      "profilingAndStartupScreenshots": true,
+      "events": [
+        {
+          "type": "startup-performance",
+          "clickToMatchMs": 5453,
+          "receivedAt": 1789498840474
+        },
+        {
+          "type": "combat-performance",
+          "profile": "upstream",
+          "durationMs": 30019.245000123978,
+          "frames": 1769,
+          "combatFrames": 1770,
+          "fps": 58.92886380029525,
+          "presentedBitmapFps": 58.92886380029525,
+          "p95": 19.299999952316284,
+          "p99": 22.365000009536743,
+          "maxFrameMs": 270.7999999523163,
+          "over33ms": 5,
+          "audioPeak": 1,
+          "audioUnderrunSamples": 0,
+          "audioRenderedSamples": 1440768,
+          "audioOverrunSamples": 0,
+          "targetFps": 60,
+          "receivedAt": 1789498870476
+        }
+      ],
+      "errors": []
+    },
+    "ichiro-after-2": {
+      "profilingAndStartupScreenshots": true,
+      "events": [
+        {
+          "type": "startup-performance",
+          "clickToMatchMs": 4495,
+          "receivedAt": 1789499437006
+        },
+        {
+          "type": "combat-performance",
+          "profile": "upstream",
+          "durationMs": 30016.349999904633,
+          "frames": 1791,
+          "combatFrames": 1792,
+          "fps": 59.667481222923186,
+          "presentedBitmapFps": 59.667481222923186,
+          "p95": 17.984999895095825,
+          "p99": 18.700000047683716,
+          "maxFrameMs": 130.76500010490417,
+          "over33ms": 2,
+          "audioPeak": 1,
+          "audioUnderrunSamples": 0,
+          "audioRenderedSamples": 1440768,
+          "audioOverrunSamples": 0,
+          "targetFps": 60,
+          "receivedAt": 1789499467003
+        }
+      ],
+      "errors": []
+    },
+    "ichiro-final": {
+      "profilingAndStartupScreenshots": false,
+      "events": [
+        {
+          "type": "startup-performance",
+          "clickToMatchMs": 4191,
+          "receivedAt": 1789499552186
+        },
+        {
+          "type": "combat-performance",
+          "profile": "upstream",
+          "durationMs": 30014.21999979019,
+          "frames": 1794,
+          "combatFrames": 1795,
+          "fps": 59.771668229677154,
+          "presentedBitmapFps": 59.771668229677154,
+          "p95": 19.864999771118164,
+          "p99": 23.645000219345093,
+          "maxFrameMs": 76.61999988555908,
+          "over33ms": 4,
+          "audioPeak": 1,
+          "audioUnderrunSamples": 0,
+          "audioRenderedSamples": 1440768,
+          "audioOverrunSamples": 0,
+          "targetFps": 60,
+          "receivedAt": 1789499582182
+        }
+      ],
+      "errors": []
+    },
+    "ichiro-input": {
+      "profilingAndStartupScreenshots": false,
+      "events": [
+        {
+          "type": "startup-performance",
+          "clickToMatchMs": 4131,
+          "receivedAt": 1789499780979
+        },
+        {
+          "type": "input-validation",
+          "keyboardStick": true,
+          "keyboardAttack": true,
+          "release": true
+        }
+      ],
+      "errors": []
+    }
+  },
+  "visuals": {
+    "before": "build/ichiro-before/startup-2.png",
+    "originalPortSameAssets": "build/ichiro-original/startup-4.png",
+    "after": "build/ichiro-after-2/startup-2.png",
+    "finding": "Same facial blockiness with 256px CMPR assets in both renderers. Full-quality 512px RGBA8 assets remove visible blockiness around eyes, cheeks and beard."
+  },
+  "limits": [
+    "Fresh Chrome profiles; OS and GPU caches were not purged.",
+    "Profiled runs are comparable to each other; final unprofiled run has lower observer overhead.",
+    "Occasional short hitches remain (76.62 ms maximum in final 30-second run); this is not a guarantee of zero stalls on every stage.",
+    "Original port run overlaps a compilation job and is used only for visual comparison."
+  ]
+}

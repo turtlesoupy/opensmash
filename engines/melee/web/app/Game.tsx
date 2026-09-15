@@ -56,8 +56,10 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true}:{fig
     launchPlan.packedPorts=launchPlan.packedPorts.map((p:number,i:number)=>i<2?(p&~0xff00)|256:p);
     launchPlan.stocks=20;
    }
+   // The upstream browser heap supports full-quality archives for multiplayer.
+   const compactCostumes=launchPlan.costumes.length>=3&&(new URLSearchParams(location.search).get('engine')||'upstream')!=='upstream';
    const costumes=await Promise.all(launchPlan.costumes.map(async (entry:any)=>{
-    const response=await meleeFetch('/api/prepare/'+encodeURIComponent(entry.character)+'?target='+encodeURIComponent(entry.target)+'&color='+entry.color+(skin==='host'?'&skin=host'+(launchPlan.costumes.length>=3?'&compact=1':''):''),{method:'POST',signal:abort.signal});
+    const response=await meleeFetch('/api/prepare/'+encodeURIComponent(entry.character)+'?target='+encodeURIComponent(entry.target)+'&color='+entry.color+(skin==='host'?'&skin=host'+(compactCostumes?'&compact=1':''):''),{method:'POST',signal:abort.signal});
     const costume=await response.json();if(!response.ok)throw Error(costume.error||'The character could not be prepared.');
     const asset=await meleeFetch(costume.url,{signal:abort.signal});if(!asset.ok)throw Error('The costume could not load.');
     return {filename:costume.filename,blob:await asset.blob()};
