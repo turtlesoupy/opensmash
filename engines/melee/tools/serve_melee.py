@@ -37,7 +37,9 @@ KINDS = {slug:(row['fighter'],row['code']) for slug,row in BY_SLUG.items()}
 LOCK = threading.Lock()
 # Serialize writes to one character/moveset cache, while allowing independent
 # characters to prepare together. Duplicate requests must not consume slots.
-PREPARATION_SLOTS = threading.BoundedSemaphore(4)
+# Each conversion holds several hundred MB of numpy state; the hosted 2 GiB
+# container was OOM-killed with four in flight next to Node.
+PREPARATION_SLOTS = threading.BoundedSemaphore(int(os.environ.get('MELEE_PREPARATION_SLOTS', '2')))
 PREPARATION_LOCKS = {}
 
 

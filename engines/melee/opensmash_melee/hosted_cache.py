@@ -1,5 +1,6 @@
 """Lazy conversion/source caches shared by ordinary website instances."""
-import hashlib,json,threading,time
+import hashlib,json,os,shutil,threading,time
+from pathlib import Path
 from contextlib import nullcontext
 from concurrent.futures import ThreadPoolExecutor
 from urllib.parse import urlsplit,unquote,parse_qs
@@ -10,13 +11,42 @@ class ServiceCache:
     def __init__(self,base,store,manifest,version):
         self.base=base;self.store=store;self.manifest=manifest
         self.prefix='melee/cache/'+version+'/';self.loaded=set();self.locks={};self.lock=threading.Lock()
-    def restore(self,key):
-        if key in self.loaded:return True
+        # The hosted workspace lives in Cloud Run's in-memory /tmp. Every distinct
+        # fighter leaves ~20 MB of sources and ~4 MB of outputs behind, which
+        # grew until the 2 GiB container was OOM-killed. Keep an LRU budget.
+        self.budget=int(os.environ.get('MELEE_WORKSPACE_BUDGET_MB','512'))*1024*1024
+        self.entries={} # key -> {'dirs':[Path],'bytes':int,'used':float}
+    def touch(self,key,dirs=None):
+        entry=self.entries.get(key)
+        if entry is None:
+            if not dirs:return
+            entry=self.entries[key]={'dirs':[Path(d) for d in dirs],'bytes':0}
+            entry['bytes']=sum(f.stat().st_size for d in entry['dirs'] if d.exists() for f in d.rglob('*') if f.is_file())
+        entry['used']=time.time()
+    def evict(self):
+        with self.lock:
+            total=sum(e['bytes'] for e in self.entries.values())
+            if total<=self.budget:return
+            now=time.time()
+            for key,entry in sorted(self.entries.items(),key=lambda item:item[1]['used']):
+                if total<=self.budget:break
+                if now-entry['used']<120:continue # likely in use by a live request
+                for d in entry['dirs']:
+                    if d.is_dir():shutil.rmtree(d,ignore_errors=True)
+                    elif d.exists():d.unlink(missing_ok=True)
+                total-=entry['bytes'];self.entries.pop(key,None);self.loaded.discard(key)
+    def restore(self,key,dirs=None):
+        if key in self.loaded:self.touch(key,dirs);return True
         raw=self.store.get(key)
         if raw is None:return False
-        unpack(raw,self.base.ROOT);self.loaded.add(key);return True
+        unpack(raw,self.base.ROOT);self.loaded.add(key);self.touch(key,dirs or self.archive_dirs(raw));return True
+    def archive_dirs(self,raw):
+        import io,tarfile
+        with tarfile.open(fileobj=io.BytesIO(raw),mode='r:gz') as archive:
+            tops={Path(self.base.ROOT).joinpath(*Path(m.name).parts[:3]) for m in archive if m.isfile()}
+        return sorted(tops)
     def save(self,key,paths):
-        self.store.put(key,pack(self.base.ROOT,paths));self.loaded.add(key)
+        self.store.put(key,pack(self.base.ROOT,paths));self.loaded.add(key);self.touch(key,[Path(self.base.ROOT)/p for p in paths])
     def source(self,slug):
         row=self.base.CATALOG.get(slug)
         if row and row.get('imported'):
@@ -27,6 +57,7 @@ class ServiceCache:
             raw=self.store.get(entry['key'])
             if raw is None or hashlib.sha256(raw).hexdigest()!=entry['sha256']:raise ValueError('Character source is unavailable: '+slug)
             unpack(raw,self.base.CHARACTERS/slug);self.loaded.add(entry['key'])
+        self.touch(entry['key'],[self.base.CHARACTERS/slug])
     def ident(self,slug,target=None):
         row=self.base.CATALOG[slug]
         return cache_id(slug,target or row['target'],row.get('original_target',row['target']))
@@ -95,6 +126,8 @@ class ServiceCache:
                 ident=self.ident(slug,entry.get('target'))
                 self.restore(self.prefix+'sources/'+ident+'.tar.gz')
     def response(self,request,value,status):
+        try:self.evict()
+        except Exception:pass
         if status>=300 or not isinstance(value,dict) or getattr(request,'cached_value',None):return
         route=urlsplit(request.path).path
         if route.startswith('/api/prepare/'):
