@@ -32,7 +32,12 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true,chrom
     for(let port=0;port<4;port++){
     const device=launchPlan?.ports[port]?.device;
     if(device==='off'||device==='cpu') {worker.postMessage({type:'pad',values:[port,0,0x80808080,0,0]});continue;}
-    const held=(action:Action)=>!blocked&&device==='keyboard'&&keys.has(kb[action]);
+    // A port assigned to a gamepad the browser does not currently expose
+    // (Chrome hides pads until a button press) would otherwise be dead. Let
+    // the keyboard drive it when no port is bound to the keyboard.
+    const padPresent=device?.startsWith('gamepad')&&rawGamepads().some(p=>p?.index===Number(device.slice(7)));
+    const keyboardHere=device==='keyboard'||(device?.startsWith('gamepad')&&!padPresent&&!launchPlan?.ports.some((p:any)=>p?.device==='keyboard'));
+    const held=(action:Action)=>!blocked&&keyboardHere&&keys.has(kb[action]);
     let buttons=0;for(const [action,bit] of Object.entries(bits))if(held(action as Action))buttons|=bit;
     let x=128+((held('right')?1:0)-(held('left')?1:0))*100;
     let y=128+((held('up')?1:0)-(held('down')?1:0))*100;
@@ -46,7 +51,7 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true,chrom
     }
     const mobile=port===0&&!blocked?touch.current:null;
     if(mobile){buttons|=mobile.buttons;if(mobile.main){x=128+mobile.x;y=128+mobile.y;}if(mobile.c){cx=128+mobile.cx;cy=128+mobile.cy;}if(mobile.buttons&0x40)l=255;if(mobile.buttons&0x20)r=255;}
-    worker.postMessage({type:'pad',values:[port,buttons,(x|(y<<8)|(cx<<16)|(cy<<24))>>>0,l|(r<<8),device==='keyboard'||!!pad||!!mobile?.active?1:0]});
+    worker.postMessage({type:'pad',values:[port,buttons,(x|(y<<8)|(cx<<16)|(cy<<24))>>>0,l|(r<<8),keyboardHere||!!pad||!!mobile?.active?1:0]});
     }
    }if(schedule)raf=requestAnimationFrame(()=>send());
   };

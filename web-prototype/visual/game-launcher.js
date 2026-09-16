@@ -2141,6 +2141,10 @@ function renderFlow(now) {
 }
 
 function beginModelExit(completion) {
+  // Without a live model there is no departure animation to wait for. Finishing
+  // synchronously keeps the overlay from lingering as an open modal dialog,
+  // which would swallow every keypress meant for the game.
+  if (!activeModel || !activeModel.visible) { completion(); return; }
   beginPhysicalDeparture(1, completion);
 }
 
@@ -2756,22 +2760,37 @@ function continueToGame() {
   overlay.dataset.step = 'closing';
   completeControlsRoadblock();
   launch(fighter);
-  beginModelExit(() => {
-    if (sequence !== flowSequence || overlay.hidden) return;
+  let finished = false;
+  const finish = () => {
+    if (finished || sequence !== flowSequence || overlay.hidden) return;
+    finished = true;
     overlay.classList.add('is-leaving');
     flowTimer = window.setTimeout(
       () => finishClosingFlow(sequence, false), FLOW_FADE_MS
     );
-  });
+  };
+  beginModelExit(finish);
+  // Safety net: the departure animation depends on the hardware render loop,
+  // which can stall or be skipped. The game must never stay input-blocked.
+  window.setTimeout(finish, 4000);
 }
 
 let restoreLaunchSequence=0;
 async function requestLaunch(fighter) {
   const sequence=++restoreLaunchSequence;
   if (APP_BRIDGE?.experience === 'melee') {
-    const ready=hasVerifiedRom()||await APP_BRIDGE?.restoreDisc?.();
-    if(sequence!==restoreLaunchSequence||APP_BRIDGE?.experience!=='melee')return;
-    if (!ready) showLaunchFlow(fighter);
+    let ready=hasVerifiedRom();
+    if (!ready) {
+      // Restoring the saved disc can take seconds on a cold page. Show the
+      // disc step with a status right away instead of a silent click.
+      showLaunchFlow(fighter);
+      if (uploadButton) { uploadButton.disabled = true; uploadButton.textContent = 'Checking your saved disc…'; }
+      ready = await APP_BRIDGE?.restoreDisc?.();
+      if(sequence!==restoreLaunchSequence||APP_BRIDGE?.experience!=='melee')return;
+      if (uploadButton) { uploadButton.disabled = false; uploadButton.textContent = 'Choose disc'; }
+      if (ready) closeLaunchFlow(true);
+    }
+    if (!ready) { if (overlay?.hidden) showLaunchFlow(fighter); }
     else if (requiresControllerTutorial()) showRequiredControls(fighter);
     else launch(fighter);
     return;
