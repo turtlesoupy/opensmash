@@ -24,6 +24,14 @@ CHARACTERS = Path(os.environ.get('OPENSMASH_CHARACTER_ROOT', ROOT.parents[1] / '
 SYS = ROOT / 'build/browser-engine/moderngekko-web/vendor/dolphin/Data/Sys'
 WEB = ROOT / 'runtime/web'
 BUILD = Path(os.environ.get('MELEE_BROWSER_BUILD', ROOT / 'build/moderngekko-wasm')).expanduser().resolve()
+# Hosted deployments address engine files under /engine/v/<build>/ so browsers
+# and the CDN can cache them forever; the id is the published input manifest's
+# hash, which changes whenever the runtime or templates change.
+_manifest_key = os.environ.get('MELEE_INPUT_MANIFEST', '')
+_manifest_hash = re.search(r'([a-f0-9]{64})\.json$', _manifest_key)
+BUILD_VERSION = _manifest_hash.group(1)[:16] if _manifest_hash else ''
+IMMUTABLE_CACHE = 'public, max-age=31536000, immutable'
+ENGINE_CACHE = 'public, max-age=3600'
 CATALOG = {r['slug']: r for r in json.loads((ROOT / 'web/public/catalog.json').read_text())}
 from opensmash_melee.targets import PLAYABLE, BY_SLUG, cache_id
 KINDS = {slug:(row['fighter'],row['code']) for slug,row in BY_SLUG.items()}
@@ -157,6 +165,16 @@ class Handler(BaseHTTPRequestHandler):
 
     def get_resource(self):
         route = unquote(urlsplit(self.path).path)
+        versioned = re.fullmatch(r'/engine/v/([a-f0-9]{16})/(.+)', route)
+        if versioned:
+            if not BUILD_VERSION or versioned.group(1) != BUILD_VERSION:
+                return self.send_error(404)
+            route = '/engine/' + versioned.group(2)
+            self.asset_cache_control = IMMUTABLE_CACHE
+        elif BUILD_VERSION and route.startswith('/engine/'):
+            # Same bytes, unversioned address (e.g. the upstream runtime's own
+            # relative fetches): cache briefly, a publish + deploy rotates them.
+            self.asset_cache_control = ENGINE_CACHE
         try:
             if route == '/api/native/status' and NATIVE:
                 return self.json(NATIVE.status())

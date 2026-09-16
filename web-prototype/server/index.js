@@ -784,8 +784,12 @@ async function serveAppShell(req, res) {
   // If roster discovery fails, omit the seed and let the client fall back to
   // the no-store API instead of caching an authoritative empty roster.
   let initialState = {};
+  // Hosted Melee engine files are served under /melee/engine/v/<build>/ so
+  // they can be cached forever; the client reads the id from here.
+  const meleeManifest = /([a-f0-9]{64})\.json$/.exec(process.env.MELEE_INPUT_MANIFEST || "");
+  if (process.env.MELEE_EMBEDDED === "1" && meleeManifest) initialState.meleeBuild = meleeManifest[1].slice(0, 16);
   try {
-    initialState = { characters: await configuredCharacters("", null) };
+    initialState = { ...initialState, characters: await configuredCharacters("", null) };
   } catch (error) {
     console.warn(`Could not embed the public character roster: ${error.message}`);
   }

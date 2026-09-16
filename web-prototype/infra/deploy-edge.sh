@@ -85,6 +85,15 @@ upsert_cache_rule "OpenSmash public engine assets" \
 # Vite's hashed app bundle. JS and CSS fall under Cloudflare's default
 # extension list, but the title-screen .glb models (8 MB per visitor) do not,
 # so without this rule every page view pulled them from Cloud Run.
+# Hosted Melee engine files: the origin serves /melee/engine/v/<build>/... as
+# immutable and unversioned /melee/engine/... with a one-hour TTL; neither
+# .wasm nor .mjs is on Cloudflare's default extension list, so make the route
+# cache-eligible and respect those headers (the API keeps /melee/api/ no-store).
+echo "==> Enabling origin-controlled caching for hosted Melee engine files"
+upsert_cache_rule "OpenSmash Melee engine assets" \
+  "(http.host in {\"${DOMAIN}\" \"www.${DOMAIN}\"} and http.request.method in {\"GET\" \"HEAD\"} and starts_with(http.request.uri.path, \"/melee/engine/\"))" \
+  '{"cache":true,"edge_ttl":{"mode":"respect_origin"},"browser_ttl":{"mode":"respect_origin"}}'
+
 echo "==> Enabling edge caching for the hashed app assets"
 upsert_cache_rule "OpenSmash app assets" \
   "(http.host in {\"${DOMAIN}\" \"www.${DOMAIN}\"} and http.request.method in {\"GET\" \"HEAD\"} and starts_with(http.request.uri.path, \"/app-assets/\"))" \

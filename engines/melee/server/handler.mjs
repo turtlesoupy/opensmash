@@ -25,6 +25,10 @@ export function createMeleeHandler({origin=process.env.MELEE_LOCAL_ORIGIN,produc
       res.writeHead(503,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(body);return true;
     }
     if(hosted&&!allowedHostedRoute(req.method,url.pathname.slice('/melee'.length))){res.writeHead(404);res.end();return true;}
+    // Engine runtime files are public and content-addressed: let the origin's
+    // cache policy through and never attach a per-visitor cookie to them, or
+    // neither browsers nor the CDN could cache them.
+    const cacheable=['GET','HEAD'].includes(req.method)&&url.pathname.startsWith('/melee/engine/');
     const headers={...req.headers,host:upstream.host};
     // The browser is talking to this same-origin development server. Never
     // forward website credentials into the local game service.
@@ -39,14 +43,14 @@ export function createMeleeHandler({origin=process.env.MELEE_LOCAL_ORIGIN,produc
         const cookie=(req.headers.cookie||'').match(/(?:^|;\s*)opensmash-melee-client=([a-f0-9]{48})\.([a-f0-9]{64})(?:;|$)/);
         const sign=value=>createHmac('sha256',serviceToken).update(value).digest('hex');
         let guest=cookie&&timingSafeEqual(Buffer.from(cookie[2],'hex'),Buffer.from(sign(cookie[1]),'hex'))?cookie[1]:null;
-        if(!guest){guest=randomBytes(24).toString('hex');res.setHeader('Set-Cookie',`opensmash-melee-client=${guest}.${sign(guest)}; Path=/melee; HttpOnly; SameSite=Lax${production?'; Secure':''}`);}
+        if(!guest){guest=randomBytes(24).toString('hex');if(!cacheable)res.setHeader('Set-Cookie',`opensmash-melee-client=${guest}.${sign(guest)}; Path=/melee; HttpOnly; SameSite=Lax${production?'; Secure':''}`);}
         identity='guest:'+guest;
       }
       headers['x-opensmash-token']=serviceToken;
       headers['x-opensmash-owner']=createHash('sha256').update(identity).digest('hex');
     }
     const proxy=(upstream.protocol==='https:'?https:http).request(new URL(url.pathname.slice('/melee'.length)+url.search,upstream),{method:req.method,headers}, response=>{
-      const output={...response.headers,'Cross-Origin-Resource-Policy':'same-origin','Cache-Control':'no-store'};delete output['set-cookie'];res.writeHead(response.statusCode,output);
+      const output={...response.headers,'Cross-Origin-Resource-Policy':'same-origin','Cache-Control':cacheable&&response.statusCode===200?response.headers['cache-control']||'no-store':'no-store'};delete output['set-cookie'];res.writeHead(response.statusCode,output);
       response.pipe(res);
     });
     proxy.setTimeout(120000,()=>proxy.destroy(Error('Melee service timed out')));
