@@ -7,7 +7,7 @@ ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
 from opensmash_melee.bucket_cache import Store,pack
 from opensmash_melee.web_game import ISO_SHA256,GameSetup
 
-UPSTREAM_WEB_FILES=['runtime.html','runtime.mjs','index.html','disc-cache.mjs','save-migration.mjs','frame-worker.mjs']
+UPSTREAM_WEB_FILES=['runtime.html','runtime.mjs','index.html','disc-cache.mjs','save-migration.mjs','frame-worker.mjs','initial_pipeline_cache.db']
 UPSTREAM_BUILT_FILES=['melee_browser.js','melee_browser.wasm']
 
 def default_melee_pc():
