@@ -31,7 +31,6 @@ _manifest_key = os.environ.get('MELEE_INPUT_MANIFEST', '')
 _manifest_hash = re.search(r'([a-f0-9]{64})\.json$', _manifest_key)
 BUILD_VERSION = _manifest_hash.group(1)[:16] if _manifest_hash else ''
 IMMUTABLE_CACHE = 'public, max-age=31536000, immutable'
-ENGINE_CACHE = 'public, max-age=3600'
 CATALOG = {r['slug']: r for r in json.loads((ROOT / 'web/public/catalog.json').read_text())}
 from opensmash_melee.targets import PLAYABLE, BY_SLUG, cache_id
 KINDS = {slug:(row['fighter'],row['code']) for slug,row in BY_SLUG.items()}
@@ -172,9 +171,16 @@ class Handler(BaseHTTPRequestHandler):
             route = '/engine/' + versioned.group(2)
             self.asset_cache_control = IMMUTABLE_CACHE
         elif BUILD_VERSION and route.startswith('/engine/'):
-            # Same bytes, unversioned address (e.g. the upstream runtime's own
-            # relative fetches): cache briefly, a publish + deploy rotates them.
-            self.asset_cache_control = ENGINE_CACHE
+            # Unversioned addresses (the upstream runtime resolves a few modules
+            # and the pipeline-cache seed from its own base path) redirect to the
+            # current build so nothing unversioned is ever cached or mismatched.
+            target = '/engine/v/' + BUILD_VERSION + route[len('/engine'):]
+            query = urlsplit(self.path).query
+            self.send_response(302)
+            self.send_header('Location', (self.path[:self.path.index('/engine/')] if '/engine/' in self.path else '') + target + ('?' + query if query else ''))
+            self.send_header('Content-Length', '0')
+            self.end_headers()
+            return
         try:
             if route == '/api/native/status' and NATIVE:
                 return self.json(NATIVE.status())
