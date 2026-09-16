@@ -50,7 +50,10 @@ export function createMeleeHandler({origin=process.env.MELEE_LOCAL_ORIGIN,produc
       headers['x-opensmash-owner']=createHash('sha256').update(identity).digest('hex');
     }
     const proxy=(upstream.protocol==='https:'?https:http).request(new URL(url.pathname.slice('/melee'.length)+url.search,upstream),{method:req.method,headers}, response=>{
-      const output={...response.headers,'Cross-Origin-Resource-Policy':'same-origin','Cache-Control':cacheable&&response.statusCode===200?response.headers['cache-control']||'no-store':'no-store'};delete output['set-cookie'];res.writeHead(response.statusCode,output);
+      const output={...response.headers,'Cross-Origin-Resource-Policy':'same-origin','Cache-Control':cacheable&&response.statusCode===200?response.headers['cache-control']||'no-store':'no-store'};delete output['set-cookie'];
+      // The service is mounted under /melee; its redirects are relative to its own root.
+      if(typeof output.location==='string'&&output.location.startsWith('/'))output.location='/melee'+output.location;
+      res.writeHead(response.statusCode,output);
       response.pipe(res);
     });
     proxy.setTimeout(120000,()=>proxy.destroy(Error('Melee service timed out')));
