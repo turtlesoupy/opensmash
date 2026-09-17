@@ -38,11 +38,12 @@ def input_fingerprint(characters, root=ROOT):
         if not re.fullmatch(r'[a-z0-9][a-z0-9_-]{0,63}', slug):
             raise ValueError('Invalid catalog character')
         source = characters/slug
-        for name in ('rigged.glb', 'character.json', 'stock_raw.png', 'emblem_raw.png', 'announcer.wav'):
+        # The mesh and its descriptor are what conversion needs; presentation
+        # art is packed when present (publish_web_inputs.character_files) and a
+        # handful of catalog fighters ship without emblems or raw portraits.
+        for name in ('rigged.glb', 'character.json'):
             if not (source/name).is_file():
                 raise ValueError(f'Missing character input: {source/name}')
-        if not any((source/name).is_file() for name in ('portrait_raw.png', 'portrait_raw.webp')):
-            raise ValueError(f'Missing portrait input: {source}')
         for name in character_files(source):
             add('characters/'+slug+'/'+name, source/name)
     return digest.hexdigest()
