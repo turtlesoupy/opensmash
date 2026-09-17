@@ -6,7 +6,7 @@ import {applyLauncherSelection} from './launch-plan.mjs';
 import {schema} from '../web/lib/launch';
 import {loadSettings,defaults,type Settings} from '../web/lib/launch';
 import {desktop,preferences} from '../web/lib/desktop';
-import {restoreLocalDisc,retainMelee,selectLocalDisc,subscribeLocalDisc,clearLocalDisc} from '../web/lib/melee-session';
+import {restoreLocalDisc,retainMelee,selectLocalDisc,subscribeLocalDisc,clearLocalDisc,localDiscReady} from '../web/lib/melee-session';
 import {pollService} from '../web/lib/service-poll';
 import {resolveFighters} from './resolve';
 import catalog from '../web/public/catalog.json';
@@ -15,10 +15,12 @@ import './launcher.css';
 export const roster=catalog as Fighter[];
 export function MeleeDiscSettings(){
  const [status,setStatus]=useState(''),[error,setError]=useState('');
- useEffect(()=>{if(desktop())return pollService<{message:string}>('/melee/api/setup',s=>setStatus(s.message),e=>setError(e.message));void restoreLocalDisc();return subscribeLocalDisc(s=>setStatus([s.message,s.storageMessage].filter(Boolean).join(' ')));},[]);
+ const [ready,setReady]=useState(localDiscReady),[busy,setBusy]=useState(false);
+ useEffect(()=>{if(desktop())return pollService<{message:string;ready:boolean}>('/melee/api/setup',s=>{setStatus(s.message);setReady(s.ready);},e=>setError(e.message));void restoreLocalDisc();return subscribeLocalDisc(s=>{setReady(s.ready);setStatus([s.message,s.storageMessage].filter(Boolean).join(' '));});},[]);
  async function choose(file?:File){
   setError('');
-  try{if(desktop())await desktop()!.chooseDisc();else if(file)await selectLocalDisc(file);}catch(e){setError((e as Error).message);}
+  setBusy(true);
+  try{if(desktop())await desktop()!.chooseDisc();else if(file)await selectLocalDisc(file);}catch(e){setError((e as Error).message);}finally{setBusy(false);}
  }
  async function clear(){
   setError('');
@@ -26,13 +28,12 @@ export function MeleeDiscSettings(){
    if(desktop()){
     const response=await fetch('/melee/api/setup/clear',{method:'POST'});
     const result=await response.json();if(!response.ok)throw Error(result.error||'Could not forget this disc.');
-    setStatus(result.message);
+    setStatus(result.message);setReady(false);
    }else await clearLocalDisc();
   }catch(e){setError((e as Error).message);}
  }
  return <section className="melee-disc-settings"><h3>Melee disc</h3><p role="status">{status}</p>{error&&<p role="alert">{error}</p>}
-  {desktop()?<button onClick={()=>void choose()}>Choose another disc</button>:<label>Choose another disc<input type="file" accept=".iso,.gcm" onChange={e=>void choose(e.target.files?.[0])}/></label>}
-  <button onClick={()=>void clear()}>Forget disc and close Melee</button>
+  {ready?<button onClick={()=>void clear()}>Clear disc</button>:desktop()?<button disabled={busy} onClick={()=>void choose()}>Upload disc</button>:<label>{busy?"Checking disc…":"Upload disc"}<input disabled={busy} type="file" accept=".iso,.gcm" onChange={e=>void choose(e.target.files?.[0])}/></label>}
  </section>;
 }
 export function MeleeSettings(){

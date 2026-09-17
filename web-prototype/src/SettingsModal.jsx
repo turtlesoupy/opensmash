@@ -24,6 +24,7 @@ export default function SettingsModal({
   engineSettings = null,
   engineControls = null,
   engineRomSettings = null,
+  meleeDiscReady = false,
   loadSharedRom,
   onReceiveDisc,
   accountConnected = false,
@@ -221,11 +222,11 @@ export default function SettingsModal({
           )}
           {page === "roms" && <div className="settings-subpage" role="tabpanel" id="settings-game-panel" aria-labelledby={`settings-game-${settingsGame}`}>
             {isMelee ? engineRomSettings : <section className="melee-disc-settings"><h3>N64 ROM</h3><p>{authorized ? "Ready to play. ROM saved on this device." : "Choose your N64 ROM to get started."}</p>
-              <label>{romBusy ? "Checking ROM…" : "Choose another ROM"}<input disabled={romBusy} type="file" accept=".z64,.n64,.v64,.rom,.zip" onChange={async event => { const file = event.target.files?.[0]; if (file) { setRomBusy(true); setRomError(''); try { await onReceiveRom(file); } catch (error) { setRomError(error.message); } finally { setRomBusy(false); } } }}/></label>
+              {!authorized && <label>{romBusy ? "Checking ROM…" : "Upload ROM"}<input disabled={romBusy} type="file" accept=".z64,.n64,.v64,.rom,.zip" onChange={async event => { const file = event.target.files?.[0]; if (file) { setRomBusy(true); setRomError(''); try { await onReceiveRom(file); } catch (error) { setRomError(error.message); } finally { setRomBusy(false); } } }}/></label>}
               {romError && <p role="alert">{romError}</p>}
-              {authorized && <button type="button" onClick={() => close(onResetRom)}>Forget ROM</button>}
+              {authorized && <button type="button" onClick={() => close(onResetRom)}>Clear ROM</button>}
             </section>}
-            <div className="advanced-actions"><button className="launch-flow-action" type="button" onClick={() => setPage("receive")}>Get from another device</button></div>
+            {!(isMelee ? meleeDiscReady : authorized) && <div className="advanced-actions"><button className="launch-flow-action" type="button" onClick={() => setPage("receive")}>Get from another device</button></div>}
             <BackButton onClick={() => setPage("main")} />
           </div>}
           {isMelee && engineSettings && page==='gameplay'  && <div className="settings-subpage" role="tabpanel" id="settings-game-panel" aria-labelledby="settings-game-melee">{engineSettings}<BackButton onClick={()=>setPage('main')}/></div>}

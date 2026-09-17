@@ -1703,6 +1703,7 @@ export default function App() {
         <SettingsModal
           selectedGame={isMelee ? "melee" : "ssb64"}
           engineControls={<Suspense fallback={<p>Loading bindings…</p>}><MeleeControls/></Suspense>}
+          meleeDiscReady={meleeDiscReady}
           onReceiveDisc={validateMeleeDisc}
           loadSharedRom={loadSharedRom}
           engineRomSettings={<Suspense fallback={<p>Loading disc settings…</p>}><MeleeRomSettings/></Suspense>}
@@ -1908,6 +1909,7 @@ export default function App() {
       <SettingsModal
         selectedGame={isMelee ? "melee" : "ssb64"}
         engineControls={<Suspense fallback={<p>Loading bindings…</p>}><MeleeControls/></Suspense>}
+        meleeDiscReady={meleeDiscReady}
         onReceiveDisc={validateMeleeDisc}
         loadSharedRom={loadSharedRom}
         engineRomSettings={<Suspense fallback={<p>Loading disc settings…</p>}><MeleeRomSettings/></Suspense>}
