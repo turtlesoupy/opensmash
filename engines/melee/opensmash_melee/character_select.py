@@ -315,7 +315,7 @@ def stage_character_select(game, entries, *, cache=None):
         path.write_bytes(data)
 
 
-def catalog_identities(root, catalog, costumes):
+def catalog_identities(root, catalog, costumes, *, source_root=None):
     from .costume_variant import SCHEMA
     import hashlib
     if not isinstance(costumes, list) or len(costumes) > 8:
@@ -336,5 +336,11 @@ def catalog_identities(root, catalog, costumes):
             raise ValueError('Invalid injected costume slot')
         seen.add((fighter, color))
         ident = cache_id(row['slug'],c.get('target',row['target']),row.get('original_target', row['target']))
-        entries.append((fighter, color, Path(root) / 'assets/characters' / ident))
+        if source_root is not None and not row.get('imported'):
+            source=(Path(source_root)/row['slug']).resolve()
+            if not source.is_relative_to(Path(source_root).resolve()):raise ValueError('Invalid source character path')
+        else:
+            if source_root is not None:ident=cache_id(row['slug'],row['target'],row.get('original_target',row['target']))
+            source=Path(root) / 'assets/characters' / ident
+        entries.append((fighter, color, source))
     return entries

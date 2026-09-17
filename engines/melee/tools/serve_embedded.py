@@ -21,6 +21,7 @@ def main():
     if raw is None:raise ValueError('Published Melee inputs are missing')
     manifest=json.loads(raw)
     if manifest.get('format')!='opensmash-melee-hosted-v1':raise ValueError('Invalid Melee input manifest')
+    if manifest.get('nativeFitting')!=1:raise ValueError('Republish Melee inputs with native fitting before deploying this build')
     for name in ['templates','browser']:
         entry=manifest[name];marker=workspace/('.'+name+'-sha256')
         if marker.is_file() and marker.read_text()==entry['sha256']:continue

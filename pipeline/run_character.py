@@ -623,6 +623,10 @@ def main():
             "--stock-art", F("stock_raw.png"), "--emblem", F("emblem_raw.png"),
             "--name", short], timeout=300)
 
+    # One source package serves every Melee moveset; no per-target conversion.
+    log("melee-source: preparing native source assets")
+    sh([sys.executable, os.path.join(HERE, "engines", "melee", "tools", "bake_native_sources.py"), out], timeout=90)
+
     # 8. voice -----------------------------------------------------------
     wav = F("announcer.wav")
     if stage_needed(wav, force, "voice"):

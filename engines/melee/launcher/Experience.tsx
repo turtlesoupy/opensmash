@@ -37,8 +37,9 @@ export function MeleeDiscSettings(){
 }
 export function MeleeSettings(){
  const [settings,setSettings]=useState(loadSettings);
- function update(value:Settings){setSettings(value);preferences.setItem('melee-launch-v1',JSON.stringify(value));}
- return <div className="melee-settings"><MeleeDiscSettings/><LaunchSettings section="gameplay" value={settings} onChange={update} roster={roster}/>{settings.ports.map((port,index)=><label key={index}>Player {index+1} moveset<select value={port.target||'auto'} onChange={e=>update({...settings,ports:settings.ports.map((p,i)=>i===index?{...p,target:e.target.value}:p)})}><option value="auto">Character default</option>{schema.targets.map(t=><option key={t.slug} value={t.slug}>{t.label}</option>)}</select></label>)}</div>;
+ function update(value:Settings){setSettings(value);preferences.setItem('melee-launch-v1',JSON.stringify(value));{const url=new URL(location.href);url.searchParams.delete('moveset');history.replaceState({},'',url);}}
+ const targets=schema.targets;
+ return <div className="melee-settings"><MeleeDiscSettings/><LaunchSettings section="gameplay" value={settings} onChange={update} roster={roster}/>{settings.ports.map((port,index)=><label key={index}>Player {index+1} moveset<select value={port.target||'auto'} onChange={e=>update({...settings,ports:settings.ports.map((p,i)=>i===index?{...p,target:e.target.value}:p)})}><option value="auto">Character default</option>{targets.map(t=><option key={t.slug} value={t.slug}>{t.label}</option>)}</select></label>)}</div>;
 }
 export default function MeleeExperience({action,onClose,soundOn=true}:{action:any;onClose:()=>void;soundOn?:boolean}){
  const [ready,setReady]=useState(false),[status,setStatus]=useState('Choose your unmodified Melee USA 1.02 ISO or GCM.'),[error,setError]=useState('');

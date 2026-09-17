@@ -1,0 +1,682 @@
+{
+  "browser": {
+    "browser": "152.0.7977.83",
+    "description": "Full native solve from decoded source and target assets, 7 fits per fresh worker; times include array validation/copy and output materialization; fixture loading/module init separate",
+    "results": [
+      {
+        "name": "50cent-fox.json",
+        "mode": "humanoid",
+        "n": 2625,
+        "initMs": 17.399999856948853,
+        "loadMs": 14.200000047683716,
+        "times": [
+          6.599999904632568,
+          2.4000000953674316,
+          2.0999999046325684,
+          1.5,
+          0.9000000953674316,
+          0.5999999046325684,
+          0.5999999046325684
+        ],
+        "positionError": 0,
+        "normalError": 0,
+        "weightError": 0,
+        "wasmHeapBytes": 16908288,
+        "rejectedInvalidInputs": 4
+      },
+      {
+        "name": "50cent-jigglypuff.json",
+        "mode": "round",
+        "n": 2625,
+        "initMs": 3.8999998569488525,
+        "loadMs": 16.399999856948853,
+        "times": [
+          19.5,
+          13.299999952316284,
+          9.400000095367432,
+          8.400000095367432,
+          9.799999952316284,
+          9.899999856948853,
+          9.800000190734863
+        ],
+        "positionError": 0,
+        "normalError": 0,
+        "weightError": 0,
+        "wasmHeapBytes": 16908288,
+        "rejectedInvalidInputs": 4
+      },
+      {
+        "name": "50cent-kirby.json",
+        "mode": "round",
+        "n": 2625,
+        "initMs": 1.5999999046325684,
+        "loadMs": 8.099999904632568,
+        "times": [
+          22.200000047683716,
+          10.899999856948853,
+          13.400000095367432,
+          11.900000095367432,
+          11,
+          11.199999809265137,
+          10.100000143051147
+        ],
+        "positionError": 0,
+        "normalError": 0,
+        "weightError": 0,
+        "wasmHeapBytes": 16908288,
+        "rejectedInvalidInputs": 4
+      },
+      {
+        "name": "abrahamlincoln-fox.json",
+        "mode": "humanoid",
+        "n": 2543,
+        "initMs": 1.5,
+        "loadMs": 3.3999998569488525,
+        "times": [
+          2.700000047683716,
+          1.5,
+          1.2999999523162842,
+          0.7999999523162842,
+          0.7999999523162842,
+          1.1000001430511475,
+          0.5999999046325684
+        ],
+        "positionError": 0,
+        "normalError": 0,
+        "weightError": 0,
+        "wasmHeapBytes": 16908288,
+        "rejectedInvalidInputs": 4
+      },
+      {
+        "name": "abrahamlincoln-jigglypuff.json",
+        "mode": "round",
+        "n": 2543,
+        "initMs": 1.7000000476837158,
+        "loadMs": 16.90000009536743,
+        "times": [
+          20.299999952316284,
+          12.5,
+          11.200000047683716,
+          13.099999904632568,
+          11,
+          11.099999904632568,
+          12.599999904632568
+        ],
+        "positionError": 0,
+        "normalError": 0,
+        "weightError": 0,
+        "wasmHeapBytes": 16908288,
+        "rejectedInvalidInputs": 4
+      },
+      {
+        "name": "abrahamlincoln-kirby.json",
+        "mode": "round",
+        "n": 2543,
+        "initMs": 2.799999952316284,
+        "loadMs": 12.5,
+        "times": [
+          25.5,
+          15.799999952316284,
+          14.800000190734863,
+          15.399999856948853,
+          15.400000095367432,
+          15.599999904632568,
+          14.100000143051147
+        ],
+        "positionError": 0,
+        "normalError": 0,
+        "weightError": 0,
+        "wasmHeapBytes": 16908288,
+        "rejectedInvalidInputs": 4
+      },
+      {
+        "name": "alanturing-fox.json",
+        "mode": "humanoid",
+        "n": 2700,
+        "initMs": 2.5,
+        "loadMs": 9.700000047683716,
+        "times": [
+          3.0999999046325684,
+          1.5,
+          1.5,
+          0.9000000953674316,
+          0.7000000476837158,
+          0.7000000476837158,
+          0.8999998569488525
+        ],
+        "positionError": 0,
+        "normalError": 0,
+        "weightError": 0,
+        "wasmHeapBytes": 16908288,
+        "rejectedInvalidInputs": 4
+      },
+      {
+        "name": "alanturing-jigglypuff.json",
+        "mode": "round",
+        "n": 2700,
+        "initMs": 1.6000001430511475,
+        "loadMs": 12.399999856948853,
+        "times": [
+          32.40000009536743,
+          21.200000047683716,
+          25.199999809265137,
+          21,
+          22.40000009536743,
+          22,
+          21.40000009536743
+        ],
+        "positionError": 0,
+        "normalError": 0,
+        "weightError": 0,
+        "wasmHeapBytes": 16908288,
+        "rejectedInvalidInputs": 4
+      },
+      {
+        "name": "alanturing-kirby.json",
+        "mode": "round",
+        "n": 2700,
+        "initMs": 2.200000047683716,
+        "loadMs": 8.400000095367432,
+        "times": [
+          14.899999856948853,
+          8.400000095367432,
+          8.099999904632568,
+          8.100000143051147,
+          8,
+          8,
+          7.8999998569488525
+        ],
+        "positionError": 0,
+        "normalError": 0,
+        "weightError": 0,
+        "wasmHeapBytes": 16908288,
+        "rejectedInvalidInputs": 4
+      },
+      {
+        "name": "donaldtrump-fox.json",
+        "mode": "humanoid",
+        "n": 2596,
+        "initMs": 1.8000001907348633,
+        "loadMs": 4,
+        "times": [
+          3.700000047683716,
+          2,
+          1.3999998569488525,
+          0.9000000953674316,
+          0.7000000476837158,
+          0.7000000476837158,
+          0.5999999046325684
+        ],
+        "positionError": 0,
+        "normalError": 0,
+        "weightError": 0,
+        "wasmHeapBytes": 16908288,
+        "rejectedInvalidInputs": 4
+      },
+      {
+        "name": "donaldtrump-jigglypuff.json",
+        "mode": "round",
+        "n": 2596,
+        "initMs": 1.2999999523162842,
+        "loadMs": 11.5,
+        "times": [
+          18.899999856948853,
+          11.600000143051147,
+          11,
+          10.899999856948853,
+          10.799999952316284,
+          10.700000047683716,
+          10.200000047683716
+        ],
+        "positionError": 0,
+        "normalError": 0,
+        "weightError": 0,
+        "wasmHeapBytes": 16908288,
+        "rejectedInvalidInputs": 4
+      },
+      {
+        "name": "donaldtrump-kirby.json",
+        "mode": "round",
+        "n": 2596,
+        "initMs": 2,
+        "loadMs": 7.799999952316284,
+        "times": [
+          16.799999952316284,
+          17.40000009536743,
+          20.09999990463257,
+          18.799999952316284,
+          10.400000095367432,
+          10.700000047683716,
+          10.099999904632568
+        ],
+        "positionError": 0,
+        "normalError": 0,
+        "weightError": 0,
+        "wasmHeapBytes": 16908288,
+        "rejectedInvalidInputs": 4
+      },
+      {
+        "name": "mahatmagandhi-fox.json",
+        "mode": "humanoid",
+        "n": 2714,
+        "initMs": 2.1000001430511475,
+        "loadMs": 6,
+        "times": [
+          2.6000001430511475,
+          2,
+          1.3999998569488525,
+          1,
+          0.8000001907348633,
+          0.7999999523162842,
+          1.0999999046325684
+        ],
+        "positionError": 0,
+        "normalError": 0,
+        "weightError": 0,
+        "wasmHeapBytes": 16908288,
+        "rejectedInvalidInputs": 4
+      },
+      {
+        "name": "mahatmagandhi-jigglypuff.json",
+        "mode": "round",
+        "n": 2714,
+        "initMs": 1.2999999523162842,
+        "loadMs": 11.600000143051147,
+        "times": [
+          47.299999952316284,
+          36.59999990463257,
+          36.90000009536743,
+          37.200000047683716,
+          37.09999990463257,
+          35.5,
+          35.799999952316284
+        ],
+        "positionError": 0,
+        "normalError": 0,
+        "weightError": 0,
+        "wasmHeapBytes": 16908288,
+        "rejectedInvalidInputs": 4
+      },
+      {
+        "name": "mahatmagandhi-kirby.json",
+        "mode": "round",
+        "n": 2714,
+        "initMs": 1.7999999523162842,
+        "loadMs": 9.699999809265137,
+        "times": [
+          29.700000047683716,
+          24.40000009536743,
+          22.899999856948853,
+          22.90000009536743,
+          23.299999952316284,
+          22.90000009536743,
+          22.700000047683716
+        ],
+        "positionError": 0,
+        "normalError": 0,
+        "weightError": 0,
+        "wasmHeapBytes": 16908288,
+        "rejectedInvalidInputs": 4
+      },
+      {
+        "name": "robzombie-fox.json",
+        "mode": "humanoid",
+        "n": 3670,
+        "initMs": 1.7999999523162842,
+        "loadMs": 10.400000095367432,
+        "times": [
+          3.200000047683716,
+          2.8999998569488525,
+          1.1000001430511475,
+          1,
+          1,
+          0.8999998569488525,
+          0.9000000953674316
+        ],
+        "positionError": 0,
+        "normalError": 0,
+        "weightError": 0,
+        "wasmHeapBytes": 16908288,
+        "rejectedInvalidInputs": 4
+      },
+      {
+        "name": "robzombie-jigglypuff.json",
+        "mode": "round",
+        "n": 3670,
+        "initMs": 2.6999998092651367,
+        "loadMs": 9.700000047683716,
+        "times": [
+          11.700000047683716,
+          6.299999952316284,
+          6.700000047683716,
+          5.799999952316284,
+          5.099999904632568,
+          5.400000095367432,
+          5.700000047683716
+        ],
+        "positionError": 0,
+        "normalError": 0,
+        "weightError": 0,
+        "wasmHeapBytes": 16908288,
+        "rejectedInvalidInputs": 4
+      },
+      {
+        "name": "robzombie-kirby.json",
+        "mode": "round",
+        "n": 3670,
+        "initMs": 1.2000000476837158,
+        "loadMs": 9.700000047683716,
+        "times": [
+          12.299999952316284,
+          6.900000095367432,
+          6.8999998569488525,
+          6.6000001430511475,
+          6.299999952316284,
+          6.5,
+          6.299999952316284
+        ],
+        "positionError": 0,
+        "normalError": 0,
+        "weightError": 0,
+        "wasmHeapBytes": 16908288,
+        "rejectedInvalidInputs": 4
+      }
+    ]
+  },
+  "nativeOracle": [
+    {
+      "name": "abrahamlincoln-fox",
+      "referenceMs": 57.77404201216996,
+      "nativeMs": [
+        0.3145418595522642,
+        0.2654171548783779,
+        0.2780419308692217,
+        0.2608329523354769,
+        0.2575838007032871
+      ],
+      "positionError": 1.0960628387124416e-06,
+      "normalError": 2.406899168860832e-08
+    },
+    {
+      "name": "abrahamlincoln-kirby",
+      "referenceMs": 718.5026658698916,
+      "nativeMs": [
+        14.69012489542365,
+        58.58995905146003,
+        36.723416997119784
+      ],
+      "positionError": 3.552713678800501e-15,
+      "normalError": 8.798517470154366e-15,
+      "legacyPositionError": 1.3456391645405574e-07,
+      "legacyNormalError": 8.616437622288586e-07,
+      "originalOffsetDelta": {
+        "L_Hand": 6.41318007807236e-10,
+        "R_Hand": 1.4514948578024022e-09
+      }
+    },
+    {
+      "name": "abrahamlincoln-jigglypuff",
+      "referenceMs": 616.8430419638753,
+      "nativeMs": [
+        9.25462506711483,
+        9.419415844604373,
+        9.911542059853673
+      ],
+      "positionError": 1.7763568394002505e-15,
+      "normalError": 1.0498546476611637e-14,
+      "legacyPositionError": 1.4082270372028916e-07,
+      "legacyNormalError": 8.579526844521013e-07,
+      "originalOffsetDelta": {
+        "L_Hand": 5.031804592584505e-16,
+        "R_Hand": 4.47545209131181e-16
+      }
+    },
+    {
+      "name": "alanturing-fox",
+      "referenceMs": 118.92008408904076,
+      "nativeMs": [
+        0.2733338624238968,
+        0.2685419749468565,
+        0.26950007304549217,
+        0.27883308939635754,
+        0.251916004344821
+      ],
+      "positionError": 9.219276577709934e-07,
+      "normalError": 3.492242239833132e-08
+    },
+    {
+      "name": "alanturing-kirby",
+      "referenceMs": 272.40408305078745,
+      "nativeMs": [
+        7.657959125936031,
+        7.426625117659569,
+        8.932624943554401
+      ],
+      "positionError": 3.552713678800501e-15,
+      "normalError": 9.575673587391975e-15,
+      "legacyPositionError": 2.4805250928849887e-06,
+      "legacyNormalError": 3.315528479597152e-06,
+      "originalOffsetDelta": {
+        "L_Hand": 2.3486285261231702e-15,
+        "R_Hand": 6.323143557303827e-10
+      }
+    },
+    {
+      "name": "alanturing-jigglypuff",
+      "referenceMs": 1416.9515420217067,
+      "nativeMs": [
+        19.72758397459984,
+        20.929832942783833,
+        20.6905419472605
+      ],
+      "positionError": 1.7763568394002505e-15,
+      "normalError": 2.4424906541753444e-14,
+      "legacyPositionError": 2.5958983518314938e-06,
+      "legacyNormalError": 3.316314785672958e-06,
+      "originalOffsetDelta": {
+        "L_Hand": 1.7436131554293933e-10,
+        "R_Hand": 7.610345961630963e-11
+      }
+    },
+    {
+      "name": "robzombie-fox",
+      "referenceMs": 91.70270804315805,
+      "nativeMs": [
+        1.3415829744189978,
+        0.9547499939799309,
+        1.0359168518334627,
+        0.5834170151501894,
+        0.5542498547583818
+      ],
+      "positionError": 5.906064757255081e-07,
+      "normalError": 2.9615458307929998e-08
+    },
+    {
+      "name": "robzombie-kirby",
+      "referenceMs": 126.55258411541581,
+      "nativeMs": [
+        7.984167197719216,
+        6.095207994803786,
+        6.7706669215112925
+      ],
+      "positionError": 3.552713678800501e-15,
+      "normalError": 6.2727600891321345e-15,
+      "legacyPositionError": 3.250863791492975e-07,
+      "legacyNormalError": 3.79854970450344e-06,
+      "originalOffsetDelta": {
+        "L_Hand": 1.169174985634204e-09,
+        "R_Hand": 4.600397697252103e-15
+      }
+    },
+    {
+      "name": "robzombie-jigglypuff",
+      "referenceMs": 138.9397920574993,
+      "nativeMs": [
+        3.473958931863308,
+        4.093582974746823,
+        3.3837498631328344
+      ],
+      "positionError": 1.7763568394002505e-15,
+      "normalError": 7.271960811294775e-15,
+      "legacyPositionError": 3.4020667616374567e-07,
+      "legacyNormalError": 3.8031356405232586e-06,
+      "originalOffsetDelta": {
+        "L_Hand": 5.839097559242052e-10,
+        "R_Hand": 7.141332153553285e-16
+      }
+    },
+    {
+      "name": "50cent-fox",
+      "referenceMs": 53.28233307227492,
+      "nativeMs": [
+        0.30704098753631115,
+        0.30720815993845463,
+        0.28091599233448505,
+        0.2627910580486059,
+        0.2745420206338167
+      ],
+      "positionError": 7.650195428254847e-07,
+      "normalError": 3.7665727259383885e-08
+    },
+    {
+      "name": "50cent-kirby",
+      "referenceMs": 370.20641611889005,
+      "nativeMs": [
+        8.890792028978467,
+        8.843458024784923,
+        9.512457996606827
+      ],
+      "positionError": 3.552713678800501e-15,
+      "normalError": 4.912736883966318e-15,
+      "legacyPositionError": 3.141639677295416e-07,
+      "legacyNormalError": 5.197115846650169e-06,
+      "originalOffsetDelta": {
+        "L_Hand": 1.1109949519526782e-09,
+        "R_Hand": 8.882394039786704e-16
+      }
+    },
+    {
+      "name": "50cent-jigglypuff",
+      "referenceMs": 302.312167128548,
+      "nativeMs": [
+        6.507833022624254,
+        5.787999834865332,
+        6.5553749445825815
+      ],
+      "positionError": 1.7763568394002505e-15,
+      "normalError": 1.1907141939104804e-14,
+      "legacyPositionError": 3.287762462278465e-07,
+      "legacyNormalError": 5.195346277894752e-06,
+      "originalOffsetDelta": {
+        "L_Hand": 1.699111833782173e-15,
+        "R_Hand": 3.6506759942727986e-16
+      }
+    },
+    {
+      "name": "donaldtrump-fox",
+      "referenceMs": 56.17716582491994,
+      "nativeMs": [
+        0.3052919637411833,
+        0.2602080348879099,
+        0.2694171853363514,
+        0.2579579595476389,
+        0.27154083363711834
+      ],
+      "positionError": 8.894829228722756e-07,
+      "normalError": 3.010418414550742e-08
+    },
+    {
+      "name": "donaldtrump-kirby",
+      "referenceMs": 411.56350006349385,
+      "nativeMs": [
+        8.981999941170216,
+        8.631000062450767,
+        8.644124958664179
+      ],
+      "positionError": 3.552713678800501e-15,
+      "normalError": 2.1510571102112408e-14,
+      "legacyPositionError": 1.8046264305127124e-07,
+      "legacyNormalError": 4.338085350386045e-07,
+      "originalOffsetDelta": {
+        "L_Hand": 3.973197313377875e-10,
+        "R_Hand": 1.5984573746271276e-15
+      }
+    },
+    {
+      "name": "donaldtrump-jigglypuff",
+      "referenceMs": 542.295082937926,
+      "nativeMs": [
+        8.864708011969924,
+        8.617083076387644,
+        8.98920907638967
+      ],
+      "positionError": 1.7763568394002505e-15,
+      "normalError": 1.226796442210798e-14,
+      "legacyPositionError": 1.8885625419073904e-07,
+      "legacyNormalError": 3.4931514766856075e-07,
+      "originalOffsetDelta": {
+        "L_Hand": 2.1720400529849748e-15,
+        "R_Hand": 2.2510667707404196e-15
+      }
+    },
+    {
+      "name": "mahatmagandhi-fox",
+      "referenceMs": 56.283832993358374,
+      "nativeMs": [
+        0.5405410192906857,
+        0.35562505945563316,
+        0.27787499129772186,
+        0.2677501179277897,
+        0.2571670338511467
+      ],
+      "positionError": 6.965997094710019e-07,
+      "normalError": 2.959375297595379e-08
+    },
+    {
+      "name": "mahatmagandhi-kirby",
+      "referenceMs": 702.220750041306,
+      "nativeMs": [
+        26.02958306670189,
+        25.83962492644787,
+        23.256124928593636
+      ],
+      "positionError": 3.552713678800501e-15,
+      "normalError": 5.384581669432009e-15,
+      "legacyPositionError": 3.6349095799970144e-06,
+      "legacyNormalError": 7.525399842181479e-06,
+      "originalOffsetDelta": {
+        "L_Hand": 2.231521336100817e-15,
+        "R_Hand": 8.156341940985486e-13
+      }
+    },
+    {
+      "name": "mahatmagandhi-jigglypuff",
+      "referenceMs": 1930.3198331035674,
+      "nativeMs": [
+        34.813125152140856,
+        36.02379118092358,
+        34.84312491491437
+      ],
+      "positionError": 1.7763568394002505e-15,
+      "normalError": 4.218847493575595e-15,
+      "legacyPositionError": 3.803975141547511e-06,
+      "legacyNormalError": 7.528211941568164e-06,
+      "originalOffsetDelta": {
+        "L_Hand": 4.182667015656422e-11,
+        "R_Hand": 4.3920867443670607e-14
+      }
+    }
+  ],
+  "build": {
+    "compiler": "emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 3.1.61 (67fa4c16496b157a7fc3377afd69ee0445e8a6e3)",
+    "sources": {
+      "README.md": "0a64abf381c4e918ac2f6215dac193f3a9f595b857e0f328a4501ae19668c146",
+      "SCIPY-LICENSE.txt": "9d1748a5004d7ab0cde41c5cf75a7b139b5b55afac892e3daeabd1f2f9b37d39",
+      "humanoid_fit.cpp": "4162969fb6f5887732f3a9303808f80ab2edd53b452d9272390964ac0e722737",
+      "math.hpp": "aee6a828d6a401a34863b8ee7dc6075a0744cd2edfbee3341cd21ba8beb1e265",
+      "native-fit.mjs": "c02dbdcc7bec2e6b8c13dff68041929e46a0bdd45a12d66ba256d1fd5a8695fc",
+      "round_fit.cpp": "8a519fd58512a8e1931f9b7888218c96e41a7aec81fad7c35faa00ddecf56232"
+    },
+    "wasmSha256": "6243d592285e5d98ab806359d837de1bd1260d346010928d9b2aa01f9d086d52"
+  }
+}

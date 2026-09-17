@@ -183,6 +183,9 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             return
         try:
+            native_asset=re.fullmatch(r'/api/native-fit/assets/([a-f0-9]{64})/sources/([a-z0-9][a-z0-9_-]{0,63}\.(?:json|rgba8|identity\.dat))',route)
+            if native_asset:
+                return self.file(ROOT/'build/native-fit/local/revisions'/native_asset[1]/'sources'/native_asset[2])
             if route == '/api/native/status' and NATIVE:
                 return self.json(NATIVE.status())
             if route == '/api/setup':
@@ -241,6 +244,15 @@ class Handler(BaseHTTPRequestHandler):
             if route.startswith('/engine/upstream/'):
                 name = route[len('/engine/upstream/'):]
                 return self.file(descendant(upstream_root(name), name))
+            if route.startswith('/engine/native-fit/'):
+                name = route[len('/engine/native-fit/'):]
+                if name in ('native-fit.mjs','costume.mjs','presentation.mjs','worker.mjs'):
+                    return self.file((BUILD/'native-fit'/name) if BUILD_VERSION else ROOT/'runtime/fitting'/name)
+                if name in ('fit.mjs','fit.wasm','SCIPY-LICENSE.txt','build.json'):
+                    return self.file((BUILD/'native-fit'/name) if BUILD_VERSION else ROOT/'build/native-fit'/name)
+                if re.fullmatch(r'assets/targets/[a-z-]+(?:-[0-5])?\.(?:json|dat)',name):
+                    return self.file((BUILD/'native-fit'/name) if BUILD_VERSION else ROOT/'build/native-fit/local'/name.removeprefix('assets/'))
+                return self.send_error(404)
             if route.startswith('/engine/direct-c/'):
                 name=route[len('/engine/direct-c/'):]
                 if name.startswith('melee-'):
@@ -282,6 +294,18 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         if not self.local_ui_request():
             return self.send_error(403)
+        if self.path.startswith('/api/native-fit/source/'):
+            slug = self.path.removeprefix('/api/native-fit/source/')
+            if not re.fullmatch('[a-z0-9][a-z0-9_-]{0,63}',slug) or slug not in CATALOG:
+                return self.json({'error':'This character is unavailable.'},404)
+            row=CATALOG[slug]
+            source=CHARACTERS/slug
+            if row.get('imported'):source=ROOT/'assets/characters'/cache_id(slug,row['target'],row['target'])
+            try:
+                from opensmash_melee.native_source import prepare
+                return self.json(prepare(ROOT,source,slug))
+            except (ValueError,OSError) as error:
+                return self.json({'error':str(error)},422)
         if self.path == '/api/setup/clear':
             try:
                 if NATIVE:
@@ -336,7 +360,8 @@ class Handler(BaseHTTPRequestHandler):
                     raise ValueError('Invalid lineup request')
                 body = json.loads(self.rfile.read(length))
                 from opensmash_melee.character_select import catalog_identities, character_select_assets
-                entries = catalog_identities(ROOT, CATALOG, body.get('costumes'))
+                entries = catalog_identities(ROOT, CATALOG, body.get('costumes'),
+                                             source_root=CHARACTERS if body.get('sourceOnly') is True else None)
                 with LOCK:
                     assets = character_select_assets(GAME, entries, cache=ROOT / 'build/announcer-cache')
                     key = hashlib.sha256(b''.join(assets.values())).hexdigest()
@@ -356,7 +381,7 @@ class Handler(BaseHTTPRequestHandler):
                 if not 0<length<=16384 or self.headers.get_content_type()!='application/json':
                     return self.json({'error':'Send a character import URL as JSON.'},400)
                 body=json.loads(self.rfile.read(length))
-                return self.json(IMPORTS.start(body.get('url'),body.get('target','mario')),202)
+                return self.json(IMPORTS.start(body.get('url'),body.get('target','mario'),source_only=body.get('sourceOnly') is True),202)
             except (ValueError,TypeError,AttributeError):
                 return self.json({'error':str(sys.exc_info()[1])},400)
         if self.path == '/api/debug':

@@ -1,0 +1,289 @@
+{
+  "browser": "152.0.7977.83",
+  "results": [
+    {
+      "character": "50cent",
+      "target": "fox",
+      "loadMs": 7.934999942779541,
+      "fitMs": 3.634999990463257,
+      "packMs": 6.009999990463257,
+      "totalMs": 17.579999923706055,
+      "filename": "PlFxOr.dat",
+      "bytes": 1524194
+    },
+    {
+      "character": "50cent",
+      "target": "kirby",
+      "loadMs": 9.009999990463257,
+      "fitMs": 19.40499997138977,
+      "packMs": 4.039999961853027,
+      "totalMs": 32.454999923706055,
+      "filename": "PlKbYe.dat",
+      "bytes": 1548366
+    },
+    {
+      "character": "50cent",
+      "target": "jigglypuff",
+      "loadMs": 11.549999952316284,
+      "fitMs": 20.134999990463257,
+      "packMs": 5.355000019073486,
+      "totalMs": 37.03999996185303,
+      "filename": "PlPrRe.dat",
+      "bytes": 1582099
+    },
+    {
+      "character": "abrahamlincoln",
+      "target": "fox",
+      "loadMs": 7.0950000286102295,
+      "fitMs": 4.265000104904175,
+      "packMs": 4.7749998569488525,
+      "totalMs": 16.134999990463257,
+      "filename": "PlFxOr.dat",
+      "bytes": 1531238
+    },
+    {
+      "character": "abrahamlincoln",
+      "target": "kirby",
+      "loadMs": 8.964999914169312,
+      "fitMs": 20.819999933242798,
+      "packMs": 4.525000095367432,
+      "totalMs": 34.30999994277954,
+      "filename": "PlKbYe.dat",
+      "bytes": 1563194
+    },
+    {
+      "character": "abrahamlincoln",
+      "target": "jigglypuff",
+      "loadMs": 14.199999809265137,
+      "fitMs": 18.925000190734863,
+      "packMs": 4.0899999141693115,
+      "totalMs": 37.21499991416931,
+      "filename": "PlPrRe.dat",
+      "bytes": 1596927
+    },
+    {
+      "character": "alanturing",
+      "target": "fox",
+      "loadMs": 7.555000066757202,
+      "fitMs": 3.619999885559082,
+      "packMs": 5.235000133514404,
+      "totalMs": 16.41000008583069,
+      "filename": "PlFxOr.dat",
+      "bytes": 1557458
+    },
+    {
+      "character": "alanturing",
+      "target": "kirby",
+      "loadMs": 8.34000015258789,
+      "fitMs": 14.835000038146973,
+      "packMs": 6.199999809265137,
+      "totalMs": 29.375,
+      "filename": "PlKbYe.dat",
+      "bytes": 1593198
+    },
+    {
+      "character": "alanturing",
+      "target": "jigglypuff",
+      "loadMs": 13.140000104904175,
+      "fitMs": 30.625,
+      "packMs": 5.434999942779541,
+      "totalMs": 49.200000047683716,
+      "filename": "PlPrRe.dat",
+      "bytes": 1626931
+    },
+    {
+      "character": "donaldtrump",
+      "target": "fox",
+      "loadMs": 6.894999980926514,
+      "fitMs": 3.4549999237060547,
+      "packMs": 4.75,
+      "totalMs": 15.099999904632568,
+      "filename": "PlFxOr.dat",
+      "bytes": 1515786
+    },
+    {
+      "character": "donaldtrump",
+      "target": "kirby",
+      "loadMs": 8.230000019073486,
+      "fitMs": 17.200000047683716,
+      "packMs": 5.049999952316284,
+      "totalMs": 30.480000019073486,
+      "filename": "PlKbYe.dat",
+      "bytes": 1543410
+    },
+    {
+      "character": "donaldtrump",
+      "target": "jigglypuff",
+      "loadMs": 11.78499984741211,
+      "fitMs": 20.40000009536743,
+      "packMs": 4.075000047683716,
+      "totalMs": 36.25999999046326,
+      "filename": "PlPrRe.dat",
+      "bytes": 1577143
+    },
+    {
+      "character": "mahatmagandhi",
+      "target": "fox",
+      "loadMs": 6.164999961853027,
+      "fitMs": 2.819999933242798,
+      "packMs": 5.830000162124634,
+      "totalMs": 14.815000057220459,
+      "filename": "PlFxOr.dat",
+      "bytes": 1501378
+    },
+    {
+      "character": "mahatmagandhi",
+      "target": "kirby",
+      "loadMs": 7.269999980926514,
+      "fitMs": 34.53999996185303,
+      "packMs": 4.994999885559082,
+      "totalMs": 46.80499982833862,
+      "filename": "PlKbYe.dat",
+      "bytes": 1528306
+    },
+    {
+      "character": "mahatmagandhi",
+      "target": "jigglypuff",
+      "loadMs": 13.855000019073486,
+      "fitMs": 48.87999987602234,
+      "packMs": 4.795000076293945,
+      "totalMs": 67.52999997138977,
+      "filename": "PlPrRe.dat",
+      "bytes": 1562039
+    },
+    {
+      "character": "robzombie",
+      "target": "fox",
+      "loadMs": 9.350000143051147,
+      "fitMs": 3.994999885559082,
+      "packMs": 6.515000104904175,
+      "totalMs": 19.860000133514404,
+      "filename": "PlFxOr.dat",
+      "bytes": 1605866
+    },
+    {
+      "character": "robzombie",
+      "target": "kirby",
+      "loadMs": 10.305000066757202,
+      "fitMs": 13.329999923706055,
+      "packMs": 4.809999942779541,
+      "totalMs": 28.450000047683716,
+      "filename": "PlKbYe.dat",
+      "bytes": 1609974
+    },
+    {
+      "character": "robzombie",
+      "target": "jigglypuff",
+      "loadMs": 11.790000200271606,
+      "fitMs": 14.230000019073486,
+      "packMs": 5.419999837875366,
+      "totalMs": 31.44000005722046,
+      "filename": "PlPrRe.dat",
+      "bytes": 1643707
+    },
+    {
+      "gameplay": "fox",
+      "fit": [
+        {
+          "character": "abrahamlincoln",
+          "target": "fox",
+          "loadMs": 13.97000002861023,
+          "fitMs": 3.2850000858306885,
+          "packMs": 6.934999942779541,
+          "totalMs": 24.19000005722046
+        },
+        {
+          "character": "50cent",
+          "target": "fox",
+          "loadMs": 16.054999828338623,
+          "fitMs": 4.509999990463257,
+          "packMs": 6.745000123977661,
+          "totalMs": 27.30999994277954
+        },
+        {
+          "character": "donaldtrump",
+          "target": "fox",
+          "loadMs": 19.375,
+          "fitMs": 2.7950000762939453,
+          "packMs": 6.164999961853027,
+          "totalMs": 28.335000038146973
+        }
+      ],
+      "frames": 1122,
+      "fps": 59.977508434337125,
+      "prepareRequests": 0,
+      "unrelatedErrors": [
+        "this.api.isExternalMethodAvailable is not a function"
+      ]
+    },
+    {
+      "gameplay": "kirby",
+      "fit": [
+        {
+          "character": "abrahamlincoln",
+          "target": "kirby",
+          "loadMs": 14.674999952316284,
+          "fitMs": 41.22000002861023,
+          "packMs": 12.724999904632568,
+          "totalMs": 68.61999988555908
+        },
+        {
+          "character": "50cent",
+          "target": "kirby",
+          "loadMs": 32.83500003814697,
+          "fitMs": 30.694999933242798,
+          "packMs": 8.31000018119812,
+          "totalMs": 71.84000015258789
+        },
+        {
+          "character": "mahatmagandhi",
+          "target": "kirby",
+          "loadMs": 58.52499985694885,
+          "fitMs": 33.1800000667572,
+          "packMs": 5.745000123977661,
+          "totalMs": 97.45000004768372
+        }
+      ],
+      "frames": 1156,
+      "fps": 56.32299757027952,
+      "prepareRequests": 0,
+      "unrelatedErrors": []
+    },
+    {
+      "gameplay": "jigglypuff",
+      "fit": [
+        {
+          "character": "abrahamlincoln",
+          "target": "jigglypuff",
+          "loadMs": 22.58999991416931,
+          "fitMs": 33.735000133514404,
+          "packMs": 8.65999984741211,
+          "totalMs": 64.98499989509583
+        },
+        {
+          "character": "alanturing",
+          "target": "jigglypuff",
+          "loadMs": 47.85000014305115,
+          "fitMs": 47,
+          "packMs": 7.929999828338623,
+          "totalMs": 102.77999997138977
+        },
+        {
+          "character": "mahatmagandhi",
+          "target": "jigglypuff",
+          "loadMs": 47.855000019073486,
+          "fitMs": 66.625,
+          "packMs": 7.169999837875366,
+          "totalMs": 121.65499997138977
+        }
+      ],
+      "frames": 1151,
+      "fps": 60.039961022674845,
+      "prepareRequests": 0,
+      "unrelatedErrors": [
+        "this.api.isExternalMethodAvailable is not a function"
+      ]
+    }
+  ],
+  "scope": "Main smash.fun shell, Melee toggle, 18 costumes, three four-player matches; native fitting and browser DAT assembly, no fitted-result cache."
+}

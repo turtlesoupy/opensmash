@@ -54,12 +54,13 @@ class CacheTests(unittest.TestCase):
    slug='import-'+'b'*24;row={'slug':slug,'target':'mario','imported':True}
    manager=SimpleNamespace(rows=[],jobs={});base=SimpleNamespace(ROOT=root/'one',CATALOG={},IMPORTS=manager)
    first=ServiceCache(base,store,{},'v1')
-   def work(job,url,target):
+   def work(job,url,target,source_only=False):
+    self.assertTrue(source_only)
     base.CATALOG[slug]=row;ident=first.ident(slug)
     source=base.ROOT/'assets/characters'/ident/'rigged.glb';source.parent.mkdir(parents=True);source.write_bytes(b'imported model')
     job.update(state='complete',fighter=row)
    manager.work=work;first.install_import_cache();job={'id':'c'*32,'state':'queued'}
-   manager.work(job,'https://unused.invalid','mario');access.grant(owner,'job:'+job['id'])
+   manager.work(job,'https://unused.invalid','mario',True);access.grant(owner,'job:'+job['id'])
    second_base=SimpleNamespace(ROOT=root/'two',CATALOG={},IMPORTS=SimpleNamespace(rows=[],jobs={}))
    second=ServiceCache(second_base,store,{},'v1')
    req=SimpleNamespace(path='/api/imports/'+job['id'],owner='d'*64)
@@ -68,3 +69,17 @@ class CacheTests(unittest.TestCase):
    self.assertEqual(second_base.IMPORTS.jobs[job['id']]['state'],'complete')
    second.source(slug)
    self.assertEqual((second_base.ROOT/'assets/characters'/second.ident(slug)/'rigged.glb').read_bytes(),b'imported model')
+
+ def test_native_source_assets_survive_a_cold_instance(self):
+  with tempfile.TemporaryDirectory() as directory:
+   root=Path(directory);store=Store(local=root/'bucket');revision='a'*64
+   first=ServiceCache(SimpleNamespace(ROOT=root/'one'),store,{},'v1')
+   folder=first.base.ROOT/'build/native-fit/local/revisions'/revision/'sources';folder.mkdir(parents=True)
+   (folder/'custom.json').write_bytes(b'geometry')
+   value={'base':'/api/native-fit/assets/'+revision+'/sources/custom'}
+   first.response(SimpleNamespace(path='/api/native-fit/source/custom'),value,200)
+   second=ServiceCache(SimpleNamespace(ROOT=root/'two'),store,{},'v1')
+   request=SimpleNamespace(path=value['base']+'.json',command='GET')
+   self.assertIs(second.request_lock(request),second.request_lock(SimpleNamespace(path=value['base']+'.rgba8')))
+   second.before_request(request)
+   self.assertEqual((second.base.ROOT/'build/native-fit/local/revisions'/revision/'sources/custom.json').read_bytes(),b'geometry')

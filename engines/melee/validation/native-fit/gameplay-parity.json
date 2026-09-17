@@ -1,0 +1,396 @@
+[
+  {
+    "targets": [
+      "mario",
+      "fox",
+      "captain-falcon",
+      "donkey-kong"
+    ],
+    "frames": 1127,
+    "fpsSnapshot": 60.313630887972415,
+    "fits": [
+      {
+        "character": "barackobama",
+        "target": "mario",
+        "loadMs": 10.200000047683716,
+        "fitMs": 5.299999952316284,
+        "packMs": 6.309999942779541,
+        "totalMs": 21.80999994277954,
+        "sourceCached": true,
+        "sourcePreparationMs": 11.512416182085872
+      },
+      {
+        "character": "mahatmagandhi",
+        "target": "captain-falcon",
+        "loadMs": 9.09000015258789,
+        "fitMs": 3.234999895095825,
+        "packMs": 6.75,
+        "totalMs": 19.075000047683716,
+        "sourceCached": false,
+        "sourcePreparationMs": 438.1536659784615
+      },
+      {
+        "character": "robzombie",
+        "target": "fox",
+        "loadMs": 16.27500009536743,
+        "fitMs": 3.240000009536743,
+        "packMs": 6.909999847412109,
+        "totalMs": 26.424999952316284,
+        "sourceCached": false,
+        "sourcePreparationMs": 443.58741701580584
+      },
+      {
+        "character": "abrahamlincoln",
+        "target": "donkey-kong",
+        "loadMs": 6.09499979019165,
+        "fitMs": 3.6600000858306885,
+        "packMs": 5.025000095367432,
+        "totalMs": 14.77999997138977,
+        "sourceCached": false,
+        "sourcePreparationMs": 811.3931249827147
+      }
+    ]
+  },
+  {
+    "targets": [
+      "kirby",
+      "bowser",
+      "link",
+      "sheik"
+    ],
+    "frames": 1115,
+    "fpsSnapshot": 59.96102532781859,
+    "fits": [
+      {
+        "character": "abrahamlincoln",
+        "target": "sheik",
+        "loadMs": 12.580000162124634,
+        "fitMs": 4.284999847412109,
+        "packMs": 9.72000002861023,
+        "totalMs": 26.585000038146973,
+        "sourceCached": true,
+        "sourcePreparationMs": 15.17895795404911
+      },
+      {
+        "character": "robzombie",
+        "target": "bowser",
+        "loadMs": 31.945000171661377,
+        "fitMs": 6.104999780654907,
+        "packMs": 14.165000200271606,
+        "totalMs": 52.21500015258789,
+        "sourceCached": true,
+        "sourcePreparationMs": 15.433666063472629
+      },
+      {
+        "character": "barackobama",
+        "target": "kirby",
+        "loadMs": 31.78499984741211,
+        "fitMs": 18.955000162124634,
+        "packMs": 12.799999952316284,
+        "totalMs": 63.53999996185303,
+        "sourceCached": true,
+        "sourcePreparationMs": 15.553709119558334
+      },
+      {
+        "character": "abrahamlincoln",
+        "target": "zelda",
+        "loadMs": 37.894999980926514,
+        "fitMs": 4.259999990463257,
+        "packMs": 12.670000076293945,
+        "totalMs": 54.825000047683716,
+        "sourceCached": true,
+        "sourcePreparationMs": 15.796416904777288
+      },
+      {
+        "character": "mahatmagandhi",
+        "target": "link",
+        "loadMs": 48.50500011444092,
+        "fitMs": 3.004999876022339,
+        "packMs": 11.384999990463257,
+        "totalMs": 62.894999980926514,
+        "sourceCached": true,
+        "sourcePreparationMs": 16.002124873921275
+      }
+    ]
+  },
+  {
+    "targets": [
+      "ness",
+      "peach",
+      "popo",
+      "pikachu"
+    ],
+    "frames": 1147,
+    "fpsSnapshot": 58.118630963653246,
+    "fits": [
+      {
+        "character": "mahatmagandhi",
+        "target": "popo",
+        "loadMs": 10.269999980926514,
+        "fitMs": 7.3500001430511475,
+        "packMs": 8.34500002861023,
+        "totalMs": 25.97000002861023,
+        "sourceCached": false,
+        "sourcePreparationMs": 511.2522910349071
+      },
+      {
+        "character": "mahatmagandhi",
+        "target": "nana",
+        "loadMs": 15.47000002861023,
+        "fitMs": 3.944999933242798,
+        "packMs": 9.675000190734863,
+        "totalMs": 29.09500002861023,
+        "sourceCached": true,
+        "sourcePreparationMs": 512.7148330211639
+      },
+      {
+        "character": "robzombie",
+        "target": "peach",
+        "loadMs": 27.09999990463257,
+        "fitMs": 5.6600000858306885,
+        "packMs": 8.484999895095825,
+        "totalMs": 41.24499988555908,
+        "sourceCached": false,
+        "sourcePreparationMs": 519.5787090342492
+      },
+      {
+        "character": "abrahamlincoln",
+        "target": "pikachu",
+        "loadMs": 8.549999952316284,
+        "fitMs": 3.9700000286102295,
+        "packMs": 6.4649999141693115,
+        "totalMs": 18.990000009536743,
+        "sourceCached": false,
+        "sourcePreparationMs": 978.0961668584496
+      },
+      {
+        "character": "barackobama",
+        "target": "ness",
+        "loadMs": 8.980000019073486,
+        "fitMs": 3.740000009536743,
+        "packMs": 5.7250001430511475,
+        "totalMs": 18.450000047683716,
+        "sourceCached": false,
+        "sourcePreparationMs": 987.2064159717411
+      }
+    ]
+  },
+  {
+    "targets": [
+      "samus",
+      "yoshi",
+      "jigglypuff",
+      "mewtwo"
+    ],
+    "frames": 1155,
+    "fpsSnapshot": 60.03612008797964,
+    "fits": [
+      {
+        "character": "abrahamlincoln",
+        "target": "mewtwo",
+        "loadMs": 11.755000114440918,
+        "fitMs": 4.889999866485596,
+        "packMs": 9.330000162124634,
+        "totalMs": 25.980000019073486,
+        "sourceCached": true,
+        "sourcePreparationMs": 13.625165913254023
+      },
+      {
+        "character": "barackobama",
+        "target": "samus",
+        "loadMs": 20.02999997138977,
+        "fitMs": 3.0899999141693115,
+        "packMs": 8.464999914169312,
+        "totalMs": 31.58999991416931,
+        "sourceCached": true,
+        "sourcePreparationMs": 13.692541047930717
+      },
+      {
+        "character": "robzombie",
+        "target": "yoshi",
+        "loadMs": 20.47000002861023,
+        "fitMs": 5.579999923706055,
+        "packMs": 10.97000002861023,
+        "totalMs": 37.019999980926514,
+        "sourceCached": true,
+        "sourcePreparationMs": 13.950709020718932
+      },
+      {
+        "character": "mahatmagandhi",
+        "target": "jigglypuff",
+        "loadMs": 25.31000018119812,
+        "fitMs": 65.01999998092651,
+        "packMs": 4.919999837875366,
+        "totalMs": 95.25,
+        "sourceCached": true,
+        "sourcePreparationMs": 14.077583095058799
+      }
+    ]
+  },
+  {
+    "targets": [
+      "luigi",
+      "marth",
+      "zelda",
+      "young-link"
+    ],
+    "frames": 1143,
+    "fpsSnapshot": 60.047348810548,
+    "fits": [
+      {
+        "character": "abrahamlincoln",
+        "target": "young-link",
+        "loadMs": 12.15500020980835,
+        "fitMs": 5.8349997997283936,
+        "packMs": 8.34000015258789,
+        "totalMs": 26.330000162124634,
+        "sourceCached": false,
+        "sourcePreparationMs": 476.9050411414355
+      },
+      {
+        "character": "mahatmagandhi",
+        "target": "zelda",
+        "loadMs": 19.700000047683716,
+        "fitMs": 3.305000066757202,
+        "packMs": 8.015000104904175,
+        "totalMs": 31.020000219345093,
+        "sourceCached": false,
+        "sourcePreparationMs": 477.26583294570446
+      },
+      {
+        "character": "mahatmagandhi",
+        "target": "sheik",
+        "loadMs": 19.264999866485596,
+        "fitMs": 3.205000162124634,
+        "packMs": 6.240000009536743,
+        "totalMs": 28.710000038146973,
+        "sourceCached": true,
+        "sourcePreparationMs": 481.09420808032155
+      },
+      {
+        "character": "barackobama",
+        "target": "luigi",
+        "loadMs": 9.644999980926514,
+        "fitMs": 4.884999990463257,
+        "packMs": 6.775000095367432,
+        "totalMs": 21.305000066757202,
+        "sourceCached": false,
+        "sourcePreparationMs": 904.7163329087198
+      },
+      {
+        "character": "robzombie",
+        "target": "marth",
+        "loadMs": 15.690000057220459,
+        "fitMs": 2.739999771118164,
+        "packMs": 9.065000057220459,
+        "totalMs": 27.494999885559082,
+        "sourceCached": false,
+        "sourcePreparationMs": 905.0621660426259
+      }
+    ]
+  },
+  {
+    "targets": [
+      "dr-mario",
+      "falco",
+      "pichu",
+      "game-watch"
+    ],
+    "frames": 1151,
+    "fpsSnapshot": 60.12428971683397,
+    "fits": [
+      {
+        "character": "abrahamlincoln",
+        "target": "game-watch",
+        "loadMs": 12.414999961853027,
+        "fitMs": 5.634999990463257,
+        "packMs": 7.809999942779541,
+        "totalMs": 25.865000009536743,
+        "sourceCached": true,
+        "sourcePreparationMs": 14.41512512974441
+      },
+      {
+        "character": "barackobama",
+        "target": "dr-mario",
+        "loadMs": 17.84500002861023,
+        "fitMs": 3.0299999713897705,
+        "packMs": 8.295000076293945,
+        "totalMs": 29.174999952316284,
+        "sourceCached": true,
+        "sourcePreparationMs": 14.426833018660545
+      },
+      {
+        "character": "robzombie",
+        "target": "falco",
+        "loadMs": 14.105000019073486,
+        "fitMs": 4.615000009536743,
+        "packMs": 9.025000095367432,
+        "totalMs": 27.74500012397766,
+        "sourceCached": true,
+        "sourcePreparationMs": 14.568209182471037
+      },
+      {
+        "character": "mahatmagandhi",
+        "target": "pichu",
+        "loadMs": 19.97000002861023,
+        "fitMs": 2.9099998474121094,
+        "packMs": 6.015000104904175,
+        "totalMs": 28.894999980926514,
+        "sourceCached": true,
+        "sourcePreparationMs": 14.59199981763959
+      }
+    ]
+  },
+  {
+    "targets": [
+      "ganondorf",
+      "roy",
+      "mario",
+      "mario"
+    ],
+    "frames": 1154,
+    "fpsSnapshot": 59.99400060566091,
+    "fits": [
+      {
+        "character": "abrahamlincoln",
+        "target": "mario",
+        "loadMs": 10.644999980926514,
+        "fitMs": 4.3999998569488525,
+        "packMs": 7.265000104904175,
+        "totalMs": 22.30999994277954,
+        "sourceCached": true,
+        "sourcePreparationMs": 13.611082918941975
+      },
+      {
+        "character": "robzombie",
+        "target": "roy",
+        "loadMs": 21.805000066757202,
+        "fitMs": 5.325000047683716,
+        "packMs": 10.484999895095825,
+        "totalMs": 37.62000012397766,
+        "sourceCached": true,
+        "sourcePreparationMs": 13.420125003904104
+      },
+      {
+        "character": "barackobama",
+        "target": "ganondorf",
+        "loadMs": 17.71499991416931,
+        "fitMs": 4.619999885559082,
+        "packMs": 8.31000018119812,
+        "totalMs": 30.644999980926514,
+        "sourceCached": true,
+        "sourcePreparationMs": 14.33020900003612
+      },
+      {
+        "character": "mahatmagandhi",
+        "target": "mario",
+        "loadMs": 27.950000047683716,
+        "fitMs": 3.580000162124634,
+        "packMs": 6.859999895095825,
+        "totalMs": 38.390000104904175,
+        "sourceCached": true,
+        "sourcePreparationMs": 14.245749916881323
+      }
+    ]
+  }
+]

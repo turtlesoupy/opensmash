@@ -68,10 +68,14 @@ class ServiceCache:
         return ident,self.prefix+'costumes/'+hashlib.sha256(json.dumps(options).encode()).hexdigest()+'.tar.gz'
     def request_lock(self,request):
         route=urlsplit(request.path).path
-        if route.startswith(('/api/prepare/','/api/costume/')):
+        if route.startswith('/api/native-fit/assets/'):
+            ident='native-assets:'+route.split('/')[4]
+        elif route.startswith('/api/native-fit/source/'):
+            ident='native-source:'+route.rsplit('/',1)[1]
+        elif route.startswith(('/api/prepare/','/api/costume/')):
             ident,_=self.variant(request)
-            with self.lock:return self.locks.setdefault(ident,threading.RLock())
-        return nullcontext()
+        else:return nullcontext()
+        with self.lock:return self.locks.setdefault(ident,threading.RLock())
     def load_import(self,slug):
         raw=self.store.get('melee/import-rows/'+slug+'.json')
         if raw:
@@ -97,12 +101,17 @@ class ServiceCache:
                     if job['state'] in ('queued','working'):self.base.IMPORTS.jobs.pop(jobid,None);request.remote_job=job
         else:
             slugs=[]
-            if route.startswith(('/api/prepare/','/api/costume/','/api/announcer/','/api/imports/portraits/')):slugs=[route.rsplit('/',1)[1].removesuffix('.webp')]
+            if route.startswith(('/api/native-fit/source/','/api/prepare/','/api/costume/','/api/announcer/','/api/imports/portraits/')):slugs=[route.rsplit('/',1)[1].removesuffix('.webp')]
             if route=='/api/character-select' and request.post_body:slugs=[c.get('character') for c in request.post_body.get('costumes',[]) if isinstance(c,dict)]
             for slug in slugs:
                 if isinstance(slug,str) and slug.startswith('import-') and access.allows(request.owner,'fighter:'+slug):self.load_import(slug)
     def before_request(self,request):
         route=urlsplit(request.path).path
+        if route.startswith('/api/native-fit/source/'):
+            self.source(route.rsplit('/',1)[1])
+        elif route.startswith('/api/native-fit/assets/'):
+            revision=route.split('/')[4]
+            self.restore(self.prefix+'native-sources/'+revision+'.tar.gz', [self.base.ROOT/'build/native-fit/local/revisions'/revision])
         if route.startswith(('/api/prepare/','/api/costume/')):
             ident,key=self.variant(request)
             if request.command=='POST':
@@ -123,6 +132,7 @@ class ServiceCache:
             if raw:request.cached_value=json.loads(raw);return
             for entry in request.post_body['costumes']:
                 slug=entry['character'];self.source(slug)
+                if request.post_body.get('sourceOnly'):continue
                 ident=self.ident(slug,entry.get('target'))
                 self.restore(self.prefix+'sources/'+ident+'.tar.gz')
     def response(self,request,value,status):
@@ -130,7 +140,12 @@ class ServiceCache:
         except Exception:pass
         if status>=300 or not isinstance(value,dict) or getattr(request,'cached_value',None):return
         route=urlsplit(request.path).path
-        if route.startswith('/api/prepare/'):
+        if route.startswith('/api/native-fit/source/') and value.get('base'):
+            revision=value['base'].split('/')[4]
+            key=self.prefix+'native-sources/'+revision+'.tar.gz'
+            if key in self.loaded:self.touch(key)
+            else:self.save(key,['build/native-fit/local/revisions/'+revision])
+        elif route.startswith('/api/prepare/'):
             ident,key=self.variant(request)
             # zlib compression overlaps on one helper; publish metadata only
             # after both complete bundles have been stored successfully.
@@ -149,10 +164,10 @@ class ServiceCache:
             self.store.put('melee/jobs/'+value['id']+'.pending.json',json.dumps({**value,'created':time.time()}).encode())
     def install_import_cache(self):
         manager=self.base.IMPORTS;work=manager.work
-        def cached_work(job,url,target):
+        def cached_work(job,url,target,source_only=False):
             job.update(state='working',message='Preparing imported fighter…')
             result=dict(job)
-            work(result,url,target)
+            work(result,url,target,source_only)
             try:
                 if result.get('fighter'):
                     row=result['fighter'];slug=row['slug'];ident=self.ident(slug)

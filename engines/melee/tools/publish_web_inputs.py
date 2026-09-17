@@ -15,11 +15,14 @@ def default_melee_pc():
     configured=os.environ.get('MELEE_PC_ROOT')
     return Path(configured) if configured else ROOT.parents[2]/'melee-pc'
 
-def publish(workspace,browser,characters,store,slugs=None,melee_pc=None):
+def publish(workspace,characters,store,slugs=None,melee_pc=None,native_fit=None,iso=None):
     import shutil
-    workspace=Path(workspace);browser=Path(browser);characters=Path(characters)
+    workspace=Path(workspace);characters=Path(characters)
+    native_fit=Path(native_fit) if native_fit else ROOT/'build/native-fit'
     melee_pc=Path(melee_pc) if melee_pc else default_melee_pc()
-    setup=GameSetup(workspace);setup.restore()
+    setup=GameSetup(workspace)
+    if iso:setup.use_existing(iso)
+    else:setup.restore()
     if not setup.ready:raise ValueError('Use an existing verified conversion workspace')
     manifest={'format':'opensmash-melee-hosted-v1','characters':{}}
     # Inputs are content-addressed, so a re-publish only uploads what changed.
@@ -41,12 +44,6 @@ def publish(workspace,browser,characters,store,slugs=None,melee_pc=None):
         receipt=root/'build/web-game/verified.json';receipt.parent.mkdir(parents=True);receipt.write_text(json.dumps({'iso_sha256':ISO_SHA256,'files':hashes}))
         manifest['templates']=upload(pack(root,['assets/game','build/web-game/verified.json']))
         target=root/'build/hosted-browser';target.mkdir(parents=True)
-        required=['opensmash-web.js','opensmash-web.wasm','opensmash-web.worker.js','opensmash-web-build.json','sys-bundle.bin']
-        for name in required:
-            if not (browser/name).is_file():raise ValueError('Missing browser runtime: '+name)
-            shutil.copy2(browser/name,target/name)
-        for name in ['opensmash-web.js.gz','opensmash-web.wasm.gz','opensmash-web.worker.js.gz']:
-            if (browser/name).is_file():shutil.copy2(browser/name,target/name)
         # The default browser engine is the pinned Melee PC fork (UPSTREAM.md). The
         # website container has no checkout, so its runtime travels in this pack and
         # serve_melee.py reads it from build/hosted-browser/upstream/ when needed.
@@ -64,6 +61,21 @@ def publish(workspace,browser,characters,store,slugs=None,melee_pc=None):
         audio=ROOT/'build/direct-c/melee-audio.wasm'
         if not audio.is_file():raise ValueError(f'Missing {audio}; run tools/build_upstream.py')
         (target/'direct-c').mkdir(parents=True,exist_ok=True);shutil.copy2(audio,target/'direct-c/melee-audio.wasm')
+        # Native fitting is the sole browser character path. Derived target
+        # templates stay in the input bundle, never in the source repository.
+        fit_target=target/'native-fit';fit_target.mkdir()
+        for name in ['native-fit.mjs','costume.mjs','presentation.mjs','worker.mjs']:
+            shutil.copy2(ROOT/'runtime/fitting'/name,fit_target/name)
+        for name in ['fit.mjs','fit.wasm','SCIPY-LICENSE.txt','build.json']:
+            if not (native_fit/name).is_file():raise ValueError(f'Missing native fitter {name}; run tools/build_native_fit.py')
+            shutil.copy2(native_fit/name,fit_target/name)
+        from opensmash_melee.targets import BY_SLUG
+        derived=native_fit/'local/targets';destination=fit_target/'assets/targets';destination.mkdir(parents=True)
+        for slug,row in BY_SLUG.items():
+            for name in [slug+'.json',*[f'{slug}-{i}.dat' for i in range(len(row['costumes']))]]:
+                if not (derived/name).is_file():raise ValueError(f'Missing target {name}; run tools/prepare_native_fit_local.py')
+                shutil.copy2(derived/name,destination/name)
+        manifest['nativeFitting']=1
         manifest['upstream']={'repository':pin['repository'],'revision':pin['revision']}
         manifest['browser']=upload(pack(root,['build/hosted-browser']))
     catalog=json.loads((ROOT/'web/public/catalog.json').read_text())
@@ -72,14 +84,16 @@ def publish(workspace,browser,characters,store,slugs=None,melee_pc=None):
         source=characters/row['slug']
         if not (source/'rigged.glb').is_file():raise ValueError('Missing character source: '+row['slug'])
         names=[name for name in ['rigged.glb','character.json','portrait_raw.png','portrait_raw.webp','portrait.png','portrait_transparent.png','stock_raw.png','emblem_raw.png','emblem_stencil.png','announcer.wav'] if (source/name).is_file()]
+        names += [name for name in ['melee-source-ready.json','melee-source.json','melee-source.rgba8','melee-source.identity.dat'] if (source/name).is_file()]
         manifest['characters'][row['slug']]=upload(pack(source,names))
     raw=json.dumps(manifest,sort_keys=True).encode();key='melee/inputs/'+hashlib.sha256(raw).hexdigest()+'.json';store.put(key,raw)
     return key
 
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__)
-    p.add_argument('--workspace',type=Path,required=True);p.add_argument('--browser',type=Path,required=True);p.add_argument('--characters',type=Path,required=True)
+    p.add_argument('--workspace',type=Path,required=True);p.add_argument('--native-fit',type=Path,help='built fitter and derived targets (default: build/native-fit)');p.add_argument('--characters',type=Path,required=True)
     p.add_argument('--melee-pc',type=Path,help='pinned Melee PC fork checkout (default: MELEE_PC_ROOT or the sibling melee-pc directory)')
+    p.add_argument('--iso',type=Path,help='Verify an existing extracted workspace against this original disc')
     p.add_argument('--only',nargs='*',help='publish only these character slugs (local checks)')
     group=p.add_mutually_exclusive_group(required=True);group.add_argument('--bucket');group.add_argument('--local-store',type=Path)
-    a=p.parse_args();print(publish(a.workspace,a.browser,a.characters,Store(a.bucket,a.local_store),slugs=a.only,melee_pc=a.melee_pc))
+    a=p.parse_args();print(publish(a.workspace,a.characters,Store(a.bucket,a.local_store),slugs=a.only,melee_pc=a.melee_pc,native_fit=a.native_fit,iso=a.iso))

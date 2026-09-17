@@ -54,6 +54,8 @@ def import_character(source, out, *, return_mesh=False):
     for name in required:
         if not (source/name).is_file():
             raise ValueError(f'Missing generation artifact: {name}')
+    # Portable native inputs contain only generated source assets.
+    required += [name for name in ('melee-source.json','melee-source.rgba8','melee-source.identity.dat','melee-source-ready.json') if (source/name).is_file()]
     mesh = GLB(source/'rigged.glb').mesh()
     character = json.loads((source/'character.json').read_text())
     out.parent.mkdir(parents=True,exist_ok=True)

@@ -12,7 +12,7 @@ FORM_JOINTS = {
 
 
 def form_joints(profile):
-    return FORM_JOINTS.get(profile.get('symbol'), ())
+    return {'bowser':(23,), 'yoshi':(3,)}.get(profile.get('base_fighter'), FORM_JOINTS.get(profile.get('symbol'), ()))
 
 
 def forms_current(stats, profile):

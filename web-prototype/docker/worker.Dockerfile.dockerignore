@@ -25,3 +25,15 @@
 !pipeline/assets/portrait_style_refs/**
 !pipeline/assets/tpose_style_ref/
 !pipeline/assets/tpose_style_ref/**
+
+# Native source preprocessing contains generated inputs only. Do not copy assets/build.
+!pipeline/engines/
+!pipeline/engines/melee/
+!pipeline/engines/melee/opensmash_melee/
+!pipeline/engines/melee/opensmash_melee/*.py
+!pipeline/engines/melee/tools/
+!pipeline/engines/melee/tools/bake_native_sources.py
+!pipeline/engines/melee/tools/prepare_native_fit_local.py
+!pipeline/engines/melee/runtime/
+!pipeline/engines/melee/runtime/launch-options.json
+!pipeline/engines/melee/runtime/retarget-options.json

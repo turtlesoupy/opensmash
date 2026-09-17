@@ -16,5 +16,5 @@ class Access:
 
 def route_allowed(method,path):
     if method in ('GET','HEAD'):
-        return bool(re.fullmatch(r'/engine/[a-zA-Z0-9_./-]+|/api/(costume|announcer)/[a-zA-Z0-9_-]+|/api/imports(/[a-f0-9]+|/portraits/import-[a-f0-9]{24}\.webp)?|/api/character-select/[a-f0-9]{64}/[0-3]\.bin',path))
-    return method=='POST' and bool(re.fullmatch(r'/api/(imports|character-select|prepare/[a-zA-Z0-9_-]+)',path))
+        return bool(re.fullmatch(r'/api/native-fit/assets/[a-f0-9]{64}/sources/[a-z0-9_-]+\.(?:json|rgba8|identity\.dat)|/engine/[a-zA-Z0-9_./-]+|/api/(costume|announcer)/[a-zA-Z0-9_-]+|/api/imports(/[a-f0-9]+|/portraits/import-[a-f0-9]{24}\.webp)?|/api/character-select/[a-f0-9]{64}/[0-3]\.bin',path))
+    return method=='POST' and bool(re.fullmatch(r'/api/(imports|character-select|native-fit/source/[a-z0-9_-]+|prepare/[a-zA-Z0-9_-]+)',path))

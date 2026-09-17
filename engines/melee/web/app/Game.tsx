@@ -3,6 +3,7 @@ import {neutralTouchPad} from '../lib/touch-pad';
 import {MeleeFrameWorker} from '@/lib/melee-frame-worker';
 import {gameInputBlocked} from '../lib/controls';
 import {meleePath} from '../lib/paths.ts';
+import {prepareNativeCostume} from '../lib/native-fit';
 import {useEffect,useRef,useState} from 'react';
 import {plan,schema,type Settings} from '@/lib/launch';
 import type {Fighter} from '../lib/fighter';
@@ -23,7 +24,7 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true,chrom
   let worker:Worker|undefined,audioNode:AudioNode|undefined,raf=0,closed=false;const abort=new AbortController(),keys=new Set<string>(),requestedAt=Date.now();
   let playable=settings.mode!==0, audioConnecting=false;
   let running=false,firstFrame=true,selectionAcknowledged=false,fullBootVisible=false,frameSamples:number[]=[],launchPlan:any;
-  const skin=new URLSearchParams(location.search).get('skin')==='gx'?'gx':'host';
+  const skin='host';
   const send=(schedule=true)=>{
    if(worker&&running){
     // Modal visibility is constant for this input sample. Querying layout for
@@ -70,22 +71,17 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true,chrom
     launchPlan.packedPorts=launchPlan.packedPorts.map((p:number,i:number)=>i<2?(p&~0xff00)|256:p);
     launchPlan.stocks=20;
    }
-   // The upstream browser heap supports full-quality archives for multiplayer.
-   const compactCostumes=launchPlan.costumes.length>=3&&(new URLSearchParams(location.search).get('engine')||'upstream')!=='upstream';
    let preparedCostumes=0;const costumeTotal=launchPlan.costumes.length;
    if(costumeTotal)setStatus(`Preparing fighters… 0/${costumeTotal}`);
    const costumes=await Promise.all(launchPlan.costumes.map(async (entry:any)=>{
-    const response=await meleeFetch('/api/prepare/'+encodeURIComponent(entry.character)+'?target='+encodeURIComponent(entry.target)+'&color='+entry.color+(skin==='host'?'&skin=host'+(compactCostumes?'&compact=1':''):''),{method:'POST',signal:abort.signal});
-    const costume=await response.json();if(!response.ok)throw Error(costume.error||'The character could not be prepared.');
-    const asset=await meleeFetch(costume.url,{signal:abort.signal});if(!asset.ok)throw Error('The costume could not load.');
-    const blob=await asset.blob();
+    const costume=await prepareNativeCostume(entry,abort.signal);
     if(!closed)setStatus(`Preparing fighters… ${++preparedCostumes}/${costumeTotal}`);
-    return {filename:costume.filename,blob};
+    return costume;
    }));
    const cssAssets = [];
    if (costumes.length) {
     setStatus('Preparing character select…');
-    const response = await meleeFetch('/api/character-select', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({costumes:launchPlan.costumes}), signal:abort.signal});
+    const response = await meleeFetch('/api/character-select', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({costumes:launchPlan.costumes,sourceOnly:true}), signal:abort.signal});
     const prepared = await response.json();if(!response.ok)throw Error(prepared.error || 'Character select could not be prepared.');
     for (const entry of prepared.assets) {
      const asset = await meleeFetch(entry.url, {signal:abort.signal});if(!asset.ok)throw Error('Character select assets could not load.');

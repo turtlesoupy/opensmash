@@ -28,6 +28,9 @@ test('namespaced proxy preserves binary streams and strips website credentials',
 test('hosted gateway exposes only asset and conversion routes',async()=>{
  const {allowedHostedRoute,createMeleeHandler}=await import('../server/handler.mjs');
  for(const route of ['/api/game','/api/game/sys/main.dol','/api/setup','/api/setup/clear','/api/native/launch','/api/debug'])for(const method of ['GET','POST'])assert.equal(allowedHostedRoute(method,route),false,route);
+ assert.equal(allowedHostedRoute('POST','/api/native-fit/source/mario'),true);
+ assert.equal(allowedHostedRoute('GET','/api/native-fit/assets/'+'a'.repeat(64)+'/sources/mario.json'),true);
+ assert.equal(allowedHostedRoute('GET','/api/native-fit/assets/'+'a'.repeat(64)+'/sources/mario.wasm'),false);
  assert.equal(allowedHostedRoute('POST','/api/prepare/mario'),true);
  assert.equal(allowedHostedRoute('GET','/engine/opensmash-web.wasm'),true);
  assert.throws(()=>createMeleeHandler({serviceOrigin:'https://private.example',serviceToken:'short'}));

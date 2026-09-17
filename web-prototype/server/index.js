@@ -1362,6 +1362,8 @@ if (!IS_PRODUCTION) {
     appType: "spa",
     server: {
       middlewareMode: true,
+      // A gameplay validation session must survive unrelated workspace edits.
+      ...(process.env.VITE_HMR === '0' ? { hmr: false, ws: { port: PORT + 1 } } : {}),
       // Dev only: extra hostnames allowed to reach the Vite middleware, e.g.
       // an ngrok tunnel for phone testing (VITE_ALLOWED_HOSTS=.ngrok-free.app).
       ...(process.env.VITE_ALLOWED_HOSTS

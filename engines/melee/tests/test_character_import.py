@@ -3,7 +3,7 @@ from pathlib import Path
 import threading
 from opensmash_melee.character_import import source_url,import_source,ImportManager,FILES
 ROOT=Path(__file__).resolve().parents[1]
-SOURCE=ROOT.parent/'opensmash/pipeline/play/ui/alanturing'
+SOURCE=ROOT.parents[1]/'play/ui/alanturing'
 BASE='https://smash.fun/engine/character-source/'+'a'*48+'/'
 class SourceImportTests(unittest.TestCase):
  def test_rejects_legacy_links_credentials_and_arbitrary_hosts(self):
@@ -19,11 +19,35 @@ class SourceImportTests(unittest.TestCase):
    dest=Path(directory);row=import_source(BASE+'manifest.json',dest,{'https://smash.fun'},fetch)
    self.assertEqual(row['name'],'Imported Turing');self.assertEqual((dest/'rigged.glb').read_bytes(),assets['rigged.glb'])
    self.assertNotIn('url',row)
+   assets['melee-source.json']=b'{}'
+   manifest['nativeSource']={'melee-source.json':{'url':BASE+'melee-source.json','sha256':hashlib.sha256(b'{}').hexdigest(),'bytes':2}}
+   again=import_source(BASE+'manifest.json',dest,{'https://smash.fun'},fetch)
+   self.assertEqual(again['signature'],row['signature'])
+   self.assertEqual((dest/'melee-source.json').read_bytes(),b'{}')
    self.assertEqual(json.loads((dest/'character.json').read_text())['display'],'Imported Turing')
    manifest['files']['rigged.glb']['url']='https://smash.fun/other/rigged.glb'
    with self.assertRaisesRegex(ValueError,'same character'):import_source(BASE+'manifest.json',dest,{'https://smash.fun'},fetch)
    manifest['files']['rigged.glb']['url']=BASE+'rigged.glb';manifest['files']['rigged.glb']['sha256']='0'*64
    with self.assertRaisesRegex(ValueError,'integrity'):import_source(BASE+'manifest.json',dest,{'https://smash.fun'},fetch)
+
+ @unittest.skipUnless((SOURCE/'rigged.glb').exists(),'Local generated source required')
+ def test_native_import_retains_source_without_per_moveset_build(self):
+  from unittest.mock import patch
+  import shutil
+  def populate(link,destination,origins):
+   for name in [*FILES,'character.json']:shutil.copyfile(SOURCE/name,destination/name)
+   return {'name':'Native source','short':'NATIVE','signature':'fixture-signature'}
+  with tempfile.TemporaryDirectory() as directory:
+   manager=ImportManager({},threading.Lock(),workspace=directory)
+   with patch('opensmash_melee.character_import.import_source',side_effect=populate), patch('opensmash_melee.character_import.run_stage') as convert:
+    first={};manager.work(first,BASE+'manifest.json','mario',True)
+    self.assertEqual(first['state'],'complete',first)
+    second={};manager.work(second,BASE+'manifest.json','fox',True)
+    self.assertEqual(second['fighter']['slug'],first['fighter']['slug'])
+    self.assertEqual(second['fighter']['target'],'fox')
+    convert.assert_not_called()
+    self.assertEqual(len(list((Path(directory)/'assets/characters').glob('*/rigged.glb'))),1)
+   manager.pool.shutdown()
 
  def test_remove_forgets_imported_fighter_and_deletes_its_files(self):
   with tempfile.TemporaryDirectory() as directory:

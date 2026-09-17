@@ -369,7 +369,8 @@ export default function App() {
   function switchExperience(experience) {
     if (experience === (isMelee ? 'melee' : 'ssb64')) return;
     if (engine && !window.confirm('Leave the current game and switch experiences?')) return;
-    window.history.pushState({}, '', experience === 'melee' ? '/melee' : '/');
+    const nativeQuery=window.location.search;
+    window.history.pushState({}, '', (experience === 'melee' ? '/melee' : '/')+nativeQuery);
     syncExperience();
   }
   useEffect(() => {

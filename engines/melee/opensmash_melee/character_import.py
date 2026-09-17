@@ -11,6 +11,7 @@ from .glb import GLB
 from .character_build import archive_previous_build,run_stage
 ROOT=Path(__file__).resolve().parents[1]
 FILES={'rigged.glb':64<<20,'portrait_raw.png':16<<20,'stock_raw.png':8<<20,'emblem_raw.png':8<<20,'announcer.wav':16<<20}
+OPTIONAL_FILES={'emblem_stencil.png':8<<20,'melee-source.json':32<<20,'melee-source.rgba8':4<<20,'melee-source.identity.dat':4<<20,'melee-source-ready.json':4096}
 from .targets import PLAYABLE
 TARGETS=set(PLAYABLE)
 class NoRedirect(HTTPRedirectHandler):
@@ -44,10 +45,14 @@ def download(url,limit):
 def import_source(link,destination,origins,fetch=download):
     link=source_url(link,origins)
     manifest=json.loads(fetch(link,64<<10))
-    if manifest.get('format')!='opensmash-source-v1' or set(manifest.get('files',{}))!=set(FILES):raise ValueError('Unsupported character source manifest.')
+    optional=manifest.get('nativeSource',{})
+    if not isinstance(optional,dict) or not set(optional)<=set(OPTIONAL_FILES):raise ValueError('Invalid native source manifest.')
+    manifest['files']={**manifest.get('files',{}),**optional}
+    names=set(manifest['files'])
+    if manifest.get('format')!='opensmash-source-v1' or not set(FILES)<=names or not names<=set(FILES)|set(OPTIONAL_FILES):raise ValueError('Unsupported character source manifest.')
     name=manifest.get('name');short=manifest.get('short')
     if not isinstance(name,str) or not 1<=len(name)<=120 or not isinstance(short,str) or not 1<=len(short)<=120:raise ValueError('Invalid character name.')
-    for filename,limit in FILES.items():
+    for filename,limit in {**FILES,**{n:limit for n,limit in OPTIONAL_FILES.items() if n in names}}.items():
         entry=manifest['files'][filename]
         if type(entry.get('bytes')) is not int or not 0<entry['bytes']<=limit or not re.fullmatch('[a-f0-9]{64}',entry.get('sha256','')):raise ValueError('Invalid source asset metadata.')
         url=urljoin(link,entry.get('url',''))
@@ -64,7 +69,7 @@ def import_source(link,destination,origins,fetch=download):
     # ASCII-escaped JSON also reads correctly in older Windows locale encodings.
     (destination/'character.json').write_text(json.dumps({'name':name,'display':name,'short':short})+'\n',encoding='utf-8')
     # Identity is content-based. Never persist the bearer URL in the public roster.
-    signature=json.dumps({'name':name,'short':short,'files':{n:e['sha256'] for n,e in manifest['files'].items()}},sort_keys=True)
+    signature=json.dumps({'name':name,'short':short,'files':{n:e['sha256'] for n,e in manifest['files'].items() if n in FILES or n=='emblem_stencil.png'}},sort_keys=True)
     return {'name':name,'short':short,'signature':hashlib.sha256(signature.encode()).hexdigest()}
 
 class ImportManager:
@@ -75,13 +80,13 @@ class ImportManager:
         self.index=self.root/'roster.json';self.jobs={};self.pool=ThreadPoolExecutor(max_workers=1);self.state_lock=threading.Lock()
         self.rows=json.loads(self.index.read_text()) if self.index.exists() else []
         self.catalog.update({r['slug']:r for r in self.rows})
-    def start(self,url,target):
+    def start(self,url,target,source_only=False):
         url=source_url(url,self.origins)
         if target not in TARGETS:raise ValueError('Choose one of the supported Melee targets.')
         with self.state_lock:
             if sum(j['state'] in ['queued','working'] for j in self.jobs.values())>=self.queue_limit:raise ValueError('The character conversion queue is full. Try again shortly.')
             token=uuid.uuid4().hex;job={'id':token,'state':'queued','message':'Waiting to import…'};self.jobs[token]=job
-        self.pool.submit(self.work,job,url,target);return dict(job)
+        self.pool.submit(self.work,job,url,target,source_only);return dict(job)
     def remove(self,slug):
         """Forget an imported fighter and delete its converted costume, retained source and portrait."""
         with self.state_lock:
@@ -101,23 +106,31 @@ class ImportManager:
                 if folder.exists():folder.rename(self.root/(folder.parent.name+'-'+ident+'-removed-'+uuid.uuid4().hex))
             (self.root/(slug+'.webp')).unlink(missing_ok=True)
         return row
-    def work(self,job,url,target):
+    def work(self,job,url,target,source_only=False):
         def progress(message):job.update(state='working',message=message)
         try:
             progress('Downloading and checking your character…')
             with tempfile.TemporaryDirectory(prefix='source-',dir=self.root) as temp:
                 source=Path(temp);info=import_source(url,source,self.origins)
-                slug='import-'+hashlib.sha256((info['signature']+target).encode()).hexdigest()[:24]
+                slug='import-'+hashlib.sha256((info['signature']+('' if source_only else target)).encode()).hexdigest()[:24]
                 with self.lock:
                     existing=self.catalog.get(slug)
-                    if existing:job.update(state='complete',message='Character is ready.',fighter=existing);return
+                    if existing:
+                        if source_only and existing['target']!=target:
+                            existing['target']=target
+                            atomic_write(self.index,(json.dumps(self.rows,indent=2)+'\n').encode())
+                        job.update(state='complete',message='Character is ready.',fighter=existing);return
                     ident='web-v1-'+hashlib.sha256(slug.encode()).hexdigest()[:16]
                     archive_previous_build(self.workspace,ident)
                     commands=[('Fitting character',['tools/build_character.py',str(source),'--id',ident,'--target',target]),
                               ('Preparing textures and artwork',['tools/upgrade_character_surfaces.py',ident]),
                               ('Building playable costume',['tools/build_browser_skin_costume.py',ident])]
                     try:
-                        for stage,args in commands:
+                        if source_only:
+                            from .__main__ import import_character
+                            progress('Preparing character source…')
+                            import_character(source,self.workspace/'assets/characters'/ident)
+                        for stage,args in ([] if source_only else commands):
                             progress(stage+'…');job['stage']=stage
                             run_stage(args,self.workspace,self.root/(job['id']+'.log'),stage,target)
                     except Exception:

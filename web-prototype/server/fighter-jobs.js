@@ -1,5 +1,5 @@
 import { blockedArtworkDetails } from "../shared/fighter-job-ui.js";
-import { prepareSourceExport, sourceManifest, SOURCE_FILES } from "./source-export.js";
+import { prepareSourceExport, sourceManifest, SOURCE_FILES, OPTIONAL_SOURCE_FILES } from "./source-export.js";
 import { availableFighterTargets } from "../shared/fighter-targets.js";
 import Busboy from "busboy";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
@@ -439,6 +439,7 @@ export function createFighterJobs({
     const candidates = [
       "character.json", "cost.json", "tpose.png", "tripo_tasks.json", "rigged.glb",
       "bundle.json", "portrait_raw.png", "stock_raw.png", "emblem_raw.png",
+      "emblem_stencil.png", "melee-source.json", "melee-source.rgba8", "melee-source.identity.dat", "melee-source-ready.json",
       `${job.slug}.osbui`, "announcer.wav",
     ];
     const previous = new Map(
@@ -1317,7 +1318,7 @@ export function createFighterJobs({
       const job=[...jobs.values()].find(j=>j.status==='complete' && j.sourceExport?.capability===capability);
       if(!job)return null;
       if(name==='manifest.json')return {manifest:sourceManifest(job)};
-      return SOURCE_FILES.includes(name)?job.sourceExport.files[name]:null;
+      return [...SOURCE_FILES,...OPTIONAL_SOURCE_FILES].includes(name)?job.sourceExport.files[name]:null;
     },
     artifact(id, ownerId, name, variant = null) {
       const job = jobs.get(id);

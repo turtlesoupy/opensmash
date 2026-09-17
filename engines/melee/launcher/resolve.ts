@@ -1,5 +1,6 @@
 import {meleePath} from '../web/lib/paths';
 import type {Fighter} from '../web/lib/fighter';
+import {desktop} from '../web/lib/desktop';
 // Resolve generated website fighters through the existing source-export format.
 // Both browser and native clients use the same importer API; only its location differs.
 export async function resolveFighters(action:any,roster:Fighter[],signal:AbortSignal,onStatus:(message:string)=>void){
@@ -14,7 +15,7 @@ export async function resolveFighters(action:any,roster:Fighter[],signal:AbortSi
   const base=pick.base||pick.target||'mario';
   const target=({donkey:'donkey-kong',captain:'captain-falcon',purin:'jigglypuff'} as Record<string,string>)[base]||base;
   const source=await json('/api/melee/source/'+encodeURIComponent(pick.slug),{method:'POST',body:'{}'});
-  let job=await json(meleePath('/api/imports'),{method:'POST',body:JSON.stringify({url:new URL(source.url,location.origin).href,target})});
+  let job=await json(meleePath('/api/imports'),{method:'POST',body:JSON.stringify({url:new URL(source.url,location.origin).href,target,sourceOnly:!desktop()})});
   while(job.state!=='complete'){
    if(job.state==='failed')throw Error(job.message);
    onStatus(job.message||'Preparing character…');

@@ -28,3 +28,11 @@ test('same bytes keep the URL through property reordering and storage relocation
  const changed=await prepareSourceExport(j,'owner',{read:async key=>Buffer.from(key+'changed')});
  assert.notEqual(changed.capability,original);
 });
+
+test('includes optional portable native inputs while keeping legacy sources valid',async()=>{
+ const j=job();j.checkpoint.files.push({scope:'output',name:'melee-source.json',key:'private/native-source'});
+ j.sourceExport=await prepareSourceExport(j,'owner',store);
+ assert.ok(sourceManifest(j).nativeSource['melee-source.json']);
+ assert.equal(Object.keys(sourceManifest(j).files).length,SOURCE_FILES.length);
+ assert.ok(!sourceManifest(j).files['photo.png']);
+});

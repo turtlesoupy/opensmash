@@ -20,6 +20,10 @@ RUN pip install --no-cache-dir -r /tmp/requirements-worker.txt
 
 COPY pipeline/pipeline /workspace/pipeline/pipeline
 COPY pipeline/skels /workspace/pipeline/skels
+# Moveset-independent native source build: code/schema only, no game assets.
+COPY pipeline/engines/melee/opensmash_melee/*.py /workspace/pipeline/engines/melee/opensmash_melee/
+COPY pipeline/engines/melee/tools/bake_native_sources.py pipeline/engines/melee/tools/prepare_native_fit_local.py /workspace/pipeline/engines/melee/tools/
+COPY pipeline/engines/melee/runtime/launch-options.json pipeline/engines/melee/runtime/retarget-options.json /workspace/pipeline/engines/melee/runtime/
 COPY pipeline/web-prototype/visual/assets/ui_refs /workspace/pipeline/web-prototype/visual/assets/ui_refs
 COPY pipeline/assets/portrait_style_refs /workspace/pipeline/assets/portrait_style_refs
 COPY pipeline/assets/tpose_style_ref /workspace/pipeline/assets/tpose_style_ref

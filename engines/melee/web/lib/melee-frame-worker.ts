@@ -1,6 +1,7 @@
 /** Worker-compatible launcher adapter for browser-owned WebGPU rendering. */
 export class MeleeFrameWorker extends EventTarget {
   onmessage: ((event: MessageEvent) => void) | null = null;
+  onmessageerror: ((event: MessageEvent) => void) | null = null;
   onerror: ((event: ErrorEvent) => void) | null = null;
   frame: HTMLIFrameElement;
   pending: unknown[];

@@ -64,6 +64,6 @@ export function createMeleeHandler({origin=process.env.MELEE_LOCAL_ORIGIN,produc
 }
 
 export function allowedHostedRoute(method,path){
- if(method==='GET'||method==='HEAD')return /^\/engine\/[a-zA-Z0-9_.\/-]+$/.test(path)||/^\/api\/(?:costume|announcer)\/[a-zA-Z0-9_-]+$/.test(path)||/^\/api\/imports(?:\/[a-f0-9]+|\/portraits\/import-[a-f0-9]{24}\.webp)?$/.test(path)||/^\/api\/character-select\/[a-f0-9]{64}\/[0-3]\.bin$/.test(path);
- return method==='POST'&&(path==='/api/imports'||path==='/api/character-select'||/^\/api\/prepare\/[a-zA-Z0-9_-]+$/.test(path));
+ if(method==='GET'||method==='HEAD')return /^\/api\/native-fit\/assets\/[a-f0-9]{64}\/sources\/[a-z0-9_-]+\.(?:json|rgba8|identity\.dat)$/.test(path)||/^\/engine\/[a-zA-Z0-9_.\/-]+$/.test(path)||/^\/api\/(?:costume|announcer)\/[a-zA-Z0-9_-]+$/.test(path)||/^\/api\/imports(?:\/[a-f0-9]+|\/portraits\/import-[a-f0-9]{24}\.webp)?$/.test(path)||/^\/api\/character-select\/[a-f0-9]{64}\/[0-3]\.bin$/.test(path);
+ return method==='POST'&&(path==='/api/imports'||/^\/api\/native-fit\/source\/[a-z0-9_-]+$/.test(path)||path==='/api/character-select'||/^\/api\/prepare\/[a-zA-Z0-9_-]+$/.test(path));
 }

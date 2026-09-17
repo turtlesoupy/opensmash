@@ -46,4 +46,5 @@ run([sdk / 'upstream/emscripten/emcc', port / 'audio/playback.c', port / 'vendor
      '-sINITIAL_MEMORY=2097152', '-sSTACK_SIZE=65536', '-sALLOW_MEMORY_GROWTH=0',
      '-sMALLOC=emmalloc', '-sABORTING_MALLOC=0', '--no-entry',
      '-sEXPORTED_FUNCTIONS=' + json.dumps(exports), '-o', out])
+run([sys.executable, ENGINE / 'tools/build_native_fit.py', '--emsdk', sdk])
 print(f'Built upstream engine {head} at {checkout}')

@@ -18,14 +18,15 @@ def handler(base,access,cache=None):
                 try:
                     length=int(self.headers.get('Content-Length','0'))
                     if not 0<=length<=16384:return False
-                    if not length and not route.startswith('/api/prepare/'):return False
+                    if not length and not route.startswith(('/api/prepare/','/api/native-fit/source/')):return False
                     raw=self.rfile.read(length);self.post_body=json.loads(raw) if raw else {};self.rfile=io.BytesIO(raw)
                 except (ValueError,TypeError):return False
                 if not isinstance(self.post_body,dict):return False
             if cache:cache.before_authorize(self,access)
             def fighter(slug):return isinstance(slug,str) and slug in base.CATALOG and (not base.CATALOG[slug].get('imported') or access.allows(self.owner,'fighter:'+slug))
-            for prefix in ['/api/prepare/','/api/costume/','/api/announcer/']:
+            for prefix in ['/api/native-fit/source/','/api/prepare/','/api/costume/','/api/announcer/']:
                 if route.startswith(prefix):return fighter(route[len(prefix):])
+            if route.startswith('/api/native-fit/assets/'):return access.allows(self.owner,'native-source:'+route.split('/')[4])
             if route.startswith('/api/imports/portraits/'):return fighter(route.rsplit('/',1)[1][:-5])
             if route.startswith('/api/imports/'):return access.allows(self.owner,'job:'+route.rsplit('/',1)[1])
             if route.startswith('/api/character-select/'):return access.allows(self.owner,'selection:'+route.split('/')[3])
@@ -56,6 +57,7 @@ def handler(base,access,cache=None):
             if cache:cache.response(self,value,status)
             if isinstance(value,list) and urlsplit(self.path).path=='/api/imports':value=[r for r in value if access.allows(self.owner,'fighter:'+r['slug'])]
             if isinstance(value,dict) and status<300:
+                if urlsplit(self.path).path.startswith('/api/native-fit/source/') and value.get('base'):access.grant(self.owner,'native-source:'+value['base'].split('/')[4])
                 if value.get('id'):access.grant(self.owner,'job:'+value['id'])
                 if isinstance(value.get('fighter'),dict) and value['fighter'].get('slug'):access.grant(self.owner,'fighter:'+value['fighter']['slug'])
                 for asset in value.get('assets',[]):access.grant(self.owner,'selection:'+asset['url'].split('/')[3])

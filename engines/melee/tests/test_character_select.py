@@ -211,6 +211,11 @@ class CharacterSelectTests(unittest.TestCase):
         catalog = {'test': {'slug': 'test', 'target': 'mario'}}
         entry = {'character': 'test', 'fighter': 8, 'color': 1, 'filename': 'PlMrYe.dat'}
         self.assertEqual(catalog_identities(self.source, catalog, [entry])[0][:2], (8, 1))
+        native = catalog_identities(self.source, catalog, [entry], source_root=self.source)
+        self.assertEqual(native[0][2], (self.source / 'test').resolve())
+        # Source-based identities keep the same lineup validation as converted costumes.
+        with self.assertRaises(ValueError):
+            catalog_identities(self.source, catalog, [{**entry, 'filename':'../x'}], source_root=self.source)
         for entries in ([entry, entry], [{**entry, 'fighter': 2}], [{**entry, 'color': True}], [{**entry, 'filename': '../x'}]):
             with self.assertRaises(ValueError): catalog_identities(self.source, catalog, entries)
 
