@@ -4,6 +4,7 @@ import AuthGate from "./AuthGate.jsx";
 import ModalPage from "./ModalPage.jsx";
 import RomHandoffModal from "./RomHandoffModal.jsx";
 import RomHandoffReceiver from "./RomHandoffReceiver.jsx";
+import N64Keyboard from "./N64Keyboard.jsx";
 import ControllerMapper from "./ControllerMapper.jsx";
 import { canTurnPortOff, choiceForEntry, padDisplayName, portOptions } from "../shared/controller-ports.js";
 import {
@@ -20,6 +21,7 @@ import {
 } from "./launch-options.js";
 
 export default function SettingsModal({
+  selectedGame = "ssb64",
   engineSettings = null,
   engineControls = null,
   accountConnected = false,
@@ -43,6 +45,9 @@ export default function SettingsModal({
 }) {
   const [draft, setDraft] = useState(options);
   const [page, setPage] = useState("main");
+  const [settingsGame, setSettingsGame] = useState(selectedGame);
+  const gameTabsRef = useRef(null);
+  const isMelee = settingsGame === "melee";
   const [mappingPad, setMappingPad] = useState(null);
   const [, setMappingRevision] = useState(0);
   const mainFirstRef = useRef(null);
@@ -58,6 +63,7 @@ export default function SettingsModal({
     if (open) {
       setDraft(options);
       setPage("main");
+      setSettingsGame(selectedGame);
       setMappingPad(null);
     }
   }, [open]);
@@ -65,7 +71,7 @@ export default function SettingsModal({
   useEffect(() => {
     if (!open) return undefined;
     const focusFrame = window.requestAnimationFrame(() => {
-      if (page === "gameplay") gameplayFirstRef.current?.focus();
+      if (page === "gameplay" || page === "bindings") gameTabsRef.current?.focus();
       else if (page === "controllers") controllersFirstRef.current?.focus();
       else if (page === "login") loginBackRef.current?.focus();
       else if (page === "receive") receiveFirstRef.current?.focus();
@@ -99,7 +105,8 @@ export default function SettingsModal({
   const title = page === "gameplay"
     ? "Gameplay Options"
     : page === "controllers" ? "Players & Controllers"
-      : page === "mapping" ? "Map Controller" : "Settings";
+      : page === "bindings" ? "Keybinds & Controller Mapping"
+        : page === "mapping" ? "Map Controller" : "Settings";
   const handoffPage = page === "receive" || page === "send";
 
   return (
@@ -127,7 +134,7 @@ export default function SettingsModal({
           <header className="advanced-heading" hidden={page === "login" || handoffPage}>
             <h2 id="settings-title">{title}</h2>
             {page === "controllers" && (
-              <p className="settings-subtitle">Connect a controller for multiplayer</p>
+              <p className="settings-subtitle">Choose keyboard, USB, or Bluetooth controllers for either game</p>
             )}
           </header>
 
@@ -158,13 +165,14 @@ export default function SettingsModal({
             <button className="launch-flow-action settings-menu-button" type="button" onClick={() => setPage("controllers")}>
               <span>Players &amp; Controllers</span>
             </button>
-            {!engineSettings && (authorized ? (
+            <button className="launch-flow-action settings-menu-button" type="button" onClick={() => setPage("bindings")}><span>Keybinds &amp; Controller Mapping</span></button>
+            {(authorized ? (
               <button
                 className="launch-flow-action settings-menu-button advanced-handoff-action"
                 type="button"
                 onClick={() => setPage("send")}
               >
-                <span>Share ROM with another device</span>
+                <span>Share N64 ROM with another device</span>
               </button>
             ) : (
               <button
@@ -172,16 +180,16 @@ export default function SettingsModal({
                 type="button"
                 onClick={() => setPage("receive")}
               >
-                <span>Get ROM from another device</span>
+                <span>Get N64 ROM from another device</span>
               </button>
             ))}
-            {authorized && !engineSettings && (
+            {authorized && (
               <button
                 className="launch-flow-action settings-menu-button reset-rom-button"
                 type="button"
                 onClick={() => close(onResetRom)}
               >
-                <span>Clear ROM from this device</span>
+                <span>Clear N64 ROM from this device</span>
               </button>
             )}
             <button
@@ -227,8 +235,11 @@ export default function SettingsModal({
             />
           </div>
 
-          {engineSettings && page==='gameplay' && <div className="settings-subpage">{engineSettings}<BackButton onClick={()=>setPage('main')}/></div>}
-          <div className="advanced-form settings-subpage" hidden={page !== "gameplay" || Boolean(engineSettings)}>
+          {(page === "gameplay" || page === "bindings") && (
+            <GameTabs value={settingsGame} onChange={setSettingsGame} selectedRef={gameTabsRef} />
+          )}
+          {isMelee && engineSettings && page==='gameplay'  && <div className="settings-subpage" role="tabpanel" id="settings-game-panel" aria-labelledby="settings-game-melee">{engineSettings}<BackButton onClick={()=>setPage('main')}/></div>}
+          <div className="advanced-form settings-subpage" role="tabpanel" id={page === "gameplay" && !isMelee ? "settings-game-panel" : undefined} aria-labelledby="settings-game-ssb64" hidden={page !== "gameplay" || isMelee}>
             <div className="advanced-selects">
               <label className="advanced-field">
                 <span className="advanced-field-label">Character Mesh</span>
@@ -351,32 +362,6 @@ export default function SettingsModal({
               )}
             </section>
 
-            {open && page === "controllers" && engineControls}
-            {!engineControls && gamepads.length > 0 && (
-              <section className="controller-profile-list" aria-label="Controller mappings">
-                {gamepads.map((pad) => {
-                  const mappingSource = window.openSmashControllerRemap?.profileSource?.(pad.id) || "default";
-                  return (
-                    <div className="controller-profile-row" key={`${pad.id}:${pad.index}`}>
-                      <span>
-                        <strong>{padDisplayName(pad.id)}</strong>
-                        <small>{mappingSource === "m64"
-                          ? "M64 detected — complete button setup"
-                          : mappingSource === "custom" ? "Custom mapping active" : "Browser default mapping"}</small>
-                      </span>
-                      <button
-                        className="launch-flow-action"
-                        type="button"
-                        onClick={() => { setMappingPad(pad); setPage("mapping"); }}
-                      >
-                        Map buttons
-                      </button>
-                    </div>
-                  );
-                })}
-              </section>
-            )}
-
             {debugMode && (
               <section className="advanced-debug-tools" aria-labelledby="advanced-debug-title">
                 <div>
@@ -403,10 +388,44 @@ export default function SettingsModal({
             <BackButton onClick={() => setPage("main")} />
           </div>
 
+          {page === "bindings" && (
+            <div className="settings-subpage" role="tabpanel" id="settings-game-panel" aria-labelledby={`settings-game-${settingsGame}`}>
+              {open && !isMelee && <N64Keyboard />}
+              {open && isMelee && engineControls}
+              {!isMelee && gamepads.length > 0 && (
+                <section className="controller-profile-list" aria-label="Controller mappings">
+                  {gamepads.map((pad) => {
+                    const mappingSource = window.openSmashControllerRemap?.profileSource?.(pad.id) || "default";
+                    return (
+                      <div className="controller-profile-row" key={`${pad.id}:${pad.index}`}>
+                        <span>
+                          <strong>{padDisplayName(pad.id)}</strong>
+                          <small>{mappingSource === "m64"
+                            ? "M64 detected — complete button setup"
+                            : mappingSource === "custom" ? "Custom mapping active" : "Browser default mapping"}</small>
+                        </span>
+                        <button
+                          className="launch-flow-action"
+                          type="button"
+                          onClick={() => { setMappingPad(pad); setPage("mapping"); }}
+                        >
+                          Map buttons
+                        </button>
+                      </div>
+                    );
+                  })}
+                </section>
+              )}
+
+              {!isMelee && gamepads.length === 0 && <p className="settings-subtitle">Connect a USB or Bluetooth controller and press a button to map it.</p>}
+              <BackButton onClick={() => setPage("main")} />
+            </div>
+          )}
+
           {open && page === "mapping" && mappingPad && (
             <ControllerMapper
               pad={mappingPad}
-              onBack={() => setPage("controllers")}
+              onBack={() => setPage("bindings")}
               onSaved={() => setMappingRevision((value) => value + 1)}
             />
           )}
@@ -424,4 +443,25 @@ function BackButton({ onClick }) {
       </button>
     </div>
   );
+}
+
+function GameTabs({ value, onChange, selectedRef }) {
+  const games = [{ id: "ssb64", label: "N64" }, { id: "melee", label: "Melee" }];
+  return <div className="settings-game-tabs" role="tablist" aria-label="Game settings">
+    {games.map((game, index) => <button
+      key={game.id} type="button" role="tab" id={`settings-game-${game.id}`}
+      className="launch-flow-action" aria-selected={value === game.id}
+      aria-controls="settings-game-panel" tabIndex={value === game.id ? 0 : -1}
+      ref={value === game.id ? selectedRef : undefined}
+      onClick={() => onChange(game.id)}
+      onKeyDown={(event) => {
+        const next = event.key === "Home" ? 0 : event.key === "End" ? 1
+          : ["ArrowLeft", "ArrowRight"].includes(event.key) ? 1 - index : null;
+        if (next === null) return;
+        event.preventDefault();
+        onChange(games[next].id);
+        document.getElementById(`settings-game-${games[next].id}`)?.focus();
+      }}
+    >{game.label}</button>)}
+  </div>;
 }

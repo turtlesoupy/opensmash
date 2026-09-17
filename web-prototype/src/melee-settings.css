@@ -41,3 +41,14 @@
  .advanced-screen .controls-grid > div { gap:6px; font-size:13px; }
  .advanced-screen .controls-screen .keycap { min-width:0; padding:8px; font-size:13px; }
 }
+
+.advanced-screen .settings-game-tabs { display:flex; gap:8px; margin:0 0 24px; border-bottom:1px solid #5d3a2b; padding-bottom:12px; }
+.advanced-screen .settings-game-tabs button { flex:1; min-height:48px; }
+.advanced-screen .settings-game-tabs [aria-selected="true"] { background:#613013; border-color:#fff0b5; color:#fff2d6; }
+.advanced-screen .settings-game-tabs button:focus-visible { outline:2px solid #fff0b5; outline-offset:3px; }
+.advanced-screen .settings-keyboard { color:#c7a985; }
+.advanced-screen .settings-keyboard p { color:#a58f79; }
+.advanced-screen .settings-keyboard dl > div { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:10px 0; border-bottom:1px solid #302219; }
+.advanced-screen .settings-keyboard dd { margin:0; color:#fff2d6; }
+
+.advanced-screen .settings-keyboard-grid > div { grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); }

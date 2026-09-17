@@ -1,3 +1,4 @@
+import { n64Keyboard } from '../shared/n64-keyboard.js';
 import {loadMeleeKeycapLayout, meleeRequiredControls, meleeControlForEvent, meleeControlLabels, meleePadControls, meleeCalloutLayout} from '../../engines/melee/launcher/controller-tutorial.ts';
 import gameCubeControllerUrl from '../../engines/melee/launcher/assets/fun-gamecube-controller.glb?url';
 import * as THREE from 'three';
@@ -18,7 +19,7 @@ import {
 } from './controls-roadblock.js?v=20260901-upload-flow1';
 import { hasShortcutModifier } from '../shared/keyboard-input.js';
 import {
-  CONTROL_KEYS, CONTROL_ALT_LABELS, controlForEvent, isControlChord, keycapLabels,
+  CONTROL_KEYS, controlAltLabels, controlForEvent, isControlChord, keycapLabels,
 } from '../shared/keyboard-map.js';
 import { lockPageScroll } from '../shared/page-scroll-lock.js';
 
@@ -93,6 +94,12 @@ const CONSOLE_DOCK_FRONT_PITCH = 0.18;
 const REQUIRED_CONTROL_KEYS = CONTROL_KEYS;
 let keyboardLabels = null;
 let keyboardLabelsLoad = null;
+n64Keyboard.subscribe(() => {
+  keyboardLabelsLoad = keycapLabels().then(result => {
+    keyboardLabels = result;
+    applyControlLabels();
+  });
+});
 let meleeKeyboardLabelsLoad = null;
 // Gamepad (standard layout) -> the same control ids the keyboard tutorial
 // uses, so a pad player lights up the very same callouts: A, B, LT=Z,
@@ -324,7 +331,7 @@ function applyControlLabels() {
   }
   // "or Ctrl" style hints only make sense for the keyboard.
   controllerCallouts?.querySelectorAll('[data-control-alt]').forEach(hint => {
-    hint.textContent = (pad || usesDisc()) ? '' : (CONTROL_ALT_LABELS[hint.dataset.controlAlt] ?? '');
+    hint.textContent = (pad || usesDisc()) ? '' : (controlAltLabels()[hint.dataset.controlAlt] ?? '');
   });
 }
 

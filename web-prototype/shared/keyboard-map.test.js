@@ -42,3 +42,23 @@ test("keycapLabels: layout map wins, QWERTY otherwise", async () => {
   const broken = await keycapLabels({ getLayoutMap: async () => { throw new Error("nope"); } });
   assert.equal(broken.j, "J");
 });
+
+test('tutorial input, labels and alternate hints follow saved N64 bindings', async () => {
+  const { n64Keyboard } = await import('./n64-keyboard.js');
+  const { controlAltLabels } = await import('./keyboard-map.js');
+  const originalStorage = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  Object.defineProperty(globalThis, 'localStorage', { configurable:true, value:{setItem(){},getItem(){return null;}} });
+  try {
+    n64Keyboard.save(n64Keyboard.rebind(n64Keyboard.defaults(), 'a', 'KeyP'));
+    assert.equal(controlForEvent({code:'KeyP'}), 'j');
+    assert.equal(controlForEvent({code:'KeyJ'}), null);
+    assert.equal(controlForEvent({code:'ControlLeft'}), null);
+    assert.equal((await keycapLabels()).j, 'P');
+    assert.equal(controlAltLabels().j, undefined);
+    assert.equal((await keycapLabels({getLayoutMap:async()=>new Map([['KeyP','r']])})).j, 'R');
+    n64Keyboard.save(n64Keyboard.defaults());
+  } finally {
+    if(originalStorage) Object.defineProperty(globalThis,'localStorage',originalStorage);
+    else delete globalThis.localStorage;
+  }
+});

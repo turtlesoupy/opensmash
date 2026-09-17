@@ -1,3 +1,4 @@
+import {n64Keyboard} from '../../../web-prototype/shared/n64-keyboard.js';
 // The same standard-mapping inputs consumed by the WASM shell. navigator's
 // gamepads have already passed through the authoritative site remapper.
 export function samplePad(pad){
@@ -21,8 +22,7 @@ export function samplePorts(plan,pads,blocked=false){
  });
 }
 
-export function sampleKeyboard(keys){
- const held=(...names)=>names.some(n=>keys.has(n));let buttons=0;
- for(const [names,bit] of [[['KeyJ','ControlLeft','ControlRight'],0x8000],[['KeyK','AltLeft','AltRight'],0x4000],[['KeyL','ShiftLeft','ShiftRight'],0x2000],[['Enter','NumpadEnter','Space'],0x1000],[['KeyI'],0x20],[['KeyO'],0x10],[['KeyU'],8],[['KeyT'],0x800],[['KeyG'],0x400],[['KeyF'],0x200],[['KeyH'],0x100]])if(held(...names))buttons|=bit;
- return [2,1,buttons,80*(Number(held('KeyD','ArrowRight'))-Number(held('KeyA','ArrowLeft'))),80*(Number(held('KeyW','ArrowUp'))-Number(held('KeyS','ArrowDown'))),0,0,0,0];
+export function sampleKeyboard(keys, bindings) {
+ const {button,sx,sy}=n64Keyboard.sample(keys, bindings);
+ return [2,1,button,sx,sy,0,0,0,0];
 }

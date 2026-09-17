@@ -14,3 +14,12 @@ test('embedded keyboard preserves N64 buttons and opposite directions cancel',as
  assert.deepEqual(sampleKeyboard(new Set(['Enter','KeyJ','KeyW','KeyD'])),[2,1,0x9000,80,80,0,0,0,0]);
  assert.deepEqual(sampleKeyboard(new Set(['KeyW','KeyS','ArrowLeft','ArrowRight'])),[2,1,0,0,0,0,0,0,0]);
 });
+
+test('native N64 uses the same remapped keyboard and all C buttons',async()=>{
+ const {sampleKeyboard}=await import('./input.mjs');
+ const {n64Keyboard}=await import('../../../web-prototype/shared/n64-keyboard.js');
+ let bindings=n64Keyboard.rebind(n64Keyboard.defaults(),'a','KeyP');
+ bindings=n64Keyboard.rebind(bindings,'cdown','Digit1');
+ assert.deepEqual(sampleKeyboard(new Set(['KeyP','Digit1','KeyD']),bindings),[2,1,0x8004,80,0,0,0,0,0]);
+ assert.equal(sampleKeyboard(new Set(['KeyJ','ControlLeft']),bindings)[2],0);
+});

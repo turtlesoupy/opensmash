@@ -8,3 +8,9 @@ export function withControllerRemap(html) {
   }
   return `${CONTROLLER_REMAP_TAG}\n${source}`;
 }
+
+const KEYBOARD_TAG = '<script src="/n64-keyboard-runtime.js"></script><script>openSmashN64Keyboard.installEngine();</script>';
+export function withN64Keyboard(html) {
+  if (html.includes(KEYBOARD_TAG)) return html;
+  return html.includes('</head>') ? html.replace('</head>', `${KEYBOARD_TAG}\n</head>`) : `${KEYBOARD_TAG}\n${html}`;
+}

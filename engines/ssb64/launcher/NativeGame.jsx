@@ -1,3 +1,4 @@
+import {n64Keyboard} from '../../../web-prototype/shared/n64-keyboard.js';
 import {samplePorts,sampleKeyboard} from './input.mjs';
 import {useEffect,useRef,useState} from 'react';
 export default function NativeGame({src,onClose,soundOn}){
@@ -8,6 +9,7 @@ export default function NativeGame({src,onClose,soundOn}){
   const bridge=window.openSmashDesktop,display=window.meleeDesktop,element=canvas.current,keys=new Set(),pulses=new Set();
   const blocked=()=>[...document.querySelectorAll('dialog[open], [role="dialog"][aria-modal="true"]')].some(el=>el.getClientRects().length>0);
   const clear=()=>{keys.clear();pulses.clear();};
+  const unsubscribeKeyboard=n64Keyboard.subscribe(clear);
   const key=event=>{if(event.code==='Escape'||event.code==='F11'||event.metaKey)return;event.preventDefault();if(event.type==='keydown'){keys.add(event.code);pulses.add(event.code);}else keys.delete(event.code);};
   const frame=()=>{setHasFrame(true);};
   const focus=()=>{if(!blocked())element.focus({preventScroll:true});};
@@ -27,7 +29,7 @@ export default function NativeGame({src,onClose,soundOn}){
     const poll=async()=>{try{const state=await bridge.status('ssb64');if(closed)return;setStatus(state.message);if(state.running)timer=setTimeout(poll,500);else{clearInterval(inputTimer);setError(state.message);}}catch(e){if(!closed)setError(e.message);}};void poll();
    }catch(e){if(!closed)setError(e.message);}
   }
-  void start();return()=>{closed=true;clearTimeout(timer);clearInterval(inputTimer);clear();display.setGameActive(false);void bridge.stop({engine:'ssb64',session});
+  void start();return()=>{closed=true;unsubscribeKeyboard();clearTimeout(timer);clearInterval(inputTimer);clear();display.setGameActive(false);void bridge.stop({engine:'ssb64',session});
    element.removeEventListener('native-frame',frame);element.removeEventListener('native-error',failed);element.removeEventListener('keydown',key);element.removeEventListener('keyup',key);element.removeEventListener('blur',clear);window.removeEventListener('blur',clear);window.removeEventListener('focus',focus);
   };
  },[src]);

@@ -1712,8 +1712,9 @@ export default function App() {
           onSaveSettings={saveFighterSettings}
         />
         <SettingsModal
-          engineControls={isMelee?<Suspense fallback={<p>Loading bindings…</p>}><MeleeControls/></Suspense>:null}
-          engineSettings={isMelee?<Suspense fallback={<p>Loading Melee settings…</p>}><MeleeSettings/></Suspense>:null}
+          selectedGame={isMelee ? "melee" : "ssb64"}
+          engineControls={<Suspense fallback={<p>Loading bindings…</p>}><MeleeControls/></Suspense>}
+          engineSettings={<Suspense fallback={<p>Loading Melee settings…</p>}><MeleeSettings/></Suspense>}
           accountConnected={Boolean(user)}
           authorized={authorized}
           debugMode={new URLSearchParams(window.location.search).get("debug") === "1"}
@@ -1913,6 +1914,9 @@ export default function App() {
       </footer>
 
       <SettingsModal
+        selectedGame={isMelee ? "melee" : "ssb64"}
+        engineControls={<Suspense fallback={<p>Loading bindings…</p>}><MeleeControls/></Suspense>}
+        engineSettings={<Suspense fallback={<p>Loading Melee settings…</p>}><MeleeSettings/></Suspense>}
         accountConnected={Boolean(user)}
         authorized={authorized}
         debugMode={new URLSearchParams(window.location.search).get("debug") === "1"}

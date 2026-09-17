@@ -23,7 +23,7 @@ import {
 } from "./cache-policy.js";
 import { CREATION_DISABLED_MESSAGE, creationEnabled } from "./creation-switch.js";
 import { withInitialState } from "./html-state.js";
-import { withControllerRemap } from "./engine-html.js";
+import { withControllerRemap, withN64Keyboard } from "./engine-html.js";
 import { resolveProjectPaths } from "./project-paths.js";
 import { assignRosterBases, bundleForBase, FIGHTERS, readOsb6Targets } from "./roster.js";
 import { characterAssetKind, engineBundleAssetKind, loadRemoteBakedRoster } from "./baked-remote.js";
@@ -503,7 +503,7 @@ async function serveFile(req, res, filePath, cacheControl = "no-store", extraHea
 async function serveEngineIndex(req, res, filePath, cacheControl, extraHeaders = {}) {
   try {
     const source = await readFile(filePath, "utf8");
-    const body = withControllerRemap(source);
+    const body = withN64Keyboard(withControllerRemap(source));
     const headers = {
       "Content-Type": "text/html; charset=utf-8",
       "Content-Length": Buffer.byteLength(body),
@@ -1270,6 +1270,10 @@ async function handleRequest(req, res, vite) {
       edgeCacheHeaders(cacheControl, IS_PRODUCTION),
     ))) return;
     return json(res, 404, { error: "Engine file not found" });
+  }
+
+  if (pathname === "/n64-keyboard-runtime.js") {
+    return serveFile(req, res, fileURLToPath(new URL("../shared/n64-keyboard-runtime.js", import.meta.url)), "no-cache");
   }
 
   if (pathname === "/bundles.json" || pathname === "/roster.json") {
