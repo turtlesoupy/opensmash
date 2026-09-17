@@ -18,7 +18,7 @@ _guard = threading.Lock()
 _locks = {}
 
 
-def prepare(root, source, slug):
+def prepare(root, source, slug, restore=None):
     root, source = Path(root), Path(source)
     if not re.fullmatch(r'[a-z0-9][a-z0-9_-]{0,63}', slug):
         raise ValueError('Invalid character identifier')
@@ -51,6 +51,10 @@ def prepare(root, source, slug):
     if not lock.acquire(timeout=remaining()):raise ValueError('Character preparation is busy. Please try again.')
     try:
         cached = ready()
+        if not cached and restore is not None:
+            # Restore only the revision computed from current source and code.
+            restore(storage_key)
+            cached = ready()
         if not cached:
             if not _slots.acquire(timeout=remaining()):raise ValueError('Character preparation is busy. Please try again.')
             try:

@@ -105,10 +105,14 @@ class ServiceCache:
             if route=='/api/character-select' and request.post_body:slugs=[c.get('character') for c in request.post_body.get('costumes',[]) if isinstance(c,dict)]
             for slug in slugs:
                 if isinstance(slug,str) and slug.startswith('import-') and access.allows(request.owner,'fighter:'+slug):self.load_import(slug)
+    def restore_native_source(self,revision):
+        return self.restore(self.prefix+'native-sources/'+revision+'.tar.gz',
+                            [self.base.ROOT/'build/native-fit/local/revisions'/revision])
     def before_request(self,request):
         route=urlsplit(request.path).path
         if route.startswith('/api/native-fit/source/'):
             self.source(route.rsplit('/',1)[1])
+            request.restore_native_source=self.restore_native_source
         elif route.startswith('/api/native-fit/assets/'):
             revision=route.split('/')[4]
             self.restore(self.prefix+'native-sources/'+revision+'.tar.gz', [self.base.ROOT/'build/native-fit/local/revisions'/revision])
