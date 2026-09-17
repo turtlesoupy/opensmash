@@ -97,7 +97,8 @@ function syncEmbeddedGameAudio(attempt = 0) {
 }
 
 function applySoundPreference() {
-  controlEmbeddedTrailer(introVideo, soundOn ? 'unMute' : 'mute');
+  // React owns trailer audio, including the user-gesture gate for autoplay.
+  // This runtime only synchronizes the legacy engine and sound toggle.
   window.openSmashSoundOn = soundOn;
   if (soundToggle) soundToggle.setAttribute('aria-pressed', String(soundOn));
   if (soundToggleState) soundToggleState.textContent = soundOn ? 'On' : 'Off';
@@ -109,7 +110,6 @@ soundToggle?.addEventListener('click', () => {
   try { localStorage.setItem(SOUND_STORAGE_KEY, soundOn ? 'on' : 'off'); }
   catch { /* The current preference still applies for this session. */ }
   applySoundPreference();
-  if (soundOn) controlEmbeddedTrailer(introVideo, 'playVideo');
 });
 embeddedGameFrame?.addEventListener('load', () => syncEmbeddedGameAudio());
 applySoundPreference();
@@ -2332,6 +2332,7 @@ function setCartridgeState(next) {
 }
 
 function startStarterVideoPlayback() {
+  if (!CARTRIDGE_INTRO_ENABLED) return;
   controlEmbeddedTrailer(introVideo, 'playVideo');
 }
 

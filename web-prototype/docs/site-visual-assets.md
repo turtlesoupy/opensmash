@@ -79,8 +79,8 @@ The tuning controls remain part of the page but are hidden from the final UI.
 image-to-model result generated from the supplied Trinitron reference. The
 optional cartridge intro gives the cabinet an authored charcoal material and a
 segmented, physically curved screen. The default route loads the character-grid
-site directly and plays the hosted YouTube trailer in the 4:3 video container
-at the top of the page. The embedded player autoplays muted, loops, and follows
+site directly and plays the hosted MP4 trailer in the 4:3 video container
+at the top of the page. The native player autoplays muted, loops, and follows
 the site's sound preference after the user's first interaction.
 
 Append `?intro=cartridge` to the local URL to preview the preserved cartridge

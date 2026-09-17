@@ -813,7 +813,7 @@
     border: 0;
     background: #000;
     object-fit: cover;
-    /* YouTube's native controls are live; the glove poofs out at the edge. */
+    /* Native video controls are live; the glove poofs out at the edge. */
     pointer-events: auto;
   }
   .hero-logo-canvas,

@@ -1,17 +1,11 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { mountFullscreenOverlay } from "../shared/fullscreen-overlay.js";
 import logoFallbackUrl from "../visual/assets/smash-the-weights-logo.png?url";
+import trailerVideoUrl from "../visual/assets/intro-trailer.mp4?url";
 import FlameAction from "./FlameAction.jsx";
 import MobileControls from "./MobileControls.jsx";
 import ModalPage from "./ModalPage.jsx";
-import {
-  controlEmbeddedTrailer,
-  disableEmbeddedTrailerCaptions,
-  subscribeEmbeddedTrailer,
-  TRAILER_EMBED_URL,
-  TRAILER_WATCH_URL,
-  canEmbedTrailer,
-} from "./embedded-trailer.js";
+import { controlEmbeddedTrailer } from "./embedded-trailer.js";
 import { DEMO_MUSIC_HOTKEY, DEMO_SCROLL_HOTKEY, DEMO_START_HOTKEY, DEMO_TRAILER_HOTKEY } from "./trailer-preset.js";
 import { startHomeRuntime } from "./visual-runtime.js";
 
@@ -278,8 +272,8 @@ export default function RetroHome({
   const aboutCancelRef = useRef(null);
   const introVideoRef = useRef(null);
   const [trailerPlayerReady, setTrailerPlayerReady] = useState(false);
-  // Last mute/pause state pushed to the YouTube player; reset per player load.
-  const trailerCommandRef = useRef({ audible: null, paused: null, sentAt: 0 });
+  // Last mute/pause state pushed to the native player; reset per player load.
+  const trailerCommandRef = useRef({ audible: null, paused: null });
   const onTrailerSoundChangeRef = useRef(onTrailerSoundChange);
   useEffect(() => { onTrailerSoundChangeRef.current = onTrailerSoundChange; }, [onTrailerSoundChange]);
   const moreMenuRef = useRef(null);
@@ -460,34 +454,6 @@ export default function RetroHome({
     return () => document.body.classList.remove("is-game-running");
   }, [engine]);
 
-  // The YouTube iframe ignores API commands until its player reports ready,
-  // which happens after the iframe's own load event. Subscribe to its events
-  // and only drive it once ready (re-sent on every reload of the iframe).
-  useEffect(() => {
-    const player = introVideoRef.current;
-    if (!player) return undefined;
-    const onMessage = (event) => {
-      if (event.source !== player.contentWindow) return;
-      let data;
-      try { data = typeof event.data === "string" ? JSON.parse(event.data) : event.data; }
-      catch { return; }
-      if (data?.event === "onReady") setTrailerPlayerReady(true);
-      // The player's own speaker button is the other way to (un)mute. Mirror
-      // it into site state so "Sound" and the trailer never disagree. Reports
-      // that arrive right after one of our own mute/unMute commands are the
-      // player echoing that command, not the viewer.
-      if (data?.event === "infoDelivery" && typeof data.info?.muted === "boolean") {
-        const expected = trailerCommandRef.current.audible;
-        if (expected === null) return;
-        if (performance.now() - trailerCommandRef.current.sentAt < 1500) return;
-        const playerAudible = !data.info.muted;
-        if (playerAudible !== expected) onTrailerSoundChangeRef.current?.(playerAudible);
-      }
-    };
-    window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
-  }, []);
-
   // Desired trailer state is a pure function of: player ready, game running,
   // launch overlay open, sound preference, and audioActive (page has had its
   // first user gesture and is in the foreground). Muted autoplay needs neither.
@@ -500,12 +466,12 @@ export default function RetroHome({
     const paused = Boolean(!demoTrailer && (launchFlowOpen || engine));
     // Only send commands for state that actually changed: a redundant
     // playVideo would restart a trailer the viewer paused by hand.
-    // mute/unMute are idempotent, so they are re-sent on every state change:
-    // the viewer may have flipped the player's own speaker button meanwhile.
+    // Do not reapply mute during the first-gesture render: native controls
+    // may have just unmuted, with their volumechange event still queued.
     const previous = trailerCommandRef.current;
-    controlEmbeddedTrailer(player, audible ? "unMute" : "mute");
+    if (previous.audible !== audible) controlEmbeddedTrailer(player, audible ? "unMute" : "mute");
     if (previous.paused !== paused) controlEmbeddedTrailer(player, paused ? "pauseVideo" : "playVideo");
-    trailerCommandRef.current = { audible, paused, sentAt: performance.now() };
+    trailerCommandRef.current = { audible, paused };
   }, [audioActive, demoMode, demoMusic, demoTrailer, engine, launchFlowOpen, soundOn, trailerPlayerReady, trailerSoundOptIn]);
 
   function closeMoreMenu() {
@@ -640,29 +606,25 @@ export default function RetroHome({
               className={`intro-video-frame ${engine ? "is-game-running" : ""}`}
               ref={gameFrameRef}
             >
-              {canEmbedTrailer() ? <iframe
-                ref={introVideoRef}
-                id="intro-video"
-                // Melee needs cross-origin isolation for WASM threads. Load the
-                // public trailer without credentials so COEP can embed YouTube.
-                credentialless=""
-                className="intro-video"
-                src={TRAILER_EMBED_URL}
-                title="smash.fun Introduction"
-                allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture; web-share"
-                referrerPolicy="strict-origin-when-cross-origin"
-                allowFullScreen
-                onLoad={(event) => {
-                  setTrailerPlayerReady(false);
-                  trailerCommandRef.current = { audible: null, paused: null, sentAt: 0 };
-                  disableEmbeddedTrailerCaptions(event.currentTarget);
-                  subscribeEmbeddedTrailer(event.currentTarget);
-                }}
-              />
-              : <a className="intro-video trailer-link" href={TRAILER_WATCH_URL} target="_blank" rel="noopener noreferrer" style={{display:'grid',placeContent:'center',gap:'1rem',textAlign:'center',color:'#fff',textDecoration:'none',background:'#080810'}}>
-                  <img src={logoFallbackUrl} alt="Smash.fun" style={{width:'min(75%, 360px)',margin:'auto'}} />
-                  <span>Watch the introduction ↗</span>
-                </a>}
+              <video
+                  ref={introVideoRef}
+                  id="intro-video"
+                  className="intro-video"
+                  src={trailerVideoUrl}
+                  aria-label="smash.fun Introduction"
+                  autoPlay muted playsInline loop controls preload="metadata"
+                  onLoadedMetadata={() => {
+                    trailerCommandRef.current = { audible: null, paused: null };
+                    setTrailerPlayerReady(true);
+                  }}
+                  onVolumeChange={(event) => {
+                    const expected = trailerCommandRef.current.audible;
+                    const audible = !event.currentTarget.muted;
+                    if (expected !== null && audible !== expected) {
+                      onTrailerSoundChangeRef.current?.(audible);
+                    }
+                  }}
+                />
               <canvas className="intro-video-rule-layer" aria-hidden="true" />
               {engineContent && <div className="melee-surface">{engineContent}</div>}
               <iframe ref={engineRef} tabIndex={engineContent ? -1 : undefined} inert={engineContent ? true : undefined} id="intro-game-frame" className="intro-game-frame" src={engineContent?"about:blank":engine?.src || "about:blank"} title={engine ? "Smash.fun game engine" : "Smash.fun game"} allow="autoplay; gamepad; fullscreen" />

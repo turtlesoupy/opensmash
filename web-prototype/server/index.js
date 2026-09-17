@@ -8,6 +8,7 @@ import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { gzip as gzipCallback } from "node:zlib";
 import { createEmbeddedMeleeHandler } from "../../engines/melee/server/embedded.mjs";
+import { mediaRange } from "./media-range.js";
 import { createFighterJobs } from "./fighter-jobs.js";
 import { createTurnstileVerifier } from "./turnstile.js";
 import { HandoffError, createHandoffRoomsFromEnv } from "./handoff-rooms.js";
@@ -484,15 +485,28 @@ async function serveFile(req, res, filePath, cacheControl = "no-store", extraHea
       res.end();
       return true;
     }
-    res.writeHead(200, {
+    const media = /\.(mp4|webm|m4v)$/i.test(filePath);
+    if (media) headers["Accept-Ranges"] = "bytes";
+    const ifRange = req.headers["if-range"];
+    const rangeMatches = !ifRange || (!etag.startsWith('W/') && ifRange === etag)
+      || ifRange === headers["Last-Modified"];
+    const range = media && req.method === "GET" && rangeMatches
+      ? mediaRange(req.headers.range, info.size) : null;
+    if (range?.unsatisfiable) {
+      res.writeHead(416, { ...headers, "Content-Range": `bytes */${info.size}`, "Content-Length": 0 });
+      res.end();
+      return true;
+    }
+    res.writeHead(range ? 206 : 200, {
       "Content-Type": MIME_TYPES[path.extname(filePath).toLowerCase()] || "application/octet-stream",
-      "Content-Length": info.size,
+      "Content-Length": range ? range.end - range.start + 1 : info.size,
+      ...(range ? { "Content-Range": `bytes ${range.start}-${range.end}/${info.size}` } : {}),
       ...headers,
     });
     if (req.method === "HEAD") {
       res.end();
     } else {
-      createReadStream(filePath).pipe(res);
+      createReadStream(filePath, range || undefined).pipe(res);
     }
     return true;
   } catch {

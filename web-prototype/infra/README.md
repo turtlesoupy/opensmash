@@ -340,8 +340,18 @@ replace COEP with `credentialless`, which does not isolate the tested Safari.
 Public cross-origin portraits and audio use anonymous CORS. The public bucket
 must allow the deployed site origins (including both smash.fun and
 www.smash.fun); the deployment script already refreshes that CORS configuration.
-The trailer uses a credentialless iframe where supported and a watch link
-otherwise, so Safari retains shared memory without a blocked third-party frame.
+The trailer uses the same hosted MP4 and native controls in every browser,
+retaining shared memory and inline playback without a third-party iframe.
+`visual/assets/intro-trailer.mp4` is imported through Vite: the output filename
+contains a content hash and `/app-assets/` responses use
+`Cache-Control: public, max-age=31536000, immutable`. Replacing the source changes
+the URL automatically. The media server supports byte ranges for Safari probes
+and seeking. Browser caches may still evict media under storage pressure.
+
+The hosted trailer was encoded from `intro-4x3-high 2-trimmed.webm` at 1280×960,
+60 fps, H.264 CRF 24 (medium preset), yuv420p, AAC 128 kbps, with MP4 faststart.
+Keep the video muted with `playsInline` for autoplay; native controls remain
+available when browser autoplay preferences prevent automatic playback.
 
 Deploy the engine revision pinned in `engines/melee/upstream.json` together with
 the shell. The runtime receives the audio ring through a same-origin reference

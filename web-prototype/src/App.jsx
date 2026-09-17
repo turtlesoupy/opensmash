@@ -1372,7 +1372,12 @@ export default function App() {
   // just drops the trailer opt-in and leaves game/UI sound alone.
   function trailerSoundChangedByPlayer(audible) {
     setTrailerSoundOptIn(audible);
-    if (audible) setSoundPreference(true);
+    if (audible) {
+      // Native media controls may consume the gesture inside the browser's
+      // shadow DOM, so the document-level unlock listener need not see it.
+      setAudioUnlocked(true);
+      setSoundPreference(true);
+    }
   }
 
   function toggleSound(event) {
