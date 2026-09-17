@@ -1,3 +1,4 @@
+import {BINDING_HELP,PROFILE_HELP,controllerStatus} from '../shared/controller-help.js';
 import {padLabel,padFamily} from '../../engines/melee/web/lib/controls';
 import {editableN64Profile,rebindN64Gamepad} from '../shared/n64-gamepad-bindings.js';
 import { useEffect, useState, useSyncExternalStore } from 'react';
@@ -91,12 +92,13 @@ export default function N64Keyboard() {
   const family = padFamily((pads.find(p=>p.id===profile)||pads[0])?.id||'');
   const active = new Set([...held].map(code => n64Keyboard.resolve(code, bindings)));
   return <section className="controls-screen" aria-label="N64 controls">
-    <p>Click a key or gamepad binding to change it. For gamepad bindings, press a button or move a stick from rest. Press Escape to cancel. Choosing an assigned key swaps the two bindings. Changes apply immediately.</p>
-    <p>{pads.length ? `${pads.length} controller${pads.length === 1 ? '' : 's'} connected.` : 'No gamepad detected — connect one and press a button.'}</p>
+    <p>{BINDING_HELP}</p>
+    <p className="controls-pad-status">{controllerStatus(pads.length)}</p>
     <label>Controller profile<select value={profile} onChange={event=>{setProfile(event.target.value);setPadPending(null);}}>
       <option value="__default__">Default for new controllers</option>
       {[...new Set([...pads.map(p=>p.id),...(remap?.profileIds()||[])])].map(id=><option key={id} value={id}>{padDisplayName(id)}</option>)}
-    </select><small>Choose a controller to save its own buttons. Controllers of the same model share a profile.</small></label>
+    </select></label>
+    <p>{PROFILE_HELP}</p>
     <dl className="controls-grid">
       <div className="controls-head"><dt>Action</dt><dd>Keyboard</dd><dd>Gamepad</dd></div>
       {n64Keyboard.actions.map(({ id, label }) => {

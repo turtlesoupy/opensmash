@@ -1,6 +1,7 @@
+import {BINDING_HELP,PROFILE_HELP,controllerStatus} from '../../../../web-prototype/shared/controller-help.js';
 import {useEffect,useState,useSyncExternalStore} from 'react';
 import {desktop} from '@/lib/desktop';
-import {gamepadAxes,rebindAxes,actions,buttonActions,connectedGamepads,defaults,eventCode,gamepadBindings,resetGamepad,familyNames,keyLabel,loadBindings,padActions,padFamily,padLabel,rebindButton,rebindKey,saveBindings,subscribeBindings,type Action,type ButtonAction,type PadFamily} from '@/lib/controls';
+import {gamepadAxes,rebindAxes,actions,buttonActions,connectedGamepads,defaults,eventCode,gamepadBindings,resetGamepad,keyLabel,loadBindings,padActions,padFamily,padLabel,rebindButton,rebindKey,saveBindings,subscribeBindings,type Action,type ButtonAction,type PadFamily} from '@/lib/controls';
 type Pending={kind:'key',action:Action}|{kind:'button',action:ButtonAction}|null;
 export default function Controls() {
  const bindings=useSyncExternalStore(subscribeBindings,loadBindings,loadBindings);
@@ -51,13 +52,14 @@ export default function Controls() {
  const isButton=(id:Action):id is ButtonAction=>(buttonActions as string[]).includes(id);
  const stickLabel=(id:Action)=>({up:'Left stick ↑',down:'Left stick ↓',left:'Left stick ←',right:'Left stick →',cup:'Right stick ↑',cdown:'Right stick ↓',cleft:'Right stick ←',cright:'Right stick →'} as Record<string,string>)[id];
  return <div className="controls-screen">
- <p>{desktop()?'Press a key or gamepad button to see it light up. Click a key to rebind it; keyboard changes apply to your next match.':'Press a key or gamepad button to see it light up. Click a key to rebind it. Click the game to use your keyboard.'}</p>
- <p className="controls-pad-status">{pads.length?`Connected: ${pads.map(p=>familyNames[p.family]).join(', ')}. Assign controllers to players in Settings → Players & Controllers.`:'No gamepad detected — connect one and press a button. Xbox button names shown.'}</p>
+ <p>{BINDING_HELP}</p>
+ {desktop()&&<p>Keyboard changes apply to your next match.</p>}
+ <p className="controls-pad-status">{controllerStatus(pads.length)}</p>
  <label>Controller profile <select value={profile} onChange={e=>{setProfile(e.target.value);setPending(null);}}>
   <option value="">Default for new controllers</option>
   {[...new Set([...pads.map(p=>p.id),...Object.keys(bindings.profiles||{}),...Object.keys(bindings.axisProfiles||{})])].map(id=><option key={id} value={id}>{id}</option>)}
  </select></label>
- <p>Choose a controller to save its own buttons. Controllers of the same model share a profile.</p>
+ <p>{PROFILE_HELP}</p>
  <dl className="controls-list controls-grid" aria-live="polite">
   <div className="controls-head" aria-hidden="true"><dt>Action</dt><dd>Keyboard</dd><dd>Gamepad</dd></div>
   {actions.map(action=>{
