@@ -19,6 +19,7 @@
     "a", "b", "z", "start", "l", "r",
     "cup", "cdown", "cleft", "cright",
     "dup", "ddown", "dleft", "dright",
+    "up", "down", "left", "right",
   ]);
   const PRESSED_BUTTON = Object.freeze({ pressed: true, touched: true, value: 1 });
   const BUTTON_ENTRIES = Object.entries(BUTTON_TARGETS);
@@ -180,6 +181,26 @@
     return active ? PRESSED_BUTTON : EMPTY_BUTTON;
   }
 
+  // Analog travel toward a captured direction, 0..1. Buttons are digital;
+  // a captured axis only tells us which way is "that direction" (capture may
+  // happen partway through a stroke), so travel keeps the raw stick range.
+  function controlTravel(gamepad, buttons, profile, control) {
+    const index = profile.buttons[control];
+    if (index !== undefined) return buttonsPressed(buttons, index) ? 1 : 0;
+    const mapping = profile.axes?.[control];
+    if (!mapping) return 0;
+    const current = Number(gamepad.axes?.[mapping.index]);
+    if (!Number.isFinite(current)) return 0;
+    const delta = mapping.value - mapping.neutral;
+    if (Math.abs(delta) < 0.2) return 0;
+    const travel = (current - mapping.neutral) * Math.sign(delta);
+    return travel > 0 ? Math.min(1, travel) : 0;
+  }
+
+  function stickMapped(profile, control) {
+    return profile.buttons[control] !== undefined || Boolean(profile.axes?.[control]);
+  }
+
   function remapGamepad(gamepad) {
     const profile = getProfile(gamepad?.id);
     if (!profile) return gamepad;
@@ -210,6 +231,13 @@
     if (controlPressed(gamepad, originalButtons, profile, "cright")) axes[2] = 1;
     if (controlPressed(gamepad, originalButtons, profile, "cup")) axes[3] = -1;
     if (controlPressed(gamepad, originalButtons, profile, "cdown")) axes[3] = 1;
+    // Control stick: any mapped direction replaces that axis entirely so
+    // reversed or swapped sticks stop feeding their native value too.
+    for (const [negative, positive, index] of [["left", "right", 0], ["up", "down", 1]]) {
+      if (!stickMapped(profile, negative) && !stickMapped(profile, positive)) continue;
+      axes[index] = controlTravel(gamepad, originalButtons, profile, positive)
+        - controlTravel(gamepad, originalButtons, profile, negative);
+    }
 
     return new Proxy(gamepad, {
       get(target, property) {

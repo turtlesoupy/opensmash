@@ -230,3 +230,30 @@ test("polling caches configuration while storage events update other frames", ()
   listeners.storage({ key: null });
   assert.equal(navigator.getGamepads()[0], gamepad);
 });
+
+test("control stick directions can be remapped to reverse or swap axes", () => {
+  const gamepad = pad();
+  gamepad.buttons[0] = { pressed: false, touched: false, value: 0 };
+  gamepad.axes = [0, 0.8];
+  const { api, navigator } = harness(gamepad);
+  // Stick whose vertical axis is reversed: user pushed UP and axis 1 read +0.4.
+  api.saveProfile(gamepad.id, {
+    mode: "standard",
+    buttons: {},
+    axes: {
+      up: { index: 1, neutral: 0, value: 0.4 },
+      down: { index: 1, neutral: 0, value: -0.4 },
+    },
+  });
+  assert.equal(navigator.getGamepads()[0].axes[1], -0.8);
+  assert.equal(navigator.getGamepads()[0].axes[0], 0);
+  gamepad.axes[1] = -0.3;
+  assert.ok(Math.abs(navigator.getGamepads()[0].axes[1] - 0.3) < 1e-9);
+  // Horizontal axis untouched by the profile keeps its native value.
+  gamepad.axes[0] = -0.6;
+  assert.equal(navigator.getGamepads()[0].axes[0], -0.6);
+  // A mapped stick direction can come from a button.
+  api.saveProfile(gamepad.id, { mode: "standard", buttons: { right: 8 }, axes: {} });
+  gamepad.buttons[8] = { pressed: true, touched: true, value: 1 };
+  assert.equal(navigator.getGamepads()[0].axes[0], 1);
+});

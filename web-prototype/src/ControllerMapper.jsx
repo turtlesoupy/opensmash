@@ -16,8 +16,15 @@ const CONTROLS = Object.freeze([
   { id: "ddown", label: "D-pad Down" },
   { id: "dleft", label: "D-pad Left" },
   { id: "dright", label: "D-pad Right" },
+  { id: "up", label: "Stick Up" },
+  { id: "down", label: "Stick Down" },
+  { id: "left", label: "Stick Left" },
+  { id: "right", label: "Stick Right" },
 ]);
-const AXIS_GLYPHS = Object.freeze({ dup: "↑", ddown: "↓", dleft: "←", dright: "→" });
+const AXIS_GLYPHS = Object.freeze({
+  dup: "↑", ddown: "↓", dleft: "←", dright: "→",
+  up: "↑", down: "↓", left: "←", right: "→",
+});
 
 function remapApi() {
   return window.openSmashControllerRemap;
