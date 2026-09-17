@@ -39,10 +39,6 @@
     ],
     "extraResources": [
       {
-        "from": "../web/dist",
-        "to": "web"
-      },
-      {
         "from": "../build/desktop-backend",
         "to": "backend"
       },
@@ -61,6 +57,30 @@
       {
         "from": "licenses",
         "to": "licenses"
+      },
+      {
+        "from": "../../../web-prototype/dist",
+        "to": "shared-web"
+      },
+      {
+        "from": "../../../desktop",
+        "to": "launcher",
+        "filter": [
+          "site.cjs",
+          "window-policy.cjs",
+          "input.cjs"
+        ]
+      },
+      {
+        "from": "../../ssb64/desktop",
+        "to": "ssb64-service",
+        "filter": [
+          "service.cjs"
+        ]
+      },
+      {
+        "from": "../../../build/desktop-ssb64",
+        "to": "ssb64"
       }
     ],
     "mac": {

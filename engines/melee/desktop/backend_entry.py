@@ -30,7 +30,7 @@ def refresh_code(payload, workspace, development_root=None):
         for name in names:
             startup_log(f"Staging application folder: {name}")
             # Development launches must use the current service sources, just
-            # as they use web/dist. A previously staged release payload can
+            # as they use the shared frontend. A previously staged release payload can
             # otherwise silently omit endpoints used by the current UI.
             source = development_root if development_root and name != "web" else payload
             shutil.copytree(source / name, staging / name,
@@ -77,7 +77,6 @@ def main():
     payload = a.resources / ("desktop-payload" if a.development else "payload")
     runtime = a.resources / ("desktop-runtime" if a.development else "runtime")
     characters = a.resources / ("desktop-characters" if a.development else "characters")
-    web = a.resources.parent / "web/dist" if a.development else a.resources / "web"
     # Only application-owned code/config folders are refreshed. assets/ and build/ persist.
     startup_log("Refreshing application code")
     refresh_code(payload, workspace, Path(__file__).resolve().parents[1] if a.development else None)
@@ -85,7 +84,6 @@ def main():
     os.environ["OPENSMASH_WORKSPACE"] = str(workspace)
     os.environ["OPENSMASH_RUNTIME"] = str(runtime)
     os.environ["OPENSMASH_CHARACTER_ROOT"] = str(characters)
-    os.environ["OPENSMASH_WEB_DIST"] = str(web)
     os.chdir(workspace)
     sys.path.insert(0, str(workspace))
     sys.path.insert(0, str(workspace / "tools"))

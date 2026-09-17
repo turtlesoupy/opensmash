@@ -13,16 +13,23 @@ From the repository root, with Emscripten 3.1.61 installed:
 export MELEE_EMSDK=/absolute/path/to/emsdk
 python3 engines/melee/tools/build_direct_c.py --dol /absolute/path/to/main.dol
 npm --prefix engines/melee/web ci
-npm --prefix engines/melee/web run build
-OPENSMASH_WEB_DIST="$PWD/engines/melee/web/dist" \
-  python3 engines/melee/tools/serve_melee.py --direct-c --port 5189 \
+npm --prefix engines/melee/web run typecheck
+python3 engines/melee/tools/serve_melee.py --direct-c --port 5189 \
   --characters /absolute/path/to/character/library \
   --iso /absolute/path/to/Melee-USA-1.02.iso
 ```
 
+In a second terminal, start the unified website (install its dependencies first):
+
+```sh
+cd web-prototype
+npm install
+MELEE_LOCAL_ORIGIN=http://127.0.0.1:5189 npm run dev
+```
+
 The launcher server uses the existing extracted `engines/melee/assets/game` files
 for custom-character preparation. The runtime verifies the complete disc SHA-256 and reads the user's ISO locally in the
-browser; the ISO is not uploaded. Open <http://127.0.0.1:5189/?engine=direct-c> and
+browser; the ISO is not uploaded. Open <http://127.0.0.1:4174/melee?engine=direct-c> and
 choose that ISO. Use the normal roster, settings, controllers and play controls.
 
 For the isolated stock-game diagnostic UI, without a character library:

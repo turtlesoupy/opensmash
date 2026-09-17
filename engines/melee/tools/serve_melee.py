@@ -52,7 +52,6 @@ IMPORTS = None
 SETUP = None
 NATIVE = None
 TOKEN = os.environ.get("OPENSMASH_DESKTOP_TOKEN", "")
-DIST = Path(os.environ["OPENSMASH_WEB_DIST"]) if os.environ.get("OPENSMASH_WEB_DIST") else None
 
 
 def upstream_root(name):
@@ -253,8 +252,6 @@ class Handler(BaseHTTPRequestHandler):
                 name = route[len('/engine/'):]
                 root = BUILD if name.startswith('opensmash-web') else WEB
                 return self.file(descendant(root, name))
-            if DIST:
-                return self.file(descendant(DIST, route.lstrip('/') or 'index.html'))
             self.send_error(404)
         except (ValueError, FileNotFoundError):
             self.send_error(404)

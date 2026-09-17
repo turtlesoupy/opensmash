@@ -30,8 +30,6 @@
   },
   "include": [
     "app",
-    "main.tsx",
-    "vite.config.ts",
     "components",
     "lib",
     "../launcher"

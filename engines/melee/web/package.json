@@ -6,8 +6,9 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev": "vite --host 127.0.0.1 --port 5174",
-    "build": "tsc --noEmit && vite build"
+    "dev": "npm --prefix ../../../web-prototype run dev",
+    "build": "npm run typecheck && npm --prefix ../../../web-prototype run build",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",

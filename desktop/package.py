@@ -62,7 +62,7 @@ if __name__=='__main__':
  npm='npm.cmd' if os.name=='nt' else 'npm'
  def run(args,cwd=ROOT):subprocess.run(list(map(str,args)),cwd=cwd,check=True)
  run([npm,'--prefix',ROOT/'web-prototype','run','build'])
- run([npm,'--prefix',MELEE/'web','run','build'])
+ run([npm,'--prefix',MELEE/'web','run','typecheck'])
  if not a.skip_freeze:run([sys.executable,MELEE/'tools/build_desktop_payload.py'])
  run(['node','build-surface.cjs'],MELEE/'desktop')
  run([npm,'exec','--','electron-builder','--config',ROOT/'desktop/builder.cjs','--publish','never',*(['--dir'] if a.dir else [])],MELEE/'desktop')

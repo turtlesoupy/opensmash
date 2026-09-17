@@ -15,7 +15,8 @@ let window,
   sharedPopupPolicy,
   saveWindowState,
   quitting = false;
-const sharedLauncher=process.env.OPENSMASH_SHARED_LAUNCHER==='1'||require('./package.json').opensmashSharedLauncher===true;
+// Both games use the unified website; there is no standalone Melee frontend.
+const sharedLauncher=true;
 if(sharedLauncher)app.setPath('userData',process.env.OPENSMASH_DESKTOP_DATA||path.join(app.getPath('appData'),app.isPackaged?'OpenSmash':'OpenSmash Integration'));
 const token = randomBytes(32).toString("hex");
 const resources = app.isPackaged ? process.resourcesPath : path.resolve(__dirname, "../build");

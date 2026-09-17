@@ -18,7 +18,19 @@ pnpm install
 pnpm dev
 ```
 
-Open <http://127.0.0.1:4174>. For a production-style run:
+Open <http://127.0.0.1:4174>. This is the only website shell: use the game
+toggle to switch between Smash 64 (`/`) and Melee (`/melee`).
+
+For local Melee gameplay, start the Melee asset service on port 8781 and run:
+
+```bash
+MELEE_LOCAL_ORIGIN=http://127.0.0.1:8781 pnpm dev
+```
+
+The former `engines/melee/web` development and build commands forward here;
+that folder contains shared Melee engine components, not a separate website.
+
+For a production-style run:
 
 ```bash
 pnpm build

@@ -1,7 +1,6 @@
-"""Build the shared frontend and launch the experimental unified native shell.
+"""Build the shared frontend and launch the unified native shell.
 
-Requires Melee native payloads prepared in engines/melee/build. Existing standalone
-native release commands remain available inside engines/melee.
+Requires Melee native payloads prepared in engines/melee/build.
 """
 import os
 from pathlib import Path

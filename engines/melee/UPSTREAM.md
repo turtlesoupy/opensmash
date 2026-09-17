@@ -19,13 +19,20 @@ It never resets an existing checkout to a different revision.
 ```sh
 python3 engines/melee/tools/build_upstream.py --jobs 6
 npm ci --prefix engines/melee/web
-npm run build --prefix engines/melee/web
-OPENSMASH_WEB_DIST="$PWD/engines/melee/web/dist" \
-  python3 engines/melee/tools/serve_melee.py --upstream --port 5191 \
+npm run typecheck --prefix engines/melee/web
+python3 engines/melee/tools/serve_melee.py --upstream --port 5191 \
   --characters /absolute/path/to/exported/character/library
 ```
 
-Open `http://127.0.0.1:5191/` and select your unmodified USA 1.02 disc locally.
+In a second terminal, start the unified website (install its dependencies first):
+
+```sh
+cd web-prototype
+npm install
+MELEE_LOCAL_ORIGIN=http://127.0.0.1:5191 npm run dev
+```
+
+Open `http://127.0.0.1:4174/melee` and select your unmodified USA 1.02 disc locally.
 No ISO is bundled or uploaded. The existing verified-file reuse and bounded
 chunk reads are retained. The upstream runtime uses a 32 MB disc-block cache.
 The browser requires WebGPU, shared memory, and cross-origin isolation.
