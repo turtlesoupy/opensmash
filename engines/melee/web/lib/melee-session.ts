@@ -2,7 +2,7 @@ import {cacheDisc,restoreCachedDisc,removeCachedDisc} from './disc-cache.ts';
 import {unlockAudio} from './audio.ts';
 import {MeleeFrameWorker} from './melee-frame-worker.ts';
 import {meleePath} from './paths.ts';
-/** One initialized engine waits at the game boundary while the roster is open. */
+/** One loaded runtime waits for Play; native graphics setup stays out of browsing. */
 type Session={worker:Worker;audio:SharedArrayBuffer;ready:Promise<void>;verified:Promise<void>;readyAt:number;cancel:()=>void};
 let standby:Session|undefined;
 const currentSession=():Session|undefined=>standby;
