@@ -18,6 +18,9 @@ export async function verifyDiscChunks(file, trusted, onProgress = () => {}) {
     if (bytes.byteLength !== end - offset) throw Error('The selected disc could not be read completely.');
     const hash = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)),
       byte => byte.toString(16).padStart(2, '0')).join('');
+    // Release each 64 MiB input immediately instead of waiting for a browser
+    // collection after loading the renderer and its GPU resources.
+    if (typeof bytes.transfer === 'function') bytes.transfer(0);
     if (hash !== chunks[index]) throw Error('This image does not match the known USA 1.02 Melee disc hash.');
     onProgress(end);
   }

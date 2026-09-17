@@ -25,3 +25,13 @@ test('rejects wrong size, short reads, and unreadable files',async()=>{
 test('checks the pinned manifest against a real disc', {skip:!process.env.MELEE_ISO},async()=>{
  await verifyDisc(await openAsBlob(process.env.MELEE_ISO));
 });
+
+test('releases verified chunk backing stores before reading the next chunk',
+ {skip:typeof ArrayBuffer.prototype.transfer!=='function'},async()=>{
+ const inputs=[];
+ await verifyDiscChunks({size:bytes.length,slice(start,end){
+  assert.ok(inputs.every(buffer=>buffer.byteLength===0));
+  return {async arrayBuffer(){const buffer=bytes.slice(start,end).buffer;inputs.push(buffer);return buffer;}};
+ }},trusted);
+ assert.ok(inputs.every(buffer=>buffer.byteLength===0));
+});
