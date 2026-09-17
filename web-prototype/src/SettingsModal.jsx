@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import "./melee-settings.css";
 import AuthGate from "./AuthGate.jsx";
 import ModalPage from "./ModalPage.jsx";
 import RomHandoffModal from "./RomHandoffModal.jsx";
