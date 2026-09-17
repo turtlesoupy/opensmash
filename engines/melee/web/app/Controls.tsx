@@ -86,6 +86,5 @@ export default function Controls() {
   {pending&&<button type="button" className="settings-menu-button" onClick={()=>setPending(null)}>Cancel</button>}
   <button type="button" className="settings-menu-button" onClick={()=>{saveBindings(profile?resetGamepad(bindings,profile):defaults());setPending(null);}}>{profile?'Reset this controller':'Reset all controls'}</button>
  </div>
- {!desktop()&&<p>Touch controls appear on touch devices.</p>}
  </div>;
 }
