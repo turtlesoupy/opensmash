@@ -105,7 +105,7 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true,chrom
     if(data.type==='status' && !fullBootVisible)setStatus(data.message);
     if(data.type==='started'){running=true;}
     if(data.type==='intro'){stopAnnouncer();setStatus('');startAudio();}
-    if(data.type==='playable'){playable=true;setStatus('');startAudio();}
+    if(data.type==='playable'){playable=true;setStatus('');startAudio();if(!gameInputBlocked())canvas.current?.focus({preventScroll:true});}
     if(data.type==='error'){setError(previous=>previous||data.message);running=false;}
     if(data.type==='log'){console.log('[Melee]',data.text);if(playable&&data.text.includes('[opensmash] destination ready'))setStatus('');}
     if(data.type==='metrics'){

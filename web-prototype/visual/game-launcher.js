@@ -2923,6 +2923,8 @@ window.addEventListener('gamepadconnected', () => {
 });
 pollPadControls();
 gameFrame?.addEventListener('load', () => {
+  // Melee receives keyboard input in the parent, not this legacy iframe.
+  if (usesDisc()) return;
   if (!videoFrame?.classList.contains('is-game-running')) return;
   keepPageScrollableFromGame();
   gameFrame.contentWindow?.focus();

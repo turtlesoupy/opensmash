@@ -2226,6 +2226,14 @@ window.addEventListener('message', updateTargetFromEmbeddedGame);
 embeddedGameFrame?.closest('.intro-video-frame')?.addEventListener('click', event => {
   if (!event.currentTarget.classList.contains('is-game-running')) return;
   if (event.target instanceof Element && event.target.closest('.game-fullscreen-control')) return;
+  // Embedded React engines receive keys in the parent document. The legacy
+  // iframe is about:blank in that mode and must never claim their input.
+  const engineSurface = event.currentTarget.querySelector('.melee-surface');
+  if (engineSurface) {
+    if (event.target instanceof Element && event.target.closest('button,input,select,textarea')) return;
+    engineSurface.querySelector('canvas[tabindex]')?.focus({ preventScroll: true });
+    return;
+  }
   embeddedGameFrame.contentWindow?.focus();
 });
 

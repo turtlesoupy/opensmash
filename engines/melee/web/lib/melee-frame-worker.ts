@@ -14,6 +14,8 @@ export class MeleeFrameWorker extends EventTarget {
     super();
     this.frame = document.createElement('iframe');
     this.frame.title = 'Melee engine';
+    // Input belongs to the launcher; tabbing into the renderer loses key events.
+    this.frame.tabIndex = -1;
     Object.assign(this.frame.style,{position:'fixed',left:'-20000px',top:'0',width:'960px',height:'720px',border:'0'});
     this.pending=[];
     this.listener=event=>{
