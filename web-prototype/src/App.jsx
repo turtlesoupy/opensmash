@@ -382,7 +382,17 @@ export default function App() {
     window.addEventListener('popstate', syncExperience);
     return () => window.removeEventListener('popstate', syncExperience);
   }, []);
-  function launchMelee(action){setEngine({experience:'melee',id:crypto.randomUUID(),action:{...action,selectionMode:advancedOptions.selectionMode,portPlan:controllerPlan(advancedOptions,gamepads)}});setPendingAction(null);}
+  function launchMelee(action) {
+    setPendingAction(null);
+    requestAnimationFrame(() => window.scrollTo({
+      top: 0,
+      left: 0,
+      behavior: demoMode ? "instant" : "smooth",
+    }));
+    bootEngineAfterScroll(() => {
+      setEngine({experience:'melee',id:crypto.randomUUID(),action:{...action,selectionMode:advancedOptions.selectionMode,portPlan:controllerPlan(advancedOptions,gamepads)}});
+    });
+  }
 
   useEffect(installPerformanceCapture, []);
   const isCreatePage = window.location.pathname.replace(/\/+$/, "") === "/create";
