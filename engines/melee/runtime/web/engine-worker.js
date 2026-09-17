@@ -98,7 +98,11 @@ self.onmessage = async ({data}) => {
         await verifyDisc(data.iso, bytes => report('status', {message: `Checking your game… ${Math.floor(bytes / data.iso.size * 100)}%`}));
         report('disc-verification-performance', {durationMs: performance.now() - verifyStarted, bytes: data.iso.size, method: 'native-sha256-chunks'});
       }
-      return inspectDisc(data.iso);
+      const inspected = await inspectDisc(data.iso);
+      // Disc setup need not wait for Wasm compilation or filesystem mounting.
+      // Gameplay still waits for ready-for-selection.
+      report('disc-verified',{});
+      return inspected;
     })();
     // Preserve a rejected verification until the mount awaits it, even if
     // compilation takes longer. No unhandled rejection may escape meanwhile.
@@ -195,7 +199,6 @@ self.onmessage = async ({data}) => {
     FS.mkdir('/disc');
     FS.mount(WORKERFS, {blobs: [{name: 'game.iso', data: data.iso}]}, '/disc');
     const {blobs} = await discInspection;
-    report('disc-verified',{});
     if (data.costume) {
       if (!/^Pl[A-Za-z0-9]+\.dat$/.test(data.costume.filename)) throw Error('Invalid costume filename.');
       const entry = blobs.find(entry => entry.name === `files/${data.costume.filename}`);

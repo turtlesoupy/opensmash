@@ -1609,7 +1609,12 @@ export default function App() {
           .filter((entry) => entry?.kind === "keyboard" || entry?.kind === "gamepad").length;
       },
       isAuthorized() { return isMelee ? meleeDiscReady : authorized; },
-      async restoreDisc() { if(meleeDesktop())return meleeDiscReady;await restoreLocalDisc();return localDiscReady(); },
+      async restoreDisc(onStatus) {
+        if(meleeDesktop())return meleeDiscReady;
+        const unsubscribe=subscribeLocalDisc(status=>onStatus?.(status.message));
+        try { await restoreLocalDisc();return localDiscReady(); }
+        finally { unsubscribe(); }
+      },
       launch: launchVisualAction,
       cancelCreateRom() { setCreateStage(null); },
       navigate(pathname) {

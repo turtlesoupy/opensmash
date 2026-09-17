@@ -2633,6 +2633,7 @@ function closeLaunchFlow(immediate = false) {
 }
 
 function cancelLaunchFlow() {
+  ++restoreLaunchSequence;
   resetAlternativeSources();
   if (createUploadMode && APP_BRIDGE?.cancelCreateRom) {
     createUploadMode = false;
@@ -2785,7 +2786,17 @@ async function requestLaunch(fighter) {
       // disc step with a status right away instead of a silent click.
       showLaunchFlow(fighter);
       if (uploadButton) { uploadButton.disabled = true; uploadButton.textContent = 'Checking your saved disc…'; }
-      ready = await APP_BRIDGE?.restoreDisc?.();
+      try {
+        ready = await APP_BRIDGE?.restoreDisc?.(message => {
+          if (sequence === restoreLaunchSequence && !overlay?.hidden && uploadButton) {
+            uploadButton.textContent = message;
+          }
+        });
+      } catch (error) {
+        if (sequence !== restoreLaunchSequence) return;
+        showRomError(error?.message || 'Could not restore your disc. Choose it again.');
+        ready = false;
+      }
       if(sequence!==restoreLaunchSequence||APP_BRIDGE?.experience!=='melee')return;
       if (uploadButton) { uploadButton.disabled = false; uploadButton.textContent = 'Choose disc'; }
       if (ready) closeLaunchFlow(true);
