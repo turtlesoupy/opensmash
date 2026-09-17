@@ -20,6 +20,7 @@ let suspendTimer:ReturnType<typeof setTimeout>|undefined;
 /** Effect replay must not discard a disc that is already warming. */
 export function retainMelee(){
  consumers++;
+ warmMelee();
  clearTimeout(suspendTimer);suspendTimer=undefined;
  let released=false;
  return()=>{
@@ -142,7 +143,7 @@ export function claimMelee():Session{
 
 export function releaseMelee(worker:Worker){
  sessions.get(worker)?.cancel();sessions.delete(worker);worker.terminate();
- if(!location.pathname?.startsWith('/melee'))warmMelee();
+ if(consumers>0||!location.pathname?.startsWith('/melee'))warmMelee();
 }
 
 if((import.meta as any).hot)(import.meta as any).hot.dispose(()=>{

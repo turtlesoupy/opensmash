@@ -73,21 +73,28 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true,chrom
    }
    let preparedCostumes=0;const costumeTotal=launchPlan.costumes.length;
    if(costumeTotal)setStatus(`Preparing fighters… 0/${costumeTotal}`);
-   const costumes=await Promise.all(launchPlan.costumes.map(async (entry:any)=>{
-    const costume=await prepareNativeCostume(entry,abort.signal);
-    if(!closed)setStatus(`Preparing fighters… ${++preparedCostumes}/${costumeTotal}`);
-    return costume;
-   }));
-   const cssAssets = [];
-   if (costumes.length) {
-    setStatus('Preparing character select…');
-    const response = await meleeFetch('/api/character-select', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({costumes:launchPlan.costumes,sourceOnly:true}), signal:abort.signal});
-    const prepared = await response.json();if(!response.ok)throw Error(prepared.error || 'Character select could not be prepared.');
-    for (const entry of prepared.assets) {
-     const asset = await meleeFetch(entry.url, {signal:abort.signal});if(!asset.ok)throw Error('Character select assets could not load.');
-     cssAssets.push({filename:entry.filename,blob:await asset.blob()});
-    }
-   }
+   // Menus depend on the selected identities, not on completed costume fitting.
+   // Observe both tasks together so failures and cancellation cannot leave an
+   // unhandled rejection while the other task is still preparing.
+   const [costumes,cssAssets]=await Promise.all([
+    Promise.all(launchPlan.costumes.map(async (entry:any)=>{
+     const costume=await prepareNativeCostume(entry,abort.signal);
+     if(!closed){
+      preparedCostumes++;
+      setStatus(preparedCostumes===costumeTotal?'Preparing character select…':`Preparing fighters… ${preparedCostumes}/${costumeTotal}`);
+     }
+     return costume;
+    })),
+    (async()=>{
+     if(!costumeTotal)return [];
+     const response=await meleeFetch('/api/character-select',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({costumes:launchPlan.costumes,sourceOnly:true}),signal:abort.signal});
+     const prepared=await response.json();if(!response.ok)throw Error(prepared.error||'Character select could not be prepared.');
+     return Promise.all(prepared.assets.map(async(entry:{filename:string;url:string})=>{
+      const asset=await meleeFetch(entry.url,{signal:abort.signal});if(!asset.ok)throw Error('Character select assets could not load.');
+      return {filename:entry.filename,blob:await asset.blob()};
+     }));
+    })(),
+   ]);
    setStatus('Loading Melee…');if(closed)return;
    const audio=session.audio;
    const startAudio=()=>{if(audioConnecting)return;audioConnecting=true;connectAudio(audio).then(node=>{if(closed)node.disconnect();else audioNode=node;}).catch(()=>{audioConnecting=false;});};
