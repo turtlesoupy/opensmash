@@ -165,6 +165,17 @@ class Handler(BaseHTTPRequestHandler):
 
     def get_resource(self):
         route = unquote(urlsplit(self.path).path)
+        if route in ('/', '/index.html', '/melee', '/melee/'):
+            # Old bookmarks enter the unified shell; this process only serves
+            # Melee APIs and engine assets.
+            query = urlsplit(self.path).query
+            target = os.environ.get('OPENSMASH_SITE_ORIGIN', 'http://127.0.0.1:4174').rstrip('/') + '/melee'
+            self.send_response(302)
+            self.send_header('Location', target + ('?' + query if query else ''))
+            self.send_header('Cache-Control', 'no-store')
+            self.send_header('Content-Length', '0')
+            self.end_headers()
+            return
         versioned = re.fullmatch(r'/engine/v/([a-f0-9]{16})/(.+)', route)
         if versioned:
             if not BUILD_VERSION or versioned.group(1) != BUILD_VERSION:
