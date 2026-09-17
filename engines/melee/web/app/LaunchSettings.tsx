@@ -21,7 +21,7 @@ export default function LaunchSettings({value,onChange,roster,section='all',unif
  <label>Stage<select value={value.stage} onChange={e=>set('stage',+e.target.value)}>{schema.stages.map(s=><option key={s.id} value={s.id}>{s.label}</option>)}</select></label>
  <label>Opponent Difficulty<input type="number" min="1" max="9" value={value.level} onChange={e=>set('level',+e.target.value)}/></label>
  {unifiedMoveset&&<label>Moveset<select value={value.ports[0]?.target||'auto'} onChange={e=>onChange({...value,ports:value.ports.map(p=>({...p,target:e.target.value}))})}><option value="auto">Character default</option>{schema.targets.map(t=><option key={t.slug} value={t.slug}>{t.label}</option>)}</select></label>}
- {!desktop()&&<label>Render Resolution<select value={value.renderWidth||0} onChange={e=>set('renderWidth',+e.target.value)}><option value={0}>Automatic ({resolveRenderWidth(0)} × {resolveRenderWidth(0)*3/4})</option>{renderWidths.map(width=><option key={width} value={width}>{width} × {width*3/4}</option>)}</select><small>Lower resolutions improve performance. Applies to the next match.</small></label>}
+ {!desktop()&&<label>Render Resolution<select value={value.renderWidth||0} onChange={e=>set('renderWidth',+e.target.value)}><option value={0}>Automatic ({resolveRenderWidth(0)} × {resolveRenderWidth(0)*3/4})</option>{renderWidths.map(width=><option key={width} value={width}>{width} × {width*3/4}</option>)}</select></label>}
  <label>Stocks<input type="number" min="1" max="99" value={value.stocks} onChange={e=>set('stocks',+e.target.value)}/></label>
  <label>Minutes (0 = unlimited)<input type="number" min="0" max="99" value={value.minutes} onChange={e=>set('minutes',+e.target.value)}/></label>
 
