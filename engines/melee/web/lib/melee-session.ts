@@ -104,6 +104,7 @@ export async function selectLocalDisc(file:File,restored=false){
     if(revision===discRevision&&percent!==lastPercent){lastPercent=percent;updateDisc({state:'checking',ready:false,message:`Saving disc on this device… ${percent}%`});}
    });}catch(e){
     if(controller.signal.aborted)return;
+    if((file as any)[Symbol.for('opensmash.received-disc')])throw e;
     storageMessage=`Playing without a saved copy. ${(e as Error).name==='QuotaExceededError'?'Not enough browser storage.':(e as Error).message} Choose the disc again next visit.`;
    }
   }

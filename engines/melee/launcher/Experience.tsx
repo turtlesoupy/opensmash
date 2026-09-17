@@ -4,7 +4,7 @@ import NativeGame from '../web/app/NativeGame';
 import LaunchSettings from '../web/app/LaunchSettings';
 import {applyLauncherSelection} from './launch-plan.mjs';
 import {schema} from '../web/lib/launch';
-import {loadSettings,type Settings} from '../web/lib/launch';
+import {loadSettings,defaults,type Settings} from '../web/lib/launch';
 import {desktop,preferences} from '../web/lib/desktop';
 import {restoreLocalDisc,retainMelee,selectLocalDisc,subscribeLocalDisc,clearLocalDisc} from '../web/lib/melee-session';
 import {pollService} from '../web/lib/service-poll';
@@ -38,8 +38,7 @@ export function MeleeDiscSettings(){
 export function MeleeSettings(){
  const [settings,setSettings]=useState(loadSettings);
  function update(value:Settings){setSettings(value);preferences.setItem('melee-launch-v1',JSON.stringify(value));{const url=new URL(location.href);url.searchParams.delete('moveset');history.replaceState({},'',url);}}
- const targets=schema.targets;
- return <div className="melee-settings"><MeleeDiscSettings/><LaunchSettings section="gameplay" value={settings} onChange={update} roster={roster}/><div className="melee-movesets">{settings.ports.map((port,index)=><label key={index}>Player {index+1} moveset<select value={port.target||'auto'} onChange={e=>update({...settings,ports:settings.ports.map((p,i)=>i===index?{...p,target:e.target.value}:p)})}><option value="auto">Character default</option>{targets.map(t=><option key={t.slug} value={t.slug}>{t.label}</option>)}</select></label>)}</div></div>;
+ return <div className="melee-settings"><LaunchSettings section="gameplay" value={settings} onChange={update} roster={roster} unifiedMoveset/><div className="advanced-actions"><button className="launch-flow-action" onClick={()=>update({...defaults(),ports:settings.ports.map(p=>({...p,target:"auto"}))})}>Restore Defaults</button></div></div>;
 }
 export default function MeleeExperience({action,onClose,soundOn=true}:{action:any;onClose:()=>void;soundOn?:boolean}){
  const [ready,setReady]=useState(false),[status,setStatus]=useState('Choose your unmodified Melee USA 1.02 ISO or GCM.'),[error,setError]=useState('');

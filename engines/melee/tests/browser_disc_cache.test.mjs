@@ -39,3 +39,26 @@ test('GameCube touch stick has neutral dead zone, full throw, inverted Y and cir
  assert.deepEqual(stickVector(50,50,50),{x:71,y:-71});
  assert.deepEqual(stickVector(NaN,1,50),{x:0,y:0});
 });
+test('verified handoff disc is adopted without copying and active incoming transfers survive cleanup',async()=>{
+ const previous=Object.getOwnPropertyDescriptor(globalThis,'navigator'),root=new Directory();
+ Object.defineProperty(globalThis,'navigator',{configurable:true,value:{storage:{getDirectory:async()=>root,persist:async()=>true}}});
+ try{
+  await cacheDisc(new File(['old'],'original.iso'),new AbortController().signal,()=>{});
+  const dir=root.entries.get('opensmash-melee-disc-v1');
+  const receipt={name:'incoming-123.iso',adopted:false},file=new File(['received disc'],'melee.iso');
+  Object.defineProperty(file,Symbol.for('opensmash.received-disc'),{value:receipt});
+  dir.entries.set(receipt.name,file);
+  dir.entries.set('incoming-456.iso',new File(['still receiving'],'incoming-456.iso'));
+  dir.entries.set('incoming-abandoned.iso',new File(['partial'],'incoming-abandoned.iso'));
+  navigator.locks={request:async(name,options,callback)=>{if(typeof options==='function')return options();return callback(name==='opensmash-disc:incoming-456.iso'?null:{});}};
+  let copied=false;
+  await cacheDisc(file,new AbortController().signal,()=>{copied=true;});
+  assert.equal(copied,false);assert.equal(receipt.adopted,true);
+  assert.equal(dir.entries.has('incoming-abandoned.iso'),false,'closed-tab transfers are reclaimed');
+  assert.equal(await(await restoreCachedDisc()).text(),'received disc');
+  assert.equal(dir.entries.has('incoming-456.iso'),true);
+  await cacheDisc(new File(['replacement'],'new.iso'),new AbortController().signal,()=>{});
+  assert.equal(dir.entries.has(receipt.name),false,'previous adopted disc is reclaimed');
+  assert.equal(dir.entries.has('incoming-456.iso'),true);
+ }finally{if(previous)Object.defineProperty(globalThis,'navigator',previous);else delete globalThis.navigator;}
+});

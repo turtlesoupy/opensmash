@@ -13,7 +13,8 @@ export function loadSettings():Settings {try{
  const saved=JSON.parse(preferences.getItem('melee-launch-v1')||'{}');
  {
   const requested=new URLSearchParams(location.search).get('moveset');
-  saved.ports=(saved.ports||defaults().ports).map((p:any)=>({...p,target:requested&&schema.targets.some(t=>t.slug===requested)?requested:p.target||'auto'}));
+  const target=requested&&schema.targets.some(t=>t.slug===requested)?requested:saved.ports?.[0]?.target||'auto';
+  saved.ports=(saved.ports||defaults().ports).map((p:any)=>({...p,target:target}));
  }
  if(Array.isArray(saved.ports)&&JSON.stringify(saved.ports.slice(1))===legacyOpponents){
   saved.ports=[saved.ports[0],...defaults().ports.slice(1)];

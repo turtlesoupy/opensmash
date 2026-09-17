@@ -4,7 +4,7 @@ import ModalPage from "./ModalPage.jsx";
 import { loadStoredRom } from "../shared/rom-store.js";
 import { holdScreenAwake, isHandoffSupported, startRomHandoffHost } from "./rom-handoff-client.js";
 
-// Host side of the ROM handoff: shows a QR code + short code, then streams
+// Host side of the game file handoff: shows a QR code + short code, then streams
 // this browser's stored ROM to the device that scans it. Only reachable from
 // Settings in a browser that already validated a ROM. It can render either as
 // a Settings subpage or in its original standalone ModalPage shell.
@@ -13,7 +13,7 @@ function formatMiB(bytes) {
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
-export default function RomHandoffModal({ backButtonRef, embedded = false, open, onClose }) {
+export default function RomHandoffModal({ backButtonRef, embedded = false, open, onClose, loadRom = loadStoredRom, game = 'ssb64' }) {
   const [state, setState] = useState("idle");
   const [detail, setDetail] = useState({});
   const [qr, setQr] = useState("");
@@ -33,7 +33,8 @@ export default function RomHandoffModal({ backButtonRef, embedded = false, open,
     setQr("");
     const run = ++runRef.current;
     const session = startRomHandoffHost({
-      loadRom: loadStoredRom,
+      loadRom,
+      game,
       onState(next, info = {}) {
         if (run !== runRef.current) return;
         setState(next);
@@ -58,10 +59,10 @@ export default function RomHandoffModal({ backButtonRef, embedded = false, open,
   const percent = detail.total ? Math.round(((detail.sent ?? 0) / detail.total) * 100) : 0;
   const subtitle = {
     creating: "Opening a private connection…",
-    waiting: "Scan the code on the other device, or enter it under Settings → Get ROM from another device.",
+    waiting: "Scan the code on the other device, or enter it under Settings → ROM Management → Get from another device.",
     connecting: "Other device found. Connecting…",
-    sending: `Sending ${detail.total ? formatMiB(detail.total) : "the ROM"}… ${percent}%`,
-    done: "Done. The other device is checking the ROM now.",
+    sending: `Sending ${detail.total ? formatMiB(detail.total) : "the game file"}… ${percent}%`,
+    done: "Done. The other device is checking the game file now.",
     error: "The handoff did not complete.",
     cancelled: "Handoff cancelled.",
   }[state] || "";
@@ -78,7 +79,7 @@ export default function RomHandoffModal({ backButtonRef, embedded = false, open,
         aria-describedby="handoff-copy"
       >
         <header className="advanced-heading">
-          <h2 id="handoff-title">Share ROM with another device</h2>
+          <h2 id="handoff-title">Share with another device</h2>
           <p id="handoff-copy">{subtitle}</p>
         </header>
 
@@ -92,7 +93,7 @@ export default function RomHandoffModal({ backButtonRef, embedded = false, open,
               <code className="handoff-code" aria-label={`Handoff code ${detail.code.split("").join(" ")}`}>{detail.code}</code>
               <a className="handoff-url" href={detail.url} target="_blank" rel="noreferrer">{detail.url}</a>
               <small className="handoff-note">
-                Keep this window open and awake until it finishes. The ROM travels directly between your devices;
+                Keep this window open and awake until it finishes. The game file travels directly between your devices;
                 our servers only pass along the connection details. Both devices should be on the same Wi-Fi.
               </small>
             </div>

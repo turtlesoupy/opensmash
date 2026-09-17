@@ -49,6 +49,7 @@ test("normalizeHandoffCode uppercases, strips separators, and folds confusables 
 test("handoffUrl round-trips through handoffCodeFromLocation", () => {
   const url = handoffUrl("https://example.com", "ABCDEF");
   assert.equal(url, "https://example.com/?handoff=ABCDEF");
+  assert.equal(handoffUrl("https://example.com", "ABCDEF", "melee"), "https://example.com/melee/?handoff=ABCDEF");
   assert.equal(handoffCodeFromLocation(new URL(url).search), "ABCDEF");
   assert.equal(handoffCodeFromLocation("?handoff=abc-def"), "ABCDEF");
   assert.equal(handoffCodeFromLocation("?handoff=nope"), null);

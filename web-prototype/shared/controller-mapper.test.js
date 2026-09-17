@@ -101,10 +101,11 @@ test("unmount on the final mapping step cancels capture without saving during pl
   assert.equal(h.saves, 0);
 });
 
-test("Settings unmounts the mapper on external close and at dismissal start", async () => {
+test("Settings unmounts both binding editors on external close and at dismissal start", async () => {
   const settings = await readFile(new URL("../src/SettingsModal.jsx", import.meta.url), "utf8");
   const modal = await readFile(new URL("../src/ModalPage.jsx", import.meta.url), "utf8");
-  assert.match(settings, /open && page === "mapping" && mappingPad &&/);
-  assert.match(settings, /onClosing=\{\(\) => setMappingPad\(null\)\}/);
+  assert.match(settings, /open && !closing && !isMelee && <N64Keyboard/);
+  assert.match(settings, /open && !closing && isMelee && engineControls/);
+  assert.match(settings, /onClosing=\{\(\) => setClosing\(true\)\}/);
   assert.match(modal, /closingRef.current = true;\s+onClosingRef.current\?\.\(\);/);
 });

@@ -90,7 +90,7 @@
     readProfiles();
     if (!resolvedProfiles.has(key)) {
       const saved = normalizedProfile(cachedProfiles[key]);
-      const profile = saved?.mode === "disabled" ? null : saved || (M64_ID.test(key) ? M64_PROFILE : null);
+      const profile = saved?.mode === "disabled" ? null : saved || normalizedProfile(cachedProfiles["__default__"]) || (M64_ID.test(key) ? M64_PROFILE : null);
       if (profile) {
         Object.values(profile.axes).forEach(Object.freeze);
         Object.freeze(profile.buttons);
@@ -107,7 +107,7 @@
     readProfiles();
     const saved = normalizedProfile(cachedProfiles[key]);
     if (saved?.mode === "disabled") return "default";
-    if (saved) return "custom";
+    if (saved || normalizedProfile(cachedProfiles["__default__"])) return "custom";
     return M64_ID.test(key) ? "m64" : "default";
   }
 
@@ -277,6 +277,7 @@
   });
 
   const api = Object.freeze({
+    profileIds: () => Object.keys(readProfiles()).filter(id => id !== "__default__"),
     clearProfile,
     controls: CONTROL_IDS,
     disableProfile,

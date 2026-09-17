@@ -1,3 +1,4 @@
+import {loadSharedRom} from './shared-game-files.js';
 import {loadSettings as loadMeleeSettings} from '../../engines/melee/web/lib/launch';
 import {restoreLocalDisc,localDiscReady,selectLocalDisc,subscribeLocalDisc,retainMelee} from '../../engines/melee/web/lib/melee-session';
 import {desktop as meleeDesktop} from '../../engines/melee/web/lib/desktop';
@@ -340,6 +341,7 @@ function CreateExperienceOverlay({ onAuthenticated, onClose, onCreated, onPlay, 
 const NativeSsb64 = lazy(()=>import('../../engines/ssb64/launcher/NativeGame.jsx'));
 const MeleeExperience = lazy(()=>import('../../engines/melee/launcher/Experience.tsx'));
 const MeleeControls = lazy(()=>import('../../engines/melee/web/app/Controls.tsx'));
+const MeleeRomSettings = lazy(()=>import('../../engines/melee/launcher/Experience.tsx').then(m=>({default:m.MeleeDiscSettings})));
 const MeleeSettings = lazy(()=>import('../../engines/melee/launcher/Experience.tsx').then(m=>({default:m.MeleeSettings})));
 
 export default function App() {
@@ -1701,6 +1703,9 @@ export default function App() {
         <SettingsModal
           selectedGame={isMelee ? "melee" : "ssb64"}
           engineControls={<Suspense fallback={<p>Loading bindings…</p>}><MeleeControls/></Suspense>}
+          onReceiveDisc={validateMeleeDisc}
+          loadSharedRom={loadSharedRom}
+          engineRomSettings={<Suspense fallback={<p>Loading disc settings…</p>}><MeleeRomSettings/></Suspense>}
           engineSettings={<Suspense fallback={<p>Loading Melee settings…</p>}><MeleeSettings/></Suspense>}
           accountConnected={Boolean(user)}
           authorized={authorized}
@@ -1903,6 +1908,9 @@ export default function App() {
       <SettingsModal
         selectedGame={isMelee ? "melee" : "ssb64"}
         engineControls={<Suspense fallback={<p>Loading bindings…</p>}><MeleeControls/></Suspense>}
+        onReceiveDisc={validateMeleeDisc}
+        loadSharedRom={loadSharedRom}
+        engineRomSettings={<Suspense fallback={<p>Loading disc settings…</p>}><MeleeRomSettings/></Suspense>}
         engineSettings={<Suspense fallback={<p>Loading Melee settings…</p>}><MeleeSettings/></Suspense>}
         accountConnected={Boolean(user)}
         authorized={authorized}

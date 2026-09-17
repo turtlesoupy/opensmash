@@ -1,3 +1,4 @@
+import {channelInbox, sendGameFile, receiveGameFile} from '../shared/handoff-transfer.js';
 // rom-handoff-client.js — browser side of the ROM handoff.
 //
 // Host (the device that already validated a ROM): opens a signalling room,
@@ -14,11 +15,6 @@
 // ROM stays unreadable to every server involved.
 
 import {
-  HANDOFF_CHUNK_SIZE,
-  chunkRanges,
-  createRomAssembler,
-  decodeHandoffFrame,
-  encodeHandoffHeader,
   handoffUrl,
   isHandoffCode,
   normalizeHandoffCode,
@@ -68,15 +64,11 @@ const POLL_INTERVAL_MS = 500;
 const POLL_FAST_WINDOW_MS = 30 * 1000;
 const POLL_IDLE_INTERVAL_MS = 2000;
 const WAIT_FOR_PEER_MS = 10 * 60 * 1000;
-// A guest that stops draining the channel without closing it (backgrounded
-// phone) would otherwise leave the host's send loop waiting forever.
-const SEND_STALL_TIMEOUT_MS = 90 * 1000;
 // From the moment both descriptions are in place until the channel opens.
 const CONNECT_TIMEOUT_MS = 60 * 1000;
 // Local ICE candidates are batched so a host with many interfaces and six TURN
 // URLs posts a handful of messages instead of dozens of contended writes.
 const CANDIDATE_BATCH_MS = 150;
-const BUFFER_HIGH_WATER = 1024 * 1024;
 const BUFFER_LOW_WATER = 256 * 1024;
 
 class HandoffCancelled extends Error {
@@ -266,37 +258,13 @@ function waitForChannelOpen(channel, signal, timeoutMs) {
   });
 }
 
-/** Wait for the channel to drain below its low-water mark, or fail when it closes, errors, stalls, or the handoff is cancelled. */
-function waitForBufferedAmountLow(channel, signal) {
-  return new Promise((resolve, reject) => {
-    if (signal?.aborted) return reject(new HandoffCancelled());
-    if (channel.readyState !== "open") return reject(new Error("The connection dropped mid-transfer."));
-    if (channel.bufferedAmount <= channel.bufferedAmountLowThreshold) return resolve();
-    const cleanup = () => {
-      clearTimeout(timer);
-      channel.removeEventListener("bufferedamountlow", onLow);
-      channel.removeEventListener("close", onClose);
-      channel.removeEventListener("error", onClose);
-      signal?.removeEventListener("abort", onAbort);
-    };
-    const onLow = () => { cleanup(); resolve(); };
-    const onClose = () => { cleanup(); reject(new Error("The connection dropped mid-transfer.")); };
-    const onAbort = () => { cleanup(); reject(new HandoffCancelled()); };
-    const timer = setTimeout(() => { cleanup(); reject(new Error("The other device stopped receiving data.")); }, SEND_STALL_TIMEOUT_MS);
-    channel.addEventListener("bufferedamountlow", onLow);
-    channel.addEventListener("close", onClose);
-    channel.addEventListener("error", onClose);
-    signal?.addEventListener("abort", onAbort);
-  });
-}
-
 /**
- * Host side. `loadRom()` resolves to { name, size, sha1, bytes } (the stored
- * ROM). `onState(state, detail)` receives:
+ * Host side. `loadRom(game)` resolves to { name, bytes } or { name, file }.
+ * The receiver requests its selected game before any file bytes are sent. `onState(state, detail)` receives:
  *   creating → waiting {code,url} → connecting → sending {sent,total} → done
  * Returns { code, url, promise, cancel }.
  */
-export function startRomHandoffHost({ loadRom, onState = () => {} }) {
+export function startRomHandoffHost({ loadRom, game = 'ssb64', onState = () => {} }) {
   const controller = new AbortController();
   const { signal } = controller;
   let pc = null;
@@ -308,7 +276,7 @@ export function startRomHandoffHost({ loadRom, onState = () => {} }) {
     const created = await api("/api/handoff/rooms", { method: "POST", body: {} });
     roomCode = created.code;
     hostKey = created.hostKey;
-    const url = handoffUrl(location.origin, roomCode);
+    const url = handoffUrl(location.origin, roomCode, game);
     onState("waiting", { code: roomCode, url, expiresAt: created.expiresAt });
 
     const ice = await fetchIceConfig();
@@ -318,6 +286,7 @@ export function startRomHandoffHost({ loadRom, onState = () => {} }) {
     const channel = pc.createDataChannel("rom", { ordered: true });
     channel.binaryType = "arraybuffer";
     channel.bufferedAmountLowThreshold = BUFFER_LOW_WATER;
+    const inbox = channelInbox(channel, signal);
 
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
@@ -347,46 +316,15 @@ export function startRomHandoffHost({ loadRom, onState = () => {} }) {
     await waitForChannelOpen(channel, signal, CONNECT_TIMEOUT_MS);
     api(`/api/handoff/rooms/${roomCode}/close`, { method: "POST", body: { role: "host", key: hostKey } }).catch(() => {});
 
-    const rom = await loadRom();
-    if (!rom?.bytes) throw new Error("This browser no longer holds the ROM. Upload it again first.");
-    const bytes = rom.bytes instanceof Uint8Array ? rom.bytes : new Uint8Array(rom.bytes);
-    const total = bytes.byteLength;
-    channel.send(encodeHandoffHeader({ name: rom.name || "smash64.z64", size: total, sha1: rom.sha1 }));
-
-    const received = new Promise((resolve, reject) => {
-      channel.addEventListener("message", (event) => {
-        if (typeof event.data !== "string") return;
-        try {
-          const frame = decodeHandoffFrame(event.data);
-          if (frame.type === "received") resolve(frame);
-          else if (frame.type === "error") reject(new Error(frame.message || "The other device rejected the transfer."));
-        } catch (error) { reject(error); }
-      });
-      channel.addEventListener("close", () => reject(new Error("The other device disconnected before confirming the transfer.")), { once: true });
-    });
-    // Awaited only after the send loop; a rejection before then must not
-    // surface as an unhandled rejection (the loop reports the drop itself).
-    received.catch(() => {});
-
-    let sent = 0;
-    onState("sending", { sent, total });
-    for (const [start, end] of chunkRanges(total, HANDOFF_CHUNK_SIZE)) {
-      if (signal.aborted) throw new HandoffCancelled();
-      if (channel.bufferedAmount > BUFFER_HIGH_WATER) await waitForBufferedAmountLow(channel, signal);
-      if (channel.readyState !== "open") throw new Error("The connection dropped mid-transfer.");
-      channel.send(bytes.buffer.slice(bytes.byteOffset + start, bytes.byteOffset + end));
-      sent = end;
-      onState("sending", { sent, total });
-    }
-    channel.send(JSON.stringify({ type: "done" }));
-    await received;
-    onState("done", { total });
+    try { await sendGameFile(channel, inbox, loadRom, onState); }
+    catch (error) { try {channel.send(JSON.stringify({type:'error',message:error.message}));} catch {} throw error; }
+    finally { inbox.dispose(); }
     channel.close();
     pc.close();
   })().catch((error) => {
     farewell(roomCode, "host", hostKey, error);
     pc?.close();
-    if (error instanceof HandoffCancelled) { onState("cancelled"); return; }
+    if (error?.name === "HandoffCancelled") { onState("cancelled"); return; }
     onState("error", { error });
     throw error;
   });
@@ -402,13 +340,15 @@ export function startRomHandoffHost({ loadRom, onState = () => {} }) {
  * the same validation the upload button runs. `onState(state, detail)`:
  *   joining → waiting → connecting → receiving {received,total} → done
  */
-export function receiveRomHandoff({ code, onState = () => {}, signal } = {}) {
+export function receiveRomHandoff({ code, game = 'ssb64', onState = () => {}, signal } = {}) {
   const roomCode = normalizeHandoffCode(code);
   const controller = new AbortController();
   const abortSignal = controller.signal;
   signal?.addEventListener("abort", () => controller.abort(), { once: true });
+  if (signal?.aborted) controller.abort();
   let pc = null;
   let guestKey = null;
+  let cleanup = async () => {};
 
   const promise = (async () => {
     if (!isHandoffCode(roomCode)) throw new Error("Enter the 6-character code shown on the other device.");
@@ -422,17 +362,12 @@ export function receiveRomHandoff({ code, onState = () => {}, signal } = {}) {
     logCandidateTypes(pc, "guest");
     const relayer = attachCandidateRelay({ pc, room: roomCode, role: "guest", key: guestKey });
     let channel = null;
-    // The host starts sending the moment its side of the channel opens, which
-    // can be up to a poll interval before this side leaves the signalling loop.
-    // Buffer every frame from the instant the channel arrives so nothing is
-    // dropped before the assembler below takes over.
-    const inbox = [];
-    let deliver = (data) => { inbox.push(data); };
+    let inbox;
     const channelReady = new Promise((resolve) => {
       pc.addEventListener("datachannel", (event) => {
         channel = event.channel;
         channel.binaryType = "arraybuffer";
-        channel.addEventListener("message", (message) => deliver(message.data));
+        inbox = channelInbox(channel, abortSignal);
         resolve(channel);
       });
     });
@@ -463,55 +398,22 @@ export function receiveRomHandoff({ code, onState = () => {}, signal } = {}) {
     await waitForChannelOpen(channel, abortSignal, CONNECT_TIMEOUT_MS);
     api(`/api/handoff/rooms/${roomCode}/close`, { method: "POST", body: { role: "guest", key: guestKey } }).catch(() => {});
 
-    const file = await new Promise((resolve, reject) => {
-      let assembler = null;
-      let name = "smash64.z64";
-      const fail = (error) => {
-        try { channel.send(JSON.stringify({ type: "error", message: error.message })); } catch { /* channel gone */ }
-        reject(error);
-      };
-      const handle = (data) => {
-        try {
-          if (typeof data === "string") {
-            const frame = decodeHandoffFrame(data);
-            if (frame.type === "header") {
-              assembler = createRomAssembler(frame);
-              name = frame.name || name;
-              onState("receiving", { received: 0, total: assembler.size });
-            } else if (frame.type === "done") {
-              const bytes = assembler.finish();
-              channel.send(JSON.stringify({ type: "received", size: bytes.byteLength }));
-              onState("done", { total: bytes.byteLength });
-              resolve(new File([bytes], name, { type: "application/octet-stream" }));
-            }
-            return;
-          }
-          if (!assembler) throw new Error("The sending device skipped the transfer header.");
-          assembler.push(data);
-          onState("receiving", { received: assembler.received, total: assembler.size });
-        } catch (error) {
-          fail(error);
-        }
-      };
-      // Replay anything that arrived while signalling was still winding down,
-      // then take frames live.
-      for (const data of inbox.splice(0)) handle(data);
-      deliver = handle;
-      channel.addEventListener("close", () => reject(new Error("The sending device disconnected before the transfer finished.")), { once: true });
-      abortSignal.addEventListener("abort", () => reject(new HandoffCancelled()), { once: true });
-    });
+    let file;
+    try { file = await receiveGameFile(channel, inbox, game, onState, value => { cleanup = value; }); }
+    catch (error) { try {channel.send(JSON.stringify({type:'error',message:error.message}));} catch {} await cleanup(); throw error; }
+    finally { inbox.dispose(); }
 
     setTimeout(() => { try { channel.close(); pc.close(); } catch { /* already closed */ } }, 500);
     return file;
   })().catch((error) => {
     farewell(roomCode, "guest", guestKey, error);
     pc?.close();
-    if (error instanceof HandoffCancelled) { onState("cancelled"); }
+    if (error?.name === "HandoffCancelled") { onState("cancelled"); }
     else onState("error", { error });
     throw error;
   });
 
-  return { promise, cancel() { controller.abort(); } };
+  return { promise, dispose: () => cleanup(), cancel() { controller.abort(); } };
 }
 
 /**

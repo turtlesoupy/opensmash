@@ -257,3 +257,16 @@ test("control stick directions can be remapped to reverse or swap axes", () => {
   gamepad.buttons[8] = { pressed: true, touched: true, value: 1 };
   assert.equal(navigator.getGamepads()[0].axes[0], 1);
 });
+
+test('default profile applies to new controllers while model profiles override it', () => {
+ const {api}=harness(pad());
+ api.saveProfile('__default__',{mode:'custom',buttons:{a:3}});
+ assert.equal(api.getProfile('New controller').buttons.a,3);
+ api.saveProfile('New controller',{mode:'custom',buttons:{a:2}});
+ assert.equal(api.getProfile('New controller').buttons.a,2);
+ assert.deepEqual(Array.from(api.profileIds()),['New controller']);
+ api.clearProfile('New controller');
+ assert.equal(api.getProfile('New controller').buttons.a,3);
+ api.clearProfile('__default__');
+ assert.equal(api.getProfile('New controller'),null);
+});

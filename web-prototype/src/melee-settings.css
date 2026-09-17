@@ -2,19 +2,19 @@
 .advanced-screen .melee-settings { padding:0; max-height:none; overflow:visible; display:grid; gap:24px; }
 .advanced-screen .melee-settings .launch-rules,
 .advanced-screen .melee-movesets { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:clamp(12px,2vw,20px); }
-.advanced-screen :is(.melee-settings,.controls-screen) label { display:grid; align-content:start; gap:8px; min-width:0; margin:0; color:#c7a985; font:600 clamp(13px,1.35vw,17px)/1.3 "Kanit",sans-serif; }
-.advanced-screen :is(.melee-settings,.controls-screen) :is(select,input:not([type="checkbox"]),button,.keycap) { min-width:0; max-width:100%; min-height:48px; padding:11px 16px; border:1px solid #5d3a2b; border-radius:0; background:#080504; color:#fff2d6; color-scheme:dark; font:600 clamp(14px,1.55vw,19px)/1.3 "Kanit",sans-serif; text-shadow:0 2px 0 #260500; }
-.advanced-screen :is(.melee-settings,.controls-screen) :is(select,input:not([type="checkbox"])) { width:100%; }
-.advanced-screen :is(.melee-settings,.controls-screen) :is(button,select) { cursor:pointer; }
-.advanced-screen :is(.melee-settings,.controls-screen) :is(button,select,input):focus-visible { outline:2px solid #fff0b5; outline-offset:2px; background-color:#32190c; }
-.advanced-screen :is(.melee-settings,.controls-screen) button:hover { background:#32190c; }
+.advanced-screen :is(.melee-settings,.melee-disc-settings,.controls-screen) label { display:grid; align-content:start; gap:8px; min-width:0; margin:0; color:#c7a985; font:600 clamp(13px,1.35vw,17px)/1.3 "Kanit",sans-serif; }
+.advanced-screen :is(.melee-settings,.melee-disc-settings,.controls-screen) :is(select,input:not([type="checkbox"]),button,.keycap) { min-width:0; max-width:100%; min-height:48px; padding:11px 16px; border:1px solid #5d3a2b; border-radius:0; background:#080504; color:#fff2d6; color-scheme:dark; font:600 clamp(14px,1.55vw,19px)/1.3 "Kanit",sans-serif; text-shadow:0 2px 0 #260500; }
+.advanced-screen :is(.melee-settings,.melee-disc-settings,.controls-screen) :is(select,input:not([type="checkbox"])) { width:100%; }
+.advanced-screen :is(.melee-settings,.melee-disc-settings,.controls-screen) :is(button,select) { cursor:pointer; }
+.advanced-screen :is(.melee-settings,.melee-disc-settings,.controls-screen) :is(button,select,input):focus-visible { outline:2px solid #fff0b5; outline-offset:2px; background-color:#32190c; }
+.advanced-screen :is(.melee-settings,.melee-disc-settings,.controls-screen) button:hover { background:#32190c; }
 .advanced-screen .melee-disc-settings { display:flex; flex-wrap:wrap; align-items:end; gap:12px 20px; padding-bottom:24px; border-bottom:1px solid #3b291e; }
 .advanced-screen .melee-disc-settings h3 { flex-basis:100%; margin:0; color:#c7a985; font-size:17px; }
 .advanced-screen .melee-disc-settings p { flex-basis:100%; margin:0; }
 .advanced-screen .melee-disc-settings label { flex:1 1 320px; }
 .advanced-screen .melee-disc-settings input[type="file"] { font-size:14px; }
 .advanced-screen .melee-disc-settings input::file-selector-button { border:0; border-right:1px solid #5d3a2b; padding:4px 12px 4px 0; margin-right:12px; background:transparent; color:#fff2d6; font:inherit; cursor:pointer; }
-.advanced-screen :is(.melee-settings,.controls-screen) p { color:#a58f79; font-size:14px; line-height:1.5; }
+.advanced-screen :is(.melee-settings,.melee-disc-settings,.controls-screen) p { color:#a58f79; font-size:14px; line-height:1.5; }
 .advanced-screen .melee-settings [role="alert"] { color:#ff9d85; }
 .advanced-screen .controls-screen { min-width:0; margin-top:28px; padding-top:20px; border-top:1px solid #3b291e; }
 .advanced-screen .controls-screen > label { max-width:28rem; }

@@ -14,8 +14,9 @@ export default function Controls() {
   const down=(e:KeyboardEvent)=>{
    if(e.target instanceof HTMLElement&&e.target.matches('input,select,textarea'))return;
    const code=eventCode(e);
+   if(pending&&code==='Escape'){e.preventDefault();e.stopImmediatePropagation();setPending(null);return;}
    if(pending?.kind==='key'){
-    e.preventDefault();e.stopPropagation();
+    e.preventDefault();e.stopImmediatePropagation();
     if(code==='Escape'){setPending(null);return;}
     const next=rebindKey(bindings,pending.action,code);
     if(next!==bindings){saveBindings(next);setPending(null);}

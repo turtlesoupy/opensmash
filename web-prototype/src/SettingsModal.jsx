@@ -5,8 +5,7 @@ import ModalPage from "./ModalPage.jsx";
 import RomHandoffModal from "./RomHandoffModal.jsx";
 import RomHandoffReceiver from "./RomHandoffReceiver.jsx";
 import N64Keyboard from "./N64Keyboard.jsx";
-import ControllerMapper from "./ControllerMapper.jsx";
-import { canTurnPortOff, choiceForEntry, padDisplayName, portOptions } from "../shared/controller-ports.js";
+import { canTurnPortOff, choiceForEntry, portOptions } from "../shared/controller-ports.js";
 import {
   BOOT_MODES,
   CHARACTER_MESHES,
@@ -24,6 +23,9 @@ export default function SettingsModal({
   selectedGame = "ssb64",
   engineSettings = null,
   engineControls = null,
+  engineRomSettings = null,
+  loadSharedRom,
+  onReceiveDisc,
   accountConnected = false,
   authorized,
   debugMode,
@@ -36,20 +38,20 @@ export default function SettingsModal({
   onCancel,
   onLogOut,
   onOptionsChange,
-  onRestoreDefaults,
   onResetControllerTutorial,
   onResetRom,
   onReceiveRom,
   onSound,
   onCrt,
 }) {
+  const [closing, setClosing] = useState(false);
+  const [romBusy, setRomBusy] = useState(false);
+  const [romError, setRomError] = useState('');
   const [draft, setDraft] = useState(options);
   const [page, setPage] = useState("main");
   const [settingsGame, setSettingsGame] = useState(selectedGame);
   const gameTabsRef = useRef(null);
   const isMelee = settingsGame === "melee";
-  const [mappingPad, setMappingPad] = useState(null);
-  const [, setMappingRevision] = useState(0);
   const mainFirstRef = useRef(null);
   const gameplayFirstRef = useRef(null);
   const controllersFirstRef = useRef(null);
@@ -61,17 +63,17 @@ export default function SettingsModal({
 
   useEffect(() => {
     if (open) {
+      setClosing(false);
       setDraft(options);
       setPage("main");
       setSettingsGame(selectedGame);
-      setMappingPad(null);
     }
   }, [open]);
 
   useEffect(() => {
     if (!open) return undefined;
     const focusFrame = window.requestAnimationFrame(() => {
-      if (page === "gameplay" || page === "bindings") gameTabsRef.current?.focus();
+      if (page === "gameplay" || page === "bindings" || page === "roms") gameTabsRef.current?.focus();
       else if (page === "controllers") controllersFirstRef.current?.focus();
       else if (page === "login") loginBackRef.current?.focus();
       else if (page === "receive") receiveFirstRef.current?.focus();
@@ -97,16 +99,16 @@ export default function SettingsModal({
   }
 
   function restoreDefaults() {
-    const defaults = normalizeAdvancedOptions(DEFAULT_ADVANCED_OPTIONS);
+    const defaults = normalizeAdvancedOptions({...DEFAULT_ADVANCED_OPTIONS, ports: draft.ports, selectionMode: draft.selectionMode});
     setDraft(defaults);
-    onRestoreDefaults(defaults);
+    onOptionsChange(defaults);
   }
 
   const title = page === "gameplay"
     ? "Gameplay Options"
     : page === "controllers" ? "Players & Controllers"
       : page === "bindings" ? "Keybinds & Controller Mapping"
-        : page === "mapping" ? "Map Controller" : "Settings";
+        : page === "roms" ? "ROM Management" : "Settings";
   const handoffPage = page === "receive" || page === "send";
 
   return (
@@ -115,7 +117,7 @@ export default function SettingsModal({
       className="advanced-overlay"
       dismissOnBackdrop
       initialFocusRef={mainFirstRef}
-      onClosing={() => setMappingPad(null)}
+      onClosing={() => setClosing(true)}
       onRequestClose={onCancel}
       open={open}
       role="presentation"
@@ -166,32 +168,8 @@ export default function SettingsModal({
               <span>Players &amp; Controllers</span>
             </button>
             <button className="launch-flow-action settings-menu-button" type="button" onClick={() => setPage("bindings")}><span>Keybinds &amp; Controller Mapping</span></button>
-            {(authorized ? (
-              <button
-                className="launch-flow-action settings-menu-button advanced-handoff-action"
-                type="button"
-                onClick={() => setPage("send")}
-              >
-                <span>Share N64 ROM with another device</span>
-              </button>
-            ) : (
-              <button
-                className="launch-flow-action settings-menu-button advanced-handoff-action"
-                type="button"
-                onClick={() => setPage("receive")}
-              >
-                <span>Get N64 ROM from another device</span>
-              </button>
-            ))}
-            {authorized && (
-              <button
-                className="launch-flow-action settings-menu-button reset-rom-button"
-                type="button"
-                onClick={() => close(onResetRom)}
-              >
-                <span>Clear N64 ROM from this device</span>
-              </button>
-            )}
+            <button className="launch-flow-action settings-menu-button" type="button" onClick={() => setPage("roms")}>ROM Management</button>
+            <button className="launch-flow-action settings-menu-button" type="button" onClick={() => setPage("send")}>Share with another device</button>
             <button
               className="launch-flow-action settings-menu-button"
               type="button"
@@ -221,8 +199,9 @@ export default function SettingsModal({
             <RomHandoffReceiver
               active={page === "receive"}
               codeInputRef={receiveFirstRef}
-              onBack={() => setPage("main")}
-              onReceiveRom={onReceiveRom}
+              onBack={() => setPage("roms")}
+              game={settingsGame}
+              onReceiveRom={isMelee ? onReceiveDisc : onReceiveRom}
             />
           </div>
 
@@ -230,27 +209,34 @@ export default function SettingsModal({
             <RomHandoffModal
               backButtonRef={sendBackRef}
               embedded
+              game={selectedGame}
+              loadRom={loadSharedRom}
               open={page === "send"}
               onClose={() => setPage("main")}
             />
           </div>
 
-          {(page === "gameplay" || page === "bindings") && (
+          {(page === "gameplay" || page === "bindings" || page === "roms") && (
             <GameTabs value={settingsGame} onChange={setSettingsGame} selectedRef={gameTabsRef} />
           )}
+          {page === "roms" && <div className="settings-subpage" role="tabpanel" id="settings-game-panel" aria-labelledby={`settings-game-${settingsGame}`}>
+            {isMelee ? engineRomSettings : <section className="melee-disc-settings"><h3>N64 ROM</h3><p>{authorized ? "Ready to play. ROM saved on this device." : "Choose your N64 ROM to get started."}</p>
+              <label>{romBusy ? "Checking ROM…" : "Choose another ROM"}<input disabled={romBusy} type="file" accept=".z64,.n64,.v64,.rom,.zip" onChange={async event => { const file = event.target.files?.[0]; if (file) { setRomBusy(true); setRomError(''); try { await onReceiveRom(file); } catch (error) { setRomError(error.message); } finally { setRomBusy(false); } } }}/></label>
+              {romError && <p role="alert">{romError}</p>}
+              {authorized && <button type="button" onClick={() => close(onResetRom)}>Forget ROM</button>}
+            </section>}
+            <div className="advanced-actions"><button className="launch-flow-action" type="button" onClick={() => setPage("receive")}>Get from another device</button></div>
+            <BackButton onClick={() => setPage("main")} />
+          </div>}
           {isMelee && engineSettings && page==='gameplay'  && <div className="settings-subpage" role="tabpanel" id="settings-game-panel" aria-labelledby="settings-game-melee">{engineSettings}<BackButton onClick={()=>setPage('main')}/></div>}
           <div className="advanced-form settings-subpage" role="tabpanel" id={page === "gameplay" && !isMelee ? "settings-game-panel" : undefined} aria-labelledby="settings-game-ssb64" hidden={page !== "gameplay" || isMelee}>
             <div className="advanced-selects">
               <label className="advanced-field">
-                <span className="advanced-field-label">Character Mesh</span>
+                <span className="advanced-field-label">Game Mode</span>
                 <span className="advanced-select-shell advanced-cell-frame flame-bridge-cell">
-                  <select
-                    ref={gameplayFirstRef}
-                    value={draft.characterMesh}
-                    onChange={(event) => update("characterMesh", event.target.value)}
-                  >
-                    {CHARACTER_MESHES.map((mesh) => (
-                      <option value={mesh.value} key={mesh.value}>{mesh.label}</option>
+                  <select value={draft.bootMode} onChange={(event) => update("bootMode", event.target.value)}>
+                    {BOOT_MODES.map((mode) => (
+                      <option value={mode.value} key={mode.value}>{mode.label}</option>
                     ))}
                   </select>
                 </span>
@@ -276,21 +262,15 @@ export default function SettingsModal({
                 </span>
               </label>
               <label className="advanced-field">
-                <span className="advanced-field-label">Boot Destination</span>
+                <span className="advanced-field-label">Moveset</span>
                 <span className="advanced-select-shell advanced-cell-frame flame-bridge-cell">
-                  <select value={draft.bootMode} onChange={(event) => update("bootMode", event.target.value)}>
-                    {BOOT_MODES.map((mode) => (
-                      <option value={mode.value} key={mode.value}>{mode.label}</option>
-                    ))}
-                  </select>
-                </span>
-              </label>
-              <label className="advanced-field">
-                <span className="advanced-field-label">Frame Pacing</span>
-                <span className="advanced-select-shell advanced-cell-frame flame-bridge-cell">
-                  <select value={draft.framePacing} onChange={(event) => update("framePacing", event.target.value)}>
-                    {FRAME_PACING.map((mode) => (
-                      <option value={mode.value} key={mode.value}>{mode.label}</option>
+                  <select
+                    ref={gameplayFirstRef}
+                    value={draft.characterMesh}
+                    onChange={(event) => update("characterMesh", event.target.value)}
+                  >
+                    {CHARACTER_MESHES.map((mesh) => (
+                      <option value={mesh.value} key={mesh.value}>{mesh.label}</option>
                     ))}
                   </select>
                 </span>
@@ -301,6 +281,16 @@ export default function SettingsModal({
                   <select value={draft.renderResolution} onChange={(event) => update("renderResolution", event.target.value)}>
                     {RENDER_RESOLUTIONS.map((size) => (
                       <option value={size.value} key={size.value}>{size.label}</option>
+                    ))}
+                  </select>
+                </span>
+              </label>
+              <label className="advanced-field">
+                <span className="advanced-field-label">Frame Pacing</span>
+                <span className="advanced-select-shell advanced-cell-frame flame-bridge-cell">
+                  <select value={draft.framePacing} onChange={(event) => update("framePacing", event.target.value)}>
+                    {FRAME_PACING.map((mode) => (
+                      <option value={mode.value} key={mode.value}>{mode.label}</option>
                     ))}
                   </select>
                 </span>
@@ -390,45 +380,13 @@ export default function SettingsModal({
 
           {page === "bindings" && (
             <div className="settings-subpage" role="tabpanel" id="settings-game-panel" aria-labelledby={`settings-game-${settingsGame}`}>
-              {open && !isMelee && <N64Keyboard />}
-              {open && isMelee && engineControls}
-              {!isMelee && gamepads.length > 0 && (
-                <section className="controller-profile-list" aria-label="Controller mappings">
-                  {gamepads.map((pad) => {
-                    const mappingSource = window.openSmashControllerRemap?.profileSource?.(pad.id) || "default";
-                    return (
-                      <div className="controller-profile-row" key={`${pad.id}:${pad.index}`}>
-                        <span>
-                          <strong>{padDisplayName(pad.id)}</strong>
-                          <small>{mappingSource === "m64"
-                            ? "M64 detected — complete button setup"
-                            : mappingSource === "custom" ? "Custom mapping active" : "Browser default mapping"}</small>
-                        </span>
-                        <button
-                          className="launch-flow-action"
-                          type="button"
-                          onClick={() => { setMappingPad(pad); setPage("mapping"); }}
-                        >
-                          Map buttons
-                        </button>
-                      </div>
-                    );
-                  })}
-                </section>
-              )}
-
-              {!isMelee && gamepads.length === 0 && <p className="settings-subtitle">Connect a USB or Bluetooth controller and press a button to map it.</p>}
+              {open && !closing && !isMelee && <N64Keyboard />}
+              {open && !closing && isMelee && engineControls}
               <BackButton onClick={() => setPage("main")} />
             </div>
           )}
 
-          {open && page === "mapping" && mappingPad && (
-            <ControllerMapper
-              pad={mappingPad}
-              onBack={() => setPage("bindings")}
-              onSaved={() => setMappingRevision((value) => value + 1)}
-            />
-          )}
+
         </section>
       )}
     </ModalPage>

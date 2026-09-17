@@ -64,8 +64,8 @@ export function isHandoffCode(code) {
 }
 
 /** The URL a phone scans; opening it starts the receive flow with the code. */
-export function handoffUrl(origin, code) {
-  const url = new URL("/", origin);
+export function handoffUrl(origin, code, game = 'ssb64') {
+  const url = new URL(game === "melee" ? "/melee/" : "/", origin);
   url.searchParams.set(HANDOFF_QUERY_PARAM, code);
   return url.toString();
 }

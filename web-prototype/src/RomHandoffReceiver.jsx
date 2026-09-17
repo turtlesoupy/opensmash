@@ -15,10 +15,10 @@ const STATUS_COPY = {
   hashing: "Checking ROM…",
   validating: "Checking ROM…",
   storing: "Storing ROM…",
-  done: "ROM received and ready to play.",
+  done: "Game received and ready to play.",
 };
 
-export default function RomHandoffReceiver({ active, codeInputRef, onBack, onReceiveRom }) {
+export default function RomHandoffReceiver({ active, codeInputRef, onBack, onReceiveRom, game = 'ssb64' }) {
   const [state, setState] = useState("idle");
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
@@ -54,6 +54,7 @@ export default function RomHandoffReceiver({ active, codeInputRef, onBack, onRec
     setProgress(0);
 
     const session = receiveRomHandoff({
+      game,
       code: codeInputRef.current?.value || "",
       onState(nextState, detail = {}) {
         if (attempt !== attemptRef.current) return;
@@ -83,6 +84,7 @@ export default function RomHandoffReceiver({ active, codeInputRef, onBack, onRec
       setError(nextError?.message || "Could not receive the ROM from the other device.");
       requestAnimationFrame(() => codeInputRef.current?.focus());
     } finally {
+      await session.dispose?.();
       if (attempt === attemptRef.current) {
         releaseWakeLockRef.current?.();
         releaseWakeLockRef.current = null;
@@ -96,15 +98,15 @@ export default function RomHandoffReceiver({ active, codeInputRef, onBack, onRec
   }
 
   const status = state === "receiving"
-    ? `Receiving ROM… ${progress}%`
-    : STATUS_COPY[state] || "";
+    ? `Receiving game file… ${progress}%`
+    : STATUS_COPY[state] || (!["idle", "error"].includes(state) ? state : "");
 
   return (
     <div className="settings-handoff-content handoff-screen">
       <header className="advanced-heading">
-        <h2 id="settings-receive-handoff-title">Get ROM from another device</h2>
+        <h2 id="settings-receive-handoff-title">Get from another device</h2>
         <p>
-          On the device that has the ROM, open <strong>Settings &gt; Share ROM with another device</strong>,
+          On the device that has the {game === "melee" ? "Melee disc" : "N64 ROM"}, open <strong>Settings &gt; Share with another device</strong>,
           then enter its code below.
         </p>
       </header>

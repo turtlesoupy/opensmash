@@ -2184,7 +2184,7 @@ function resetRomPrompt() {
     hint.querySelector('code').textContent = filename;
     hint.querySelector('button').setAttribute('aria-label', `Copy ${filename} to clipboard`);
   }
-  if (moreOptionsButton) moreOptionsButton.hidden = usesDisc();
+  if (moreOptionsButton) moreOptionsButton.hidden = false;
 }
 
 // --- Alternative ROM sources -------------------------------------------------
@@ -2265,6 +2265,7 @@ async function connectHandoff(code) {
   if (validationBusy || activeHandoff || !pendingFighter) return;
   if (formError) { formError.hidden = true; formError.textContent = ''; }
   const session = receiveRomHandoff({
+    game: usesDisc() ? "melee" : "ssb64",
     code,
     onState(state, detail = {}) {
       const labels = {
@@ -2303,7 +2304,7 @@ async function connectHandoff(code) {
       showRomError(error?.message || 'Could not receive the ROM from the other device.', handoffError);
       handoffCodeInput?.focus();
     }
-  }
+  } finally { await session.dispose?.(); }
 }
 
 // Settings → "Receive from another device": open the dedicated receiver page
