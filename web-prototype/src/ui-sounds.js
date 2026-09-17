@@ -1,3 +1,4 @@
+import { installAudioUnlock } from "../shared/audio-unlock.js";
 import { useEffect, useRef } from "react";
 
 const INTERACTIVE_SELECTOR = [
@@ -101,7 +102,7 @@ class UiSoundEngine {
       this.context = new AudioContextClass({ latencyHint: "interactive" });
       this.noiseBuffer = makeNoiseBuffer(this.context);
     }
-    if (this.context.state === "suspended") this.context.resume().catch(() => {});
+    if (["suspended", "interrupted"].includes(this.context.state)) this.context.resume().catch(() => {});
     return this.context;
   }
 
@@ -256,6 +257,8 @@ function installUiSounds(isEnabled) {
     engine.playKey();
   };
 
+  const removeAudioUnlock = installAudioUnlock(window, () => isEnabled() ? [engine.context] : []);
+
   document.addEventListener("pointerdown", clickFromPointer, true);
   document.addEventListener("click", clickFromKeyboard, true);
   document.addEventListener("keydown", keyFromEditable, true);
@@ -264,6 +267,7 @@ function installUiSounds(isEnabled) {
     document.removeEventListener("pointerdown", clickFromPointer, true);
     document.removeEventListener("click", clickFromKeyboard, true);
     document.removeEventListener("keydown", keyFromEditable, true);
+    removeAudioUnlock();
     engine.destroy();
   };
 }

@@ -15,6 +15,7 @@ import ModalPage from "./ModalPage.jsx";
 import RetroHome from "./RetroHome.jsx";
 import TrailerSetup from "./TrailerSetup.jsx";
 import SettingsModal from "./SettingsModal.jsx";
+import { installAudioUnlock } from "../shared/audio-unlock.js";
 import { installPerformanceCapture } from "./performance-capture.js";
 import { matchesCharacterSearch } from "../shared/character-search.js";
 import { mergeCharactersBySlug } from "../shared/character-roster.js";
@@ -884,31 +885,17 @@ export default function App() {
   // called from the handler. Chrome inherits activation via allow="autoplay"
   // and never needs either path.
   useEffect(() => {
-    const unlockAudio = (event) => {
-      if (!event.isTrusted) return;
+    return installAudioUnlock(window, () => {
+      if (!soundOn && engine) return [];
       const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-      if (AudioContextClass && !window.__openSmashAudioContext) {
+      if (AudioContextClass && (!window.__openSmashAudioContext || window.__openSmashAudioContext.state === "closed")) {
         try { window.__openSmashAudioContext = new AudioContextClass(); } catch { /* no audio device */ }
       }
-      const contexts = [
+      return [
         window.__openSmashAudioContext,
         engine ? engineRef.current?.contentWindow?.Module?.SDL2?.audioContext : null,
       ];
-      for (const audioContext of contexts) {
-        if (!audioContext || audioContext.state !== "suspended") continue;
-        // The sound preference is applied to the engine's context separately
-        // once it runs; a running silent context before that is harmless.
-        if (!soundOn && engine) continue;
-        audioContext.resume().catch(() => {});
-      }
-    };
-    const options = { capture: true, passive: true };
-    window.addEventListener("keydown", unlockAudio, options);
-    window.addEventListener("pointerdown", unlockAudio, options);
-    return () => {
-      window.removeEventListener("keydown", unlockAudio, options);
-      window.removeEventListener("pointerdown", unlockAudio, options);
-    };
+    });
   }, [engine, soundOn]);
 
   // Re-plan the running game's ports when the controller settings change;
