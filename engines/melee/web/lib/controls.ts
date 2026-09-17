@@ -169,7 +169,12 @@ export function sampleMeleePad(pad:Gamepad|null|undefined, b=loadBindings()):num
  return [3,1,buttons,axis(axes.x,1,axes.invertX),axis(axes.y,-1,axes.invertY),axis(axes.cx,1,axes.invertCX),axis(axes.cy,-1,axes.invertCY),Math.round((pad.buttons[map.l]?.value||0)*255),Math.round((pad.buttons[map.r]?.value||0)*255)];
 }
 
-export function gameInputBlocked(){return [...document.querySelectorAll('dialog[open], [role="dialog"][aria-modal="true"]')].some(element=>element.getClientRects().length>0);}
+export function gameInputBlocked(){
+ // The shell keeps its modal pages mounted under [hidden]. Reading their
+ // geometry every input frame flushes unrelated roster/control style work.
+ return [...document.querySelectorAll('dialog[open], [role="dialog"][aria-modal="true"]')]
+  .some(element=>!element.closest('[hidden]')&&element.getClientRects().length>0);
+}
 
 function validAxes(value:any):StickAxes{
  const result={...defaultAxes};

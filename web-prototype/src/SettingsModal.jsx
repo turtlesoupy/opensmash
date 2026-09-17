@@ -351,7 +351,7 @@ export default function SettingsModal({
               )}
             </section>
 
-            {engineControls}
+            {open && page === "controllers" && engineControls}
             {!engineControls && gamepads.length > 0 && (
               <section className="controller-profile-list" aria-label="Controller mappings">
                 {gamepads.map((pad) => {

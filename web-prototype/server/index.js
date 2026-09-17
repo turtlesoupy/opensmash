@@ -1355,7 +1355,7 @@ async function handleRequest(req, res, vite) {
 }
 
 let vite = null;
-if (!IS_PRODUCTION) {
+if (!IS_PRODUCTION && process.env.SERVE_BUILT_FRONTEND !== '1') {
   const { createServer: createViteServer } = await import("vite");
   vite = await createViteServer({
     root: APP_ROOT,

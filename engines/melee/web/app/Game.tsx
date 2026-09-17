@@ -1,4 +1,5 @@
 import MeleeTouchControls from './MeleeTouchControls';
+import {resolveRenderWidth} from '../lib/render-resolution.mjs';
 import {neutralTouchPad} from '../lib/touch-pad';
 import {MeleeFrameWorker} from '@/lib/melee-frame-worker';
 import {gameInputBlocked} from '../lib/controls';
@@ -117,7 +118,7 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true,chrom
     }
    };
    await session.ready;if(closed)return;running=true;
-   worker.postMessage({type:'select',requestedAt,warmReadyBeforeClick:session.readyAt<=requestedAt,character:fighter.slug,skin,fighter:launchPlan.ports[0].fighter,launch:launchPlan,costumes,cssAssets});
+   worker.postMessage({type:'select',renderWidth:resolveRenderWidth(settings.renderWidth),requestedAt,warmReadyBeforeClick:session.readyAt<=requestedAt,character:fighter.slug,skin,fighter:launchPlan.ports[0].fighter,launch:launchPlan,costumes,cssAssets});
    raf=requestAnimationFrame(()=>send());
   }catch(e){if(!closed)setError((e as Error).message);}}
   // StrictMode replays setup/cleanup synchronously. Claim the warmed engine

@@ -23,9 +23,16 @@ test('controller profiles survive browser index changes and stay separate from N
 test('hidden settings dialogs do not block game input',async()=>{
  const {gameInputBlocked}=await import('../web/lib/controls.ts');
  const previous=globalThis.document;let visible=false;
- globalThis.document={querySelectorAll:()=>[{getClientRects:()=>visible?[{}]:[]}]};
+ globalThis.document={querySelectorAll:()=>[{closest:()=>null,getClientRects:()=>visible?[{}]:[]}]};
  try{assert.equal(gameInputBlocked(),false);visible=true;assert.equal(gameInputBlocked(),true);}
  finally{globalThis.document=previous;}
+});
+
+test('mounted dialogs beneath hidden modal pages never force a layout read',async()=>{
+ const {gameInputBlocked}=await import('../web/lib/controls.ts');
+ const previous=globalThis.document;
+ globalThis.document={querySelectorAll:()=>[{closest:()=>({hidden:true}),getClientRects:()=>{throw Error('Unexpected layout read');}}]};
+ try{assert.equal(gameInputBlocked(),false);}finally{globalThis.document=previous;}
 });
 
 test('browser and shared native packets use the same per-device stick profile',async()=>{

@@ -2438,15 +2438,17 @@ let idleFrameCleared = false;
 function tick() {
   requestAnimationFrame(tick);
   if (!hardwareShadersReady) return;
+  const gameRunning = document.body.classList.contains('is-game-running');
+  const mobileGame = gameRunning &&
+    document.body.classList.contains('uses-mobile-controls');
+  // The hardware/glove is hidden during mobile gameplay. Avoid even viewport
+  // geometry reads here: they can flush the game's pending style/layout work.
+  if (mobileGame) return;
   if (window.innerWidth && renderer.domElement.width !== window.innerWidth) resize();
   const rawDt = clock.getDelta();
   const dt = Math.min(rawDt, 1 / 30);
   if (rawDt > 0.25) resetPointerMotion();
   healMotionState();
-  const gameRunning = document.body.classList.contains('is-game-running');
-  const mobileGame = gameRunning &&
-    document.body.classList.contains('uses-mobile-controls');
-  if (mobileGame) return;
   // Nothing to draw: no available cursor or its disappearance has settled, the intro
   // rigs hidden, no live poof. Clear the last glove frame once and skip the
   // two-pass full-screen render instead of burning it at 60fps.

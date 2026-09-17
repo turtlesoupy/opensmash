@@ -4,7 +4,7 @@ import {neutralTouchPad,stickVector,type TouchPad} from '../lib/touch-pad';
 const actions=[['L','Shield',0x40],['Start','Pause',0x1000],['Z','Grab',0x10],['X','Jump',0x400],['B','Special',0x200],['A','Attack',0x100]] as const;
 export default function MeleeTouchControls({pad}:{pad:MutableRefObject<TouchPad>}){
  const deck=useRef<HTMLDivElement>(null);
- const pointers=useRef(new Map<number,{kind:string;button?:number;element:HTMLElement}>());
+ const pointers=useRef(new Map<number,{kind:string;button?:number;element:HTMLElement;rect:DOMRect}>());
  const refresh=()=>{
   let buttons=0;for(const p of pointers.current.values())buttons|=p.button||0;
   pad.current.buttons=buttons;pad.current.active=pointers.current.size>0;
@@ -21,12 +21,12 @@ export default function MeleeTouchControls({pad}:{pad:MutableRefObject<TouchPad>
  useEffect(()=>{
   const reset=()=>{for(const id of [...pointers.current.keys()])release(id);pad.current=neutralTouchPad();};
   const visibility=()=>{if(document.hidden)reset();};
-  window.addEventListener('blur',reset);window.addEventListener('pagehide',reset);window.addEventListener('orientationchange',reset);document.addEventListener('visibilitychange',visibility);
-  return()=>{reset();window.removeEventListener('blur',reset);window.removeEventListener('pagehide',reset);window.removeEventListener('orientationchange',reset);document.removeEventListener('visibilitychange',visibility);};
+  window.addEventListener('blur',reset);window.addEventListener('pagehide',reset);window.addEventListener('orientationchange',reset);window.addEventListener('resize',reset);document.addEventListener('visibilitychange',visibility);
+  return()=>{reset();window.removeEventListener('blur',reset);window.removeEventListener('pagehide',reset);window.removeEventListener('orientationchange',reset);window.removeEventListener('resize',reset);document.removeEventListener('visibilitychange',visibility);};
  },[]);
  const move=(e:PointerEvent<HTMLElement>)=>{
   const p=pointers.current.get(e.pointerId);if(!p||p.button)return;
-  const rect=p.element.getBoundingClientRect(),radius=rect.width*.36;
+  const rect=p.rect,radius=rect.width*.36;
   const dx=e.clientX-rect.left-rect.width/2,dy=e.clientY-rect.top-rect.height/2;
   const {x,y}=stickVector(dx,dy,radius),scale=Math.min(1,radius/(Math.hypot(dx,dy)||1));
   if(p.kind==='main'){pad.current.x=x;pad.current.y=y;pad.current.main=true;}
@@ -37,7 +37,8 @@ export default function MeleeTouchControls({pad}:{pad:MutableRefObject<TouchPad>
   onPointerDown:(e:PointerEvent<HTMLElement>)=>{
    e.preventDefault();
    if(!button&&[...pointers.current.values()].some(p=>p.kind===kind))return;
-   e.currentTarget.setPointerCapture(e.pointerId);pointers.current.set(e.pointerId,{kind,button,element:e.currentTarget});e.currentTarget.setAttribute('aria-pressed','true');move(e);refresh();
+   const rect=e.currentTarget.getBoundingClientRect();
+   e.currentTarget.setPointerCapture(e.pointerId);pointers.current.set(e.pointerId,{kind,button,element:e.currentTarget,rect});e.currentTarget.setAttribute('aria-pressed','true');move(e);refresh();
   },onPointerMove:move,onPointerUp:(e:PointerEvent<HTMLElement>)=>release(e.pointerId),onPointerCancel:(e:PointerEvent<HTMLElement>)=>release(e.pointerId),onLostPointerCapture:(e:PointerEvent<HTMLElement>)=>release(e.pointerId)
  });
  return <div ref={deck} className="melee-touch-deck" aria-label="Melee touch controller" onContextMenu={e=>e.preventDefault()}>
