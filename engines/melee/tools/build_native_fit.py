@@ -24,6 +24,9 @@ def main():
     subprocess.run([compiler,*common,'--no-entry','-s','MODULARIZE=1','-s','EXPORT_ES6=1',
                     '-s','ENVIRONMENT=web,worker','-s','ALLOW_MEMORY_GROWTH=1','-s','DISABLE_EXCEPTION_CATCHING=0',
                     '-s','EXPORTED_FUNCTIONS=["_fit_round","_fit_humanoid","_malloc","_free"]',
+                    # native-fit.mjs reads/writes module.HEAPU8; modern Emscripten only
+                    # attaches heap views to the module when exported explicitly.
+                    '-s','EXPORTED_RUNTIME_METHODS=["HEAPU8"]',
                     '-o',str(a.output/'fit.mjs')],check=True,timeout=120)
     if a.native:
         system=platform.system()

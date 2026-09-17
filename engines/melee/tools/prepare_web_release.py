@@ -76,6 +76,10 @@ def build_inputs(workspace, melee_pc, iso, jobs):
     env = {**os.environ, 'MELEE_PC_ROOT': str(melee_pc)}
     commands = [
         [sys.executable, ROOT/'tools/build_upstream.py', '--jobs', str(jobs)],
+        # The fitter ships from build/native-fit; rebuild it with the fork's SDK so a
+        # stale local build can never be published with new fitting code.
+        [sys.executable, ROOT/'tools/build_native_fit.py',
+         '--emsdk', Path(os.environ.get('MELEE_EMSDK', Path(melee_pc)/'build/browser/emsdk'))],
         [sys.executable, ROOT/'tools/prepare_native_fit_local.py',
          '--game', Path(workspace)/'assets/game/files', '--output', ROOT/'build/native-fit/local'],
     ]
