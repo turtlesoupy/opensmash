@@ -26,7 +26,8 @@ def handler(base,access,cache=None):
             def fighter(slug):return isinstance(slug,str) and slug in base.CATALOG and (not base.CATALOG[slug].get('imported') or access.allows(self.owner,'fighter:'+slug))
             for prefix in ['/api/native-fit/source/','/api/prepare/','/api/costume/','/api/announcer/']:
                 if route.startswith(prefix):return fighter(route[len(prefix):])
-            if route.startswith('/api/native-fit/assets/'):return access.allows(self.owner,'native-source:'+route.split('/')[4])
+            # Content-addressed source assets are bearer links, including on CDN misses.
+            if route.startswith('/api/native-fit/assets/'):return True
             if route.startswith('/api/imports/portraits/'):return fighter(route.rsplit('/',1)[1][:-5])
             if route.startswith('/api/imports/'):return access.allows(self.owner,'job:'+route.rsplit('/',1)[1])
             if route.startswith('/api/character-select/'):return access.allows(self.owner,'selection:'+route.split('/')[3])
@@ -57,7 +58,6 @@ def handler(base,access,cache=None):
             if cache:cache.response(self,value,status)
             if isinstance(value,list) and urlsplit(self.path).path=='/api/imports':value=[r for r in value if access.allows(self.owner,'fighter:'+r['slug'])]
             if isinstance(value,dict) and status<300:
-                if urlsplit(self.path).path.startswith('/api/native-fit/source/') and value.get('base'):access.grant(self.owner,'native-source:'+value['base'].split('/')[4])
                 if value.get('id'):access.grant(self.owner,'job:'+value['id'])
                 if isinstance(value.get('fighter'),dict) and value['fighter'].get('slug'):access.grant(self.owner,'fighter:'+value['fighter']['slug'])
                 for asset in value.get('assets',[]):access.grant(self.owner,'selection:'+asset['url'].split('/')[3])

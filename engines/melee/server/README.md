@@ -12,6 +12,14 @@ owner grants survive instance changes. Inputs and converter source hashes versio
 the conversion cache, so updates do not serve stale costumes. Existing per-fighter
 locks and conversion behavior are retained; there is no new scheduling layer.
 
+Versioned `/melee/api/native-fit/assets/<hash>/sources/*` URLs are bearer links:
+anyone holding the exact URL can download the asset, including private characters.
+Successful responses are public and immutable for one year in browsers and the CDN;
+changing visibility does not revoke already issued links. Preparing a private
+character and obtaining its source URL still requires owner access. Preparation,
+errors, and other private API responses remain uncached. `deploy-edge.sh` installs
+the source-asset cache rule; the backing bucket remains private.
+
 ## Publish inputs once, then use the normal website deploy
 
 Use the verified conversion workspace, matching WASM build, and original character

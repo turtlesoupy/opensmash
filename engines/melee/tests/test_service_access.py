@@ -31,10 +31,9 @@ class HostedAccessTests(unittest.TestCase):
     self.assertEqual(get('/api/native-fit/source/'+slug,owner=two,data=b''),404)
     self.assertEqual(get('/api/native-fit/source/'+slug,data=b''),200)
     revision='c'*64;asset='/api/native-fit/assets/'+revision+'/sources/'+slug+'.json'
-    self.assertEqual(get(asset),404)
-    access.grant(one,'native-source:'+revision)
     self.assertEqual(get(asset),200)
-    self.assertEqual(get(asset,owner=two),404)
+    self.assertEqual(get(asset,owner=two),200)
+    self.assertEqual(get(asset,token='wrong'),404)
     self.assertEqual(get('/api/prepare/public',data=b'{}'),200)
     self.assertEqual(get('/api/prepare/public',data=b''),200)
     self.assertEqual(get('/api/character-select',data=b'{"costumes":[{"character":{}}]}'),404)

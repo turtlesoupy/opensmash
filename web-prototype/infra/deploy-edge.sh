@@ -94,6 +94,13 @@ upsert_cache_rule "OpenSmash Melee engine assets" \
   "(http.host in {\"${DOMAIN}\" \"www.${DOMAIN}\"} and http.request.method in {\"GET\" \"HEAD\"} and starts_with(http.request.uri.path, \"/melee/engine/\"))" \
   '{"cache":true,"edge_ttl":{"mode":"respect_origin"},"browser_ttl":{"mode":"respect_origin"}}'
 
+# Only exact immutable source responses receive public headers from the gateway.
+# Preparation and all other Melee API routes remain uncached.
+echo "==> Enabling edge caching for Melee character source bearer links"
+upsert_cache_rule "OpenSmash Melee character sources" \
+  "(http.host in {\"${DOMAIN}\" \"www.${DOMAIN}\"} and http.request.method in {\"GET\" \"HEAD\"} and starts_with(http.request.uri.path, \"/melee/api/native-fit/assets/\"))" \
+  '{"cache":true,"edge_ttl":{"mode":"respect_origin"},"browser_ttl":{"mode":"respect_origin"}}'
+
 echo "==> Enabling edge caching for the hashed app assets"
 upsert_cache_rule "OpenSmash app assets" \
   "(http.host in {\"${DOMAIN}\" \"www.${DOMAIN}\"} and http.request.method in {\"GET\" \"HEAD\"} and starts_with(http.request.uri.path, \"/app-assets/\"))" \

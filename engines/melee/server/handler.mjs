@@ -28,7 +28,8 @@ export function createMeleeHandler({origin=process.env.MELEE_LOCAL_ORIGIN,produc
     // Engine runtime files are public and content-addressed: let the origin's
     // cache policy through and never attach a per-visitor cookie to them, or
     // neither browsers nor the CDN could cache them.
-    const cacheable=['GET','HEAD'].includes(req.method)&&url.pathname.startsWith('/melee/engine/');
+    const sourceAsset=hosted&&production&&['GET','HEAD'].includes(req.method)&&/^\/melee\/api\/native-fit\/assets\/[a-f0-9]{64}\/sources\/[a-z0-9_-]+\.(?:json|rgba8|identity\.dat)$/.test(url.pathname);
+    const cacheable=sourceAsset||(['GET','HEAD'].includes(req.method)&&url.pathname.startsWith('/melee/engine/'));
     const headers={...req.headers,host:upstream.host};
     // The browser is talking to this same-origin development server. Never
     // forward website credentials into the local game service.
@@ -51,6 +52,15 @@ export function createMeleeHandler({origin=process.env.MELEE_LOCAL_ORIGIN,produc
     }
     const proxy=(upstream.protocol==='https:'?https:http).request(new URL(url.pathname.slice('/melee'.length)+url.search,upstream),{method:req.method,headers}, response=>{
       const output={...response.headers,'Cross-Origin-Resource-Policy':'same-origin','Cache-Control':cacheable&&response.statusCode===200?response.headers['cache-control']||'no-store':'no-store'};delete output['set-cookie'];
+      delete output['cache-control'];
+      if(sourceAsset){
+        // Exact source URLs are bearer links, independent of visitor identity.
+        const policy=response.statusCode===200?'public, max-age=31536000, immutable':'no-store';
+        output['Cache-Control']=policy;
+        delete output['cdn-cache-control'];delete output['cloudflare-cdn-cache-control'];
+        output['CDN-Cache-Control']=policy;
+        output['Cloudflare-CDN-Cache-Control']=policy;
+      }
       // The service is mounted under /melee; its redirects are relative to its own root.
       if(typeof output.location==='string'&&output.location.startsWith('/'))output.location='/melee'+output.location;
       res.writeHead(response.statusCode,output);

@@ -53,3 +53,33 @@ test('hosted gateway signs guest identities and replaces client-supplied service
  assert.equal(received[0]['x-opensmash-owner'],received[1]['x-opensmash-owner']);
  assert.equal((await fetch(origin+'/melee/api/native/status')).status,404);assert.equal(received.length,2);
 });
+
+test('production source bearer links cache publicly without cookies; errors and preparation do not',async t=>{
+ const upstream=http.createServer((req,res)=>{
+  res.writeHead(req.url.includes('?missing')?404:200,{
+   'Cache-Control':'no-store','Set-Cookie':'upstream=private','Content-Type':'application/octet-stream'
+  });res.end('source');
+ });
+ upstream.listen(0,'127.0.0.1');await once(upstream,'listening');t.after(()=>upstream.close());
+ const handler=createMeleeHandler({serviceOrigin:`http://127.0.0.1:${upstream.address().port}`,serviceToken:'s'.repeat(40),production:true});
+ const server=http.createServer((req,res)=>handler(req,res));
+ server.listen(0,'127.0.0.1');await once(server,'listening');t.after(()=>server.close());
+ const origin=`http://127.0.0.1:${server.address().port}`;
+ const path='/melee/api/native-fit/assets/'+'a'.repeat(64)+'/sources/custom';
+ for(const suffix of ['.json','.rgba8','.identity.dat'])for(const method of ['GET','HEAD']){
+  const response=await fetch(origin+path+suffix,{method});await response.arrayBuffer();
+  assert.equal(response.status,200);
+  for(const header of ['cache-control','cdn-cache-control','cloudflare-cdn-cache-control'])
+   assert.equal(response.headers.get(header),'public, max-age=31536000, immutable');
+  assert.equal(response.headers.get('set-cookie'),null);
+  assert.equal(response.headers.get('vary'),null);
+ }
+ const missing=await fetch(origin+path+'.json?missing');await missing.text();
+ assert.equal(missing.status,404);
+ assert.equal(missing.headers.get('cache-control'),'no-store');
+ assert.equal(missing.headers.get('cloudflare-cdn-cache-control'),'no-store');
+ const prepare=await fetch(origin+'/melee/api/native-fit/source/custom',{method:'POST'});await prepare.text();
+ assert.equal(prepare.headers.get('cache-control'),'no-store');
+ assert.match(prepare.headers.get('set-cookie'),/opensmash-melee-client=/);
+ assert.equal((await fetch(origin+path+'.wasm')).status,404);
+});
