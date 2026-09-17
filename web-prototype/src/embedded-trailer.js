@@ -28,3 +28,9 @@ export function subscribeEmbeddedTrailer(player) {
     id: player.id || "intro-video",
   }), YOUTUBE_ORIGIN);
 }
+
+// YouTube does not opt into COEP. Only credentialless iframes can embed it
+// inside the isolated game shell. Other browsers get a normal watch link.
+export function canEmbedTrailer(framePrototype = globalThis.HTMLIFrameElement?.prototype) {
+  return !!framePrototype && 'credentialless' in framePrototype;
+}

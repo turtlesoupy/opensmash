@@ -205,7 +205,9 @@ function soundEnabled() {
 function preloadLaunchSounds() {
   for (const sound of Object.values(LAUNCH_SOUNDS)) {
     if (launchSoundTemplates.has(sound.url)) continue;
-    const audio = new Audio(sound.url);
+    const audio = new Audio();
+    audio.crossOrigin = "anonymous";
+    audio.src = sound.url;
     audio.preload = 'auto';
     launchSoundTemplates.set(sound.url, audio);
   }

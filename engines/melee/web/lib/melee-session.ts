@@ -77,17 +77,27 @@ export async function selectLocalDisc(file:File,restored=false){
  updateDisc({state:'checking',ready:false,message:'Checking your local disc…'});
  let session:Session|undefined,listener:((event:MessageEvent)=>void)|undefined;
  try{
-  warmMelee();session=currentSession();
-  if(!session)throw Error('This browser needs shared memory and OffscreenCanvas support.');
-  listener=({data}:MessageEvent)=>{
-   if(data.type==='status'&&currentSession()===session)updateDisc({state:'checking',ready:false,message:data.message});
-  };
-  session.worker.addEventListener('message',listener);
-  await session.verified;
+  if(!crossOriginIsolated||typeof SharedArrayBuffer==='undefined')throw Error('This browser needs shared memory support.');
+  if(canReparentRuntime()){
+   warmMelee();session=currentSession();
+   if(!session)throw Error('The game runtime could not start.');
+   listener=({data}:MessageEvent)=>{
+    if(data.type==='status'&&currentSession()===session)updateDisc({state:'checking',ready:false,message:data.message});
+   };
+   session.worker.addEventListener('message',listener);
+   await session.verified;
+  }else{
+   // Verify without allocating a standby WASM runtime that Safari cannot move.
+   // Launch will allocate exactly one runtime inside its final game surface.
+   const {verifyDisc}=await import(/* @vite-ignore */ meleePath('/engine/verify-disc.mjs'));
+   await verifyDisc(file,(bytes:number)=>{if(revision===discRevision)updateDisc({state:'checking',ready:false,message:`Checking your game… ${Math.floor(bytes/file.size*100)}%`});});
+   verifiedDiscs.add(file);
+  }
+  if(revision!==discRevision)return;
   let storageMessage='Saved disc restored from this device.';
   if(currentSession()===session&&!restored){
    // Finish the disk copy before enabling play, keeping I/O out of the match.
-   session.worker.removeEventListener('message',listener);
+   if(session&&listener)session.worker.removeEventListener('message',listener);
    let lastPercent=-1;
    try{storageMessage=await cacheDisc(file,controller.signal,fraction=>{
     const percent=Math.floor(fraction*100);
@@ -107,11 +117,12 @@ export async function selectLocalDisc(file:File,restored=false){
  }finally{if(session&&listener)session.worker.removeEventListener('message',listener);}
 }
 const sessions=new WeakMap<Worker,Session>();
+const canReparentRuntime=()=>typeof (document.documentElement as HTMLElement&{moveBefore?:unknown}).moveBefore==='function'||new URLSearchParams(location.search).get('presentation')==='bitmap';
 
-export function warmMelee(){
- if(standby||!crossOriginIsolated||typeof SharedArrayBuffer==='undefined'||(usesLocalDisc()&&!localDisc))return;
+export function warmMelee(surface?:HTMLCanvasElement){
+ if((!surface&&!canReparentRuntime())||standby||!crossOriginIsolated||typeof SharedArrayBuffer==='undefined'||(usesLocalDisc()&&!localDisc))return;
  const disc=localDisc;
- const worker=new MeleeFrameWorker(meleePath('/engine/upstream/runtime.html')) as Worker;
+ const worker=new MeleeFrameWorker(meleePath('/engine/upstream/runtime.html'),surface) as Worker;
  const audio=new SharedArrayBuffer(16+32768*2*4);
  let resolve!:()=>void,reject!:(reason:Error)=>void;
  let verify!:()=>void,rejectVerify!:(reason:Error)=>void;
@@ -135,8 +146,13 @@ export function warmMelee(){
   profile:query.get('profile'),benchmark:query.get('benchmark'),audio});
 }
 
-export function claimMelee():Session{
- warmMelee();
+export function claimMelee(surface?:HTMLCanvasElement):Session{
+ // Safari cannot reparent a warmed iframe without reloading it. Recreate the
+ // runtime in its final parent, retaining the already verified local File.
+ if(surface?.parentElement&&!('moveBefore' in surface.parentElement)&&new URLSearchParams(location.search).get('presentation')!=='bitmap'){
+  standby?.cancel();standby?.worker.terminate();standby=undefined;
+ }
+ warmMelee(surface);
  if(!standby)throw Error('This browser needs shared memory support.');
  const session=standby;standby=undefined;return session;
 }

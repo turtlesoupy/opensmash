@@ -65,7 +65,7 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true,chrom
   window.addEventListener('keydown',keydown);window.addEventListener('keyup',keyup);window.addEventListener('blur',blur);
   async function start(){try{
    if(!crossOriginIsolated||!canvas.current?.transferControlToOffscreen)throw Error('This browser needs shared memory and OffscreenCanvas support. Open the local game in Chrome.');
-   const session=claimMelee();worker=session.worker;gameWorker.current=worker;
+   const session=claimMelee(canvas.current||undefined);worker=session.worker;gameWorker.current=worker;
    if(worker instanceof MeleeFrameWorker&&canvas.current)worker.attachSurface(canvas.current);
    launchPlan=plan(settings,fighter,roster);
    if(new URLSearchParams(location.search).get('benchmark')==='1') {
@@ -98,7 +98,7 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true,chrom
    ]);
    setStatus('Loading Melee…');if(closed)return;
    const audio=session.audio;
-   const startAudio=()=>{if(audioConnecting)return;audioConnecting=true;connectAudio(audio).then(node=>{if(closed)node.disconnect();else audioNode=node;}).catch(()=>{audioConnecting=false;});};
+   const startAudio=()=>{if(audioConnecting)return;audioConnecting=true;connectAudio(audio).then(node=>{if(closed)node.disconnect();else audioNode=node;}).catch(error=>{audioConnecting=false;console.warn('[Melee audio]',error);});};
    startAudio();
    worker.onerror=e=>{if(!closed)setError(e.message||'The game worker stopped.');};
    worker.onmessage=({data})=>{

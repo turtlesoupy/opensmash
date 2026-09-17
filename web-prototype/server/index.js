@@ -806,10 +806,10 @@ async function serveAppShell(req, res) {
 async function handleRequest(req, res, vite) {
   const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
   const { pathname } = url;
-  // Both experiences share one document when switching. Public cross-origin
-  // images/audio may load without credentials; WASM retains SharedArrayBuffer.
+  // Both experiences share one document. require-corp works in Safari as well
+  // as Chromium; public cross-origin assets must opt into CORS.
   res.setHeader('Cross-Origin-Opener-Policy','same-origin');
-  res.setHeader('Cross-Origin-Embedder-Policy','credentialless');
+  res.setHeader('Cross-Origin-Embedder-Policy','require-corp');
 
   // Firebase's hosted sign-in helper, served from our origin (see auth.js).
   // It carries no cookies either way and is never edge-cached.

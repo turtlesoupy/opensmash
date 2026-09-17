@@ -352,6 +352,7 @@ function paintPixels(target, pixels, width, height) {
 
 function createImageLayer(className) {
   const image = document.createElement('img');
+  image.crossOrigin = 'anonymous';
   image.className = className;
   image.alt = '';
   image.decoding = 'async';

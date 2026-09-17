@@ -19,3 +19,21 @@ test('iframe transport sends input changes, preserves releases, and resends afte
   worker.terminate();worker.postMessage({type:'pad',values:held});assert.equal(sent.length,6);
  }finally{Object.assign(globalThis,saved);}
 });
+
+test('Safari mounts directly in the final parent without reloading the iframe',async()=>{
+ const saved={document:globalThis.document,window:globalThis.window,location:globalThis.location,ResizeObserver:globalThis.ResizeObserver};
+ const sent=[];let insertions=0;
+ const parent={clientWidth:480,clientHeight:360,insertBefore(frame){insertions++;frame.parentElement=this;}};
+ const surface={parentElement:parent,style:{}};
+ const frame={style:{},contentWindow:{postMessage:data=>sent.push(data)},setAttribute(){},remove(){}};
+ Object.assign(globalThis,{document:{createElement:()=>frame,body:{append(){throw Error('must mount in game panel');}}},window:new EventTarget(),location:{origin:'http://localhost',search:''},ResizeObserver:class{observe(){}disconnect(){}}});
+ try{
+  const {MeleeFrameWorker}=await import('../web/lib/melee-frame-worker.ts');
+  const worker=new MeleeFrameWorker('/engine',surface);worker.connected=true;worker.attachSurface(surface);
+  assert.equal(insertions,1);assert.equal(surface.style.opacity,'0');
+  assert.equal(frame.style.transform,'scale(0.5)');assert.deepEqual(sent,[{type:'surface',direct:true}]);
+  const audio=new SharedArrayBuffer(64);worker.postMessage({type:'start',audio});
+  assert.equal(frame.contentWindow.openSmashAudioRing,audio,'same-origin handoff preserves the shared ring even when window messages copy it');
+  worker.terminate();assert.equal(surface.style.opacity,'');
+ }finally{Object.assign(globalThis,saved);}
+});

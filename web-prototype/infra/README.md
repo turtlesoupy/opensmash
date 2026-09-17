@@ -331,3 +331,20 @@ Use `MELEE_WORKSPACE` (verified extracted game), `MELEE_ISO` if needed,
 `MELEE_CHARACTER_ROOT`, `MELEE_PC_ROOT`, and `MELEE_BUILD_PYTHON` to override local
 input/toolchain locations. An explicit `MELEE_INPUT_MANIFEST` is validated as a
 candidate, never blindly carried forward. See `engines/melee/server/README.md`.
+
+### Browser isolation and Melee startup
+
+The shared shell sends COOP `same-origin` and COEP `require-corp` for every
+browser. Keep these headers on HTML and the same-origin Melee runtime; do not
+replace COEP with `credentialless`, which does not isolate the tested Safari.
+Public cross-origin portraits and audio use anonymous CORS. The public bucket
+must allow the deployed site origins (including both smash.fun and
+www.smash.fun); the deployment script already refreshes that CORS configuration.
+The trailer uses a credentialless iframe where supported and a watch link
+otherwise, so Safari retains shared memory without a blocked third-party frame.
+
+Deploy the engine revision pinned in `engines/melee/upstream.json` together with
+the shell. The runtime receives the audio ring through a same-origin reference
+because Safari's window messaging copied it during testing. Safari mounts the
+runtime directly in its final game panel and verifies the disc without a second
+standby WASM instance. See `engines/melee/validation/SAFARI.md` for measurements.

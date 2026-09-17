@@ -11,7 +11,7 @@ export class MeleeFrameWorker extends EventTarget {
   closed = false;
   resize?: ResizeObserver;
   surface?: HTMLCanvasElement;
-  constructor(url: string) {
+  constructor(url: string, surface?: HTMLCanvasElement) {
     super();
     this.frame = document.createElement('iframe');
     this.frame.title = 'Melee engine';
@@ -29,14 +29,18 @@ export class MeleeFrameWorker extends EventTarget {
     };
     window.addEventListener('message',this.listener);
     this.frame.src=url;
-    document.body.append(this.frame);
+    if(surface?.parentElement)surface.parentElement.insertBefore(this.frame,surface);
+    else document.body.append(this.frame);
   }
   attachSurface(canvas: HTMLCanvasElement){
     const parent=canvas.parentElement as (HTMLElement & {moveBefore?: (node:Node,child:Node|null)=>void})|null;
     // moveBefore preserves the warmed iframe's browsing context. appendChild
     // would reload it and discard the verified disc and initialized WASM module.
-    if(!parent?.moveBefore||new URLSearchParams(location.search).get('presentation')==='bitmap')return;
-    parent.moveBefore(this.frame,canvas);
+    if(!parent||new URLSearchParams(location.search).get('presentation')==='bitmap')return;
+    if(this.frame.parentElement!==parent){
+      if(!parent.moveBefore)return;
+      parent.moveBefore(this.frame,canvas);
+    }
     this.surface=canvas;
     canvas.style.opacity='0';
     Object.assign(this.frame.style,{position:'absolute',pointerEvents:'none',transformOrigin:'top left'});
@@ -51,7 +55,12 @@ export class MeleeFrameWorker extends EventTarget {
   postMessage(data: unknown){
     if(this.closed)return;
     if(!this.connected){this.pending.push(data);return;}
-    const message=data as {type?:string;values?:number[]};
+    const message=data as {type?:string;values?:number[];audio?:SharedArrayBuffer};
+    if(message.type==='start'&&message.audio){
+      // Safari can deep-copy SABs in window.postMessage. This same-origin
+      // reference keeps the producer and AudioWorklet on the identical ring.
+      (this.frame.contentWindow as Window & {openSmashAudioRing?:SharedArrayBuffer}).openSmashAudioRing=message.audio;
+    }
     if(message?.type==='pad'&&Array.isArray(message.values)){
       const values=message.values,previous=this.pads.get(values[0]);
       // The engine reapplies held state every VI. Only changes need a browser

@@ -9,7 +9,9 @@ export function stopAnnouncer() {
 }
 export function announceCharacter(slug: string) {
   stopAnnouncer();
-  const audio = new Audio('/api/announcer/' + encodeURIComponent(slug));
+  const audio = new Audio();
+  audio.crossOrigin = 'anonymous';
+  audio.src = '/api/announcer/' + encodeURIComponent(slug);
   current = audio;
   const release = () => { if (current === audio) current = null; };
   audio.addEventListener('ended', release, {once: true});

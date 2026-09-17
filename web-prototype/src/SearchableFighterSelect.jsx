@@ -50,7 +50,7 @@ export default function SearchableFighterSelect({ characters, selected, onSelect
           setOpen((current) => !current);
         }}
       >
-        {selected ? <img src={selected.portraitMedium || selected.portraitFull || selected.portrait} alt="" /> : <i />}
+        {selected ? <img crossOrigin="anonymous" src={selected.portraitMedium || selected.portraitFull || selected.portrait} alt="" /> : <i />}
         <strong>{selected?.name || "Choose a fighter"}</strong>
         <b aria-hidden="true">⌄</b>
       </button>
@@ -84,7 +84,7 @@ export default function SearchableFighterSelect({ characters, selected, onSelect
                 key={character.slug}
                 onClick={() => choose(character)}
               >
-                <img loading="lazy" src={character.portraitMedium || character.portraitFull || character.portrait} alt="" />
+                <img crossOrigin="anonymous" loading="lazy" src={character.portraitMedium || character.portraitFull || character.portrait} alt="" />
                 <span>
                   <strong>{character.name}</strong>
                   <small>{character.short || character.slug}</small>

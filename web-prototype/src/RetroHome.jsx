@@ -9,6 +9,8 @@ import {
   disableEmbeddedTrailerCaptions,
   subscribeEmbeddedTrailer,
   TRAILER_EMBED_URL,
+  TRAILER_WATCH_URL,
+  canEmbedTrailer,
 } from "./embedded-trailer.js";
 import { DEMO_MUSIC_HOTKEY, DEMO_SCROLL_HOTKEY, DEMO_START_HOTKEY, DEMO_TRAILER_HOTKEY } from "./trailer-preset.js";
 import { startHomeRuntime } from "./visual-runtime.js";
@@ -638,7 +640,7 @@ export default function RetroHome({
               className={`intro-video-frame ${engine ? "is-game-running" : ""}`}
               ref={gameFrameRef}
             >
-              <iframe
+              {canEmbedTrailer() ? <iframe
                 ref={introVideoRef}
                 id="intro-video"
                 // Melee needs cross-origin isolation for WASM threads. Load the
@@ -657,6 +659,10 @@ export default function RetroHome({
                   subscribeEmbeddedTrailer(event.currentTarget);
                 }}
               />
+              : <a className="intro-video trailer-link" href={TRAILER_WATCH_URL} target="_blank" rel="noopener noreferrer" style={{display:'grid',placeContent:'center',gap:'1rem',textAlign:'center',color:'#fff',textDecoration:'none',background:'#080810'}}>
+                  <img src={logoFallbackUrl} alt="Smash.fun" style={{width:'min(75%, 360px)',margin:'auto'}} />
+                  <span>Watch the introduction ↗</span>
+                </a>}
               <canvas className="intro-video-rule-layer" aria-hidden="true" />
               {engineContent && <div className="melee-surface">{engineContent}</div>}
               <iframe ref={engineRef} tabIndex={engineContent ? -1 : undefined} inert={engineContent ? true : undefined} id="intro-game-frame" className="intro-game-frame" src={engineContent?"about:blank":engine?.src || "about:blank"} title={engine ? "Smash.fun game engine" : "Smash.fun game"} allow="autoplay; gamepad; fullscreen" />

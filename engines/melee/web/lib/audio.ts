@@ -4,6 +4,18 @@ let gain:GainNode|undefined;
 export function setAudioEnabled(value:boolean){enabled=value;if(gain)gain.gain.value=enabled?1:0;}
 let context:AudioContext|undefined;
 let workletReady:Promise<boolean>|undefined;
+// Restoring a saved disc can create the context before the first user gesture.
+// Safari will not resume that context from the later async React launch effect.
+const resumeFromGesture=(event:Event)=>{
+ if(event.isTrusted&&context&&context.state!=='running'&&context.state!=='closed')void context.resume().catch(()=>{});
+};
+window.addEventListener('pointerdown',resumeFromGesture,{capture:true,passive:true});
+window.addEventListener('keydown',resumeFromGesture,{capture:true,passive:true});
+if((import.meta as any).hot)(import.meta as any).hot.dispose(()=>{
+ window.removeEventListener('pointerdown',resumeFromGesture,true);
+ window.removeEventListener('keydown',resumeFromGesture,true);
+});
+
 export async function unlockAudio(){
  context??=new AudioContext({sampleRate:48000,latencyHint:'interactive'});
  void context.resume();

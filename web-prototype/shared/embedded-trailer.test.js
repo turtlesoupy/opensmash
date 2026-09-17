@@ -39,3 +39,10 @@ test("trailer controls use the YouTube iframe API", () => {
   ]);
   assert.ok(iframe.calls.every(([, origin]) => origin === "https://www.youtube-nocookie.com"));
 });
+
+test('isolated trailer falls back when credentialless iframes are unavailable', async () => {
+  const {canEmbedTrailer} = await import('../src/embedded-trailer.js');
+  assert.equal(canEmbedTrailer({}), false);
+  assert.equal(canEmbedTrailer(null), false);
+  assert.equal(canEmbedTrailer({credentialless: false}), true);
+});

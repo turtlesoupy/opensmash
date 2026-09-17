@@ -19,8 +19,8 @@ rather than a separate approximation of the design.
 presentation updates here distinguishable from those adapters.
 
 The original N64 launch runtime, 3D glove, animated logo and CRT compositor are
-not loaded. The shared introduction trailer is embedded credentiallessly so
-that Melee keeps cross-origin isolation. Selecting a fighter unmounts the trailer
+not loaded. The shared introduction trailer uses a credentialless iframe where supported
+and a watch link otherwise, preserving Melee cross-origin isolation. Selecting a fighter unmounts the trailer
 and pauses roster decoration; it starts a human-controlled Melee session in the
 same frame. Settings retain all five launch modes and all four player ports.
 The Create cell uses the original plus icon and opens the Melee import dialog.

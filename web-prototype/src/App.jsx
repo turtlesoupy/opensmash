@@ -1208,7 +1208,9 @@ export default function App() {
     }
 
     if (soundOn && character.announcer) {
-      const announcer = new Audio(character.announcer);
+      const announcer = new Audio();
+      announcer.crossOrigin = "anonymous";
+      announcer.src = character.announcer;
       announcerRef.current = announcer;
       announcer.play().catch(() => {
         if (announcerRef.current === announcer) announcerRef.current = null;
@@ -1894,7 +1896,7 @@ export default function App() {
               onClick={() => selectCharacter(character)}
             >
               <span className="portrait-wrap">
-                <img src={character.portraitMedium || character.portrait} alt="" loading="lazy" />
+                <img crossOrigin="anonymous" src={character.portraitMedium || character.portrait} alt="" loading="lazy" />
               </span>
               <span className="character-number">{String(index + 1).padStart(2, "0")}</span>
               {character.generated && <span className="generated-label">Fighter Lab</span>}

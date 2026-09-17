@@ -29,7 +29,21 @@ let compiled;
 export async function createDirectAudioNode(audio,ring,workletReady){
  compiled??=fetch(new URL('./melee-audio.wasm',import.meta.url)).then(r=>{if(!r.ok)throw Error('Build the direct-C audio module');return r.arrayBuffer();}).then(b=>WebAssembly.compile(b));
  const module=await compiled;
- if(workletReady)return new AudioWorkletNode(audio,'melee-direct-audio',{outputChannelCount:[2],processorOptions:{ring,module}});
+ if(workletReady){
+  let node;
+  try{
+   node=new AudioWorkletNode(audio,'melee-direct-audio',{numberOfInputs:0,numberOfOutputs:1,outputChannelCount:[2],processorOptions:{ring,module}});
+   await new Promise((resolve,reject)=>{
+    const timer=setTimeout(()=>reject(Error('Audio processor did not initialize')),1500);
+    node.port.onmessage=({data})=>{if(data?.type==='ready'){clearTimeout(timer);resolve();}};
+    node.onprocessorerror=()=>{clearTimeout(timer);reject(Error('Audio processor could not initialize'));};
+   });
+   node.port.onmessage=null;return node;
+  }catch(error){
+   node?.disconnect();node?.port.close();
+   console.warn('[Melee audio] Using main-thread playback:',error);
+  }
+ }
  const node=audio.createScriptProcessor(1024,0,2),playback=new RingStretcher(module,ring);
  node.onaudioprocess=e=>playback.process(e.outputBuffer.getChannelData(0),e.outputBuffer.getChannelData(1));return node;
 }

@@ -7,7 +7,7 @@ function browser(){
  globalThis.crossOriginIsolated=true;
  globalThis.window=new EventTarget();
  const frames=[];
- globalThis.document={body:{append(){}},createElement(){
+ globalThis.document={documentElement:{moveBefore(){}},body:{append(){}},createElement(){
   const frame={style:{},contentWindow:{postMessage(){}},removed:false,
    remove(){this.removed=true;},
    emit(data){const event=new Event('message');Object.assign(event,{data,source:this.contentWindow,origin:location.origin});window.dispatchEvent(event);},
@@ -61,4 +61,20 @@ test('returning to the unified roster warms the next engine and releases it on e
   assert.equal(frames[0].removed,true);assert.equal(frames.length,2);assert.equal(frames[1].removed,false);
   release();await new Promise(resolve=>setTimeout(resolve,10));assert.equal(frames[1].removed,true);
  }finally{release();await clearLocalDisc();}
+});
+
+
+test('without moveBefore browsing allocates no standby and Play mounts one final runtime',async()=>{
+ const frames=browser();delete document.documentElement.moveBefore;
+ location.search='?disc=server';
+ const {retainMelee,claimMelee,releaseMelee}=await import('../../engines/melee/web/lib/melee-session.ts');
+ const release=retainMelee();
+ try{
+  assert.equal(frames.length,0);
+  const parent={insertBefore(frame){frame.parentElement=this;}};
+  const session=claimMelee({parentElement:parent});
+  assert.equal(frames.length,1);assert.equal(frames[0].parentElement,parent);
+  releaseMelee(session.worker);assert.equal(frames[0].removed,true);
+  assert.equal(frames.length,1,'returning to roster does not allocate a second runtime');
+ }finally{release();}
 });
