@@ -5,12 +5,10 @@ Python child. It starts lazily on the first Melee asset/preparation request. The
 existing website API owns authentication, routes and guest identities. No new
 Cloud Run service, service account, queue or mounted volume is needed.
 
-A costume is converted on demand, then stored in the existing **private** object
-bucket. Other web instances reuse it. Their local `/tmp` workspace is disposable.
-Character-select assets are also cached; imported source art, job results and
-owner grants survive instance changes. Inputs and converter source hashes version
-the conversion cache, so updates do not serve stale costumes. Existing per-fighter
-locks and conversion behavior are retained; there is no new scheduling layer.
+Browser characters use native WASM fitting. Moveset-independent source packages
+are baked during generation or prepared lazily on first use; fitted browser
+costumes are not persisted. Source packages, character-select assets and owner
+grants use the existing private object store across API instances.
 
 Versioned `/melee/api/native-fit/assets/<hash>/sources/*` URLs are bearer links:
 anyone holding the exact URL can download the asset, including private characters.
@@ -20,26 +18,39 @@ character and obtaining its source URL still requires owner access. Preparation,
 errors, and other private API responses remain uncached. `deploy-edge.sh` installs
 the source-asset cache rule; the backing bucket remains private.
 
-## Publish inputs once, then use the normal website deploy
+## Normal website deployment prepares inputs automatically
 
-Use the verified conversion workspace, matching WASM build, and original character
-library already used locally. Install the engine requirements and
-`google-cloud-storage` in the publishing Python environment. From the repository root:
+`web-prototype/infra/deploy.sh` calls `tools/prepare_web_release.py` before image
+rollout. It fingerprints the pinned engine, fitter and template-generation code,
+roster catalog and source assets. A matching private release is reused without
+building or publishing. Otherwise it builds the pinned engine and fitter, derives
+target templates, publishes content-addressed inputs and pins the returned
+manifest for this deploy. It never invokes a bulk character bake.
+
+Install the engine requirements and `google-cloud-storage` in the deployment
+Python environment. Optional deployment environment variables:
+
+- `MELEE_BUILD_PYTHON`: Python with those dependencies (default `python3`).
+- `MELEE_WORKSPACE`: verified extracted game workspace (default `engines/melee`).
+- `MELEE_ISO`: original disc to verify that workspace when no receipt exists.
+- `MELEE_CHARACTER_ROOT`: roster sources (default `play/ui`).
+- `MELEE_PC_ROOT`: pinned engine checkout; `MELEE_BUILD_JOBS` defaults to 6.
+
+A changed release needs the verified game inputs and engine build toolchain.
+Missing inputs or a failed build stop deployment before image rollout. An optional
+`MELEE_INPUT_MANIFEST` is only a reuse candidate: it cannot override a mismatched
+fingerprint. Old manifests without fingerprints are rebuilt once. This also
+means ordinary frontend-only deploys reuse the previous matching input release.
+
+The lower-level `publish_web_inputs.py` remains available for manual bundles and
+local smoke tests; it does not itself rebuild stale generated artifacts. To test
+the automated release path without remote writes:
 
 ```sh
-python3 engines/melee/tools/publish_web_inputs.py \
+python3 engines/melee/tools/prepare_web_release.py \
   --workspace /path/to/verified-melee-workspace \
-  --browser /path/to/moderngekko-wasm \
-  --characters /path/to/play/ui \
-  --bucket YOUR_EXISTING_PRIVATE_BUCKET
+  --characters /path/to/play/ui --local-store /path/to/local/objects
 ```
-
-The last line is the immutable `melee/inputs/<sha256>.json` object key. Export it as
-`MELEE_INPUT_MANIFEST` when running the ordinary `web-prototype/infra/deploy.sh`.
-That script enables `MELEE_EMBEDDED=1`, preserves the pinned manifest on subsequent
-deploys, and uses the website's existing bucket permissions and cookie secret.
-Without a pinned input release Melee stays unconfigured; the rest of the site
-still deploys as before. The Docker build includes Python and converter code.
 
 Publishing copies input files, **not prebuilt conversions**. Original character
 sources are fetched one fighter at a time on first use. The boot inputs contain

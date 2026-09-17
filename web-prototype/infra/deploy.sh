@@ -38,16 +38,6 @@ FIREBASE_AUTH_DOMAIN="${FIREBASE_AUTH_DOMAIN:-${PUBLIC_ORIGIN#https://}}"
 IMAGE_ROOT="${REGION}-docker.pkg.dev/${PROJECT_ID}/${ARTIFACT_REPOSITORY}"
 VERSION="${VERSION:-$(date -u +%Y%m%d-%H%M%S)}"
 API_IMAGE="${IMAGE_ROOT}/web:${VERSION}"
-# Preserve the pinned Melee input release on normal website redeploys. Inputs
-# and conversion caches live in the existing private bucket, not a new service.
-if [[ -z "${MELEE_INPUT_MANIFEST:-}" ]]; then
-  MELEE_INPUT_MANIFEST="$(gcloud run services describe "$SERVICE_NAME" --region "$REGION" --format=json 2>/dev/null | python3 -c 'import json,sys; s=json.load(sys.stdin); print(next((e.get("value","") for e in s["spec"]["template"]["spec"]["containers"][0].get("env",[]) if e["name"]=="MELEE_INPUT_MANIFEST"),""))' 2>/dev/null || true)"
-fi
-MELEE_ENV="MELEE_EMBEDDED=0"
-if [[ -n "${MELEE_INPUT_MANIFEST:-}" ]]; then
-  [[ "$MELEE_INPUT_MANIFEST" =~ ^melee/inputs/[a-f0-9]{64}\.json$ ]] || { echo "Invalid MELEE_INPUT_MANIFEST" >&2; exit 2; }
-  MELEE_ENV="MELEE_EMBEDDED=1,MELEE_INPUT_MANIFEST=${MELEE_INPUT_MANIFEST},MELEE_SOURCE_ORIGINS=${PUBLIC_ORIGIN}"
-fi
 WORKER_IMAGE="${IMAGE_ROOT}/worker:${VERSION}"
 COOKIE_SECRET_NAME="${COOKIE_SECRET_NAME:-opensmash-cookie-secret}"
 COOKIE_SECRET_PREVIOUS_NAME="${COOKIE_SECRET_PREVIOUS_NAME:-opensmash-cookie-secret-previous}"
@@ -140,6 +130,22 @@ for bucket in "$PRIVATE_BUCKET" "$PUBLIC_BUCKET"; do
       --location "$REGION" --uniform-bucket-level-access
   fi
 done
+
+# Ensure this release's engine, fitter, templates and roster inputs match the
+# deployed code. Matching releases skip builds; failures stop before image rollout.
+melee_args=(
+  --workspace "${MELEE_WORKSPACE:-$WORKSPACE_ROOT/pipeline/engines/melee}"
+  --characters "${MELEE_CHARACTER_ROOT:-$WORKSPACE_ROOT/pipeline/play/ui}"
+  --bucket "$PRIVATE_BUCKET"
+  --jobs "${MELEE_BUILD_JOBS:-6}"
+)
+[[ -z "${MELEE_ISO:-}" ]] || melee_args+=(--iso "$MELEE_ISO")
+[[ -z "${MELEE_PC_ROOT:-}" ]] || melee_args+=(--melee-pc "$MELEE_PC_ROOT")
+[[ -z "${MELEE_INPUT_MANIFEST:-}" ]] || melee_args+=(--candidate "$MELEE_INPUT_MANIFEST")
+MELEE_INPUT_MANIFEST="$("${MELEE_BUILD_PYTHON:-python3}" "$WORKSPACE_ROOT/pipeline/engines/melee/tools/prepare_web_release.py" "${melee_args[@]}")"
+[[ "$MELEE_INPUT_MANIFEST" =~ ^melee/inputs/[a-f0-9]{64}\.json$ ]] || { echo "Invalid prepared Melee manifest" >&2; exit 2; }
+MELEE_ENV="MELEE_EMBEDDED=1,MELEE_INPUT_MANIFEST=${MELEE_INPUT_MANIFEST},MELEE_SOURCE_ORIGINS=${PUBLIC_ORIGIN}"
+
 gcloud projects add-iam-policy-binding "$PROJECT_ID" \
   --member "serviceAccount:${API_IDENTITY}" --role roles/firebaseauth.admin >/dev/null
 

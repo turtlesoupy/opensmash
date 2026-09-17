@@ -15,7 +15,13 @@ def default_melee_pc():
     configured=os.environ.get('MELEE_PC_ROOT')
     return Path(configured) if configured else ROOT.parents[2]/'melee-pc'
 
-def publish(workspace,characters,store,slugs=None,melee_pc=None,native_fit=None,iso=None):
+def character_files(source):
+    names=['rigged.glb','character.json','portrait_raw.png','portrait_raw.webp','portrait.png','portrait_transparent.png','stock_raw.png','emblem_raw.png','emblem_stencil.png','announcer.wav',
+           'melee-source-ready.json','melee-source.json','melee-source.rgba8','melee-source.identity.dat']
+    return [name for name in names if (Path(source)/name).is_file()]
+
+
+def publish(workspace,characters,store,slugs=None,melee_pc=None,native_fit=None,iso=None,release_fingerprint=None):
     import shutil
     workspace=Path(workspace);characters=Path(characters)
     native_fit=Path(native_fit) if native_fit else ROOT/'build/native-fit'
@@ -25,6 +31,7 @@ def publish(workspace,characters,store,slugs=None,melee_pc=None,native_fit=None,
     else:setup.restore()
     if not setup.ready:raise ValueError('Use an existing verified conversion workspace')
     manifest={'format':'opensmash-melee-hosted-v1','characters':{}}
+    if release_fingerprint:manifest['releaseFingerprint']=release_fingerprint
     # Inputs are content-addressed, so a re-publish only uploads what changed.
     existing=set(store.keys('melee/inputs/'))
     def upload(raw):
@@ -83,8 +90,7 @@ def publish(workspace,characters,store,slugs=None,melee_pc=None,native_fit=None,
     for row in catalog:
         source=characters/row['slug']
         if not (source/'rigged.glb').is_file():raise ValueError('Missing character source: '+row['slug'])
-        names=[name for name in ['rigged.glb','character.json','portrait_raw.png','portrait_raw.webp','portrait.png','portrait_transparent.png','stock_raw.png','emblem_raw.png','emblem_stencil.png','announcer.wav'] if (source/name).is_file()]
-        names += [name for name in ['melee-source-ready.json','melee-source.json','melee-source.rgba8','melee-source.identity.dat'] if (source/name).is_file()]
+        names=character_files(source)
         manifest['characters'][row['slug']]=upload(pack(source,names))
     raw=json.dumps(manifest,sort_keys=True).encode();key='melee/inputs/'+hashlib.sha256(raw).hexdigest()+'.json';store.put(key,raw)
     return key

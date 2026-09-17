@@ -318,9 +318,16 @@ further means also restoring the previous `deploy.sh` and its image contents.
 ## Melee
 
 Melee preparation runs as a lazy Python child in this same API container. It uses
-the existing private bucket for source inputs, cached costumes and owner grants;
-no additional service or queue is deployed. Publish its private input manifest
-once using `engines/melee/tools/publish_web_inputs.py`, then pass the returned
-object key as `MELEE_INPUT_MANIFEST` to `deploy.sh`. Later deploys preserve the
-configured release automatically. See `engines/melee/server/README.md` for the
-input publisher and local two-instance conversion smoke test.
+the existing private bucket for source inputs and owner grants; browser fitting
+runs in WASM. No additional service or queue is deployed.
+
+`deploy.sh` automatically runs `engines/melee/tools/prepare_web_release.py` before
+image rollout. Matching input fingerprints reuse the published release. Changed
+inputs rebuild the pinned engine/fitter and derived target templates, then publish
+and pin the new manifest. Character sources are included without bulk baking;
+missing native source packages fill lazily. Failed preparation stops deployment.
+
+Use `MELEE_WORKSPACE` (verified extracted game), `MELEE_ISO` if needed,
+`MELEE_CHARACTER_ROOT`, `MELEE_PC_ROOT`, and `MELEE_BUILD_PYTHON` to override local
+input/toolchain locations. An explicit `MELEE_INPUT_MANIFEST` is validated as a
+candidate, never blindly carried forward. See `engines/melee/server/README.md`.

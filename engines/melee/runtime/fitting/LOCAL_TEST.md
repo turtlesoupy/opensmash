@@ -96,7 +96,8 @@ must not be presented as click-to-play or frame-pacing measurements.
 
 Build the pinned engine and fitter with `tools/build_upstream.py`. Derive all
 reusable target templates with `tools/prepare_native_fit_local.py` from the
-verified local game. Publish the new input bundle before deploying the website:
+verified local game. The standard `web-prototype/infra/deploy.sh` now prepares and publishes matching
+inputs automatically; it does not bulk-bake characters. For manual publishing:
 
 ```sh
 python3 engines/melee/tools/publish_web_inputs.py \
@@ -110,7 +111,8 @@ native fitter, and derived target assets. Old moderngekko runtime artifacts are
 not required. Generated game assets remain outside Git. Existing baked source
 packages are included when present; missing packages fill lazily.
 
-Set `MELEE_INPUT_MANIFEST` to the returned manifest when releasing. The service
+Manual manifests lack the automatic release fingerprint, so standard deployment
+will rebuild them once. The service
 rejects old manifests without native fitting assets rather than shipping a
 broken default. Publishing and deployment are separate actions.
 
