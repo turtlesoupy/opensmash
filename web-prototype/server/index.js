@@ -10,6 +10,7 @@ import { gzip as gzipCallback } from "node:zlib";
 import { createEmbeddedMeleeHandler } from "../../engines/melee/server/embedded.mjs";
 import { mediaRange } from "./media-range.js";
 import { createFighterJobs } from "./fighter-jobs.js";
+import { SOURCE_ASSET_PATH } from "./source-export.js";
 import { createTurnstileVerifier } from "./turnstile.js";
 import { HandoffError, createHandoffRoomsFromEnv } from "./handoff-rooms.js";
 import { createIceServerProvider } from "./handoff-ice.js";
@@ -1185,7 +1186,7 @@ async function handleRequest(req, res, vite) {
     return res.end();
   }
 
-  const sourceAsset=pathname.match(/^\/engine\/character-source\/([a-f0-9]{48})\/([a-z_.]+)$/);
+  const sourceAsset=pathname.match(SOURCE_ASSET_PATH);
   if(sourceAsset && ['GET','HEAD'].includes(req.method)) {
     const asset=fighterJobs.sourceExport(sourceAsset[1],sourceAsset[2]);
     if(!asset)return json(res,404,{error:'Character import link is unavailable.'});

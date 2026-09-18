@@ -1,8 +1,22 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {prepareSourceExport,sourceManifest,SOURCE_FILES} from './source-export.js';
+import {prepareSourceExport,sourceManifest,SOURCE_FILES,OPTIONAL_SOURCE_FILES,SOURCE_ASSET_PATH} from './source-export.js';
 const job=()=>({id:'test',ownerId:'owner',status:'complete',slug:'example',name:'Example',short:'EXAMPLE',checkpoint:{files:[...SOURCE_FILES,'photo.png','cost.json'].map(name=>({scope:'output',name,key:'private/'+name}))}});
 const store={read:async key=>Buffer.from(key)};
+test('download route accepts every URL emitted by a complete native source manifest',async()=>{
+ const j=job();
+ j.checkpoint.files.push(...OPTIONAL_SOURCE_FILES.map(name=>({scope:'output',name,key:'private/'+name})));
+ j.sourceExport=await prepareSourceExport(j,'owner',store);
+ const manifest=sourceManifest(j);
+ const root='/engine/character-source/'+j.sourceExport.capability+'/';
+ for(const [name,entry] of Object.entries({...manifest.files,...manifest.nativeSource,'manifest.json':{url:root+'manifest.json'}})){
+  const match=entry.url.match(SOURCE_ASSET_PATH);
+  assert.ok(match,`Download route must accept ${name}`);
+  assert.equal(match[1],j.sourceExport.capability);
+  assert.equal(match[2],name);
+ }
+ assert.equal((root+'nested/rigged.glb').match(SOURCE_ASSET_PATH),null);
+});
 test('requires the actual owner and complete source assets',async()=>{
  for(const owner of [null,'other'])await assert.rejects(prepareSourceExport(job(),owner,store),/not found/);
  const missing=job();missing.checkpoint.files=[];await assert.rejects(prepareSourceExport(missing,'owner',store),/not available/);

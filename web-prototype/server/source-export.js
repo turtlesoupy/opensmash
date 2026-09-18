@@ -1,6 +1,7 @@
 // Owner-initiated source export: only generated game art, never source photos,
 // prompts, credentials, costs or arbitrary checkpoint files.
 import {createHash, randomBytes} from 'node:crypto';
+export const SOURCE_ASSET_PATH=/^\/engine\/character-source\/([a-f0-9]{48})\/([a-z0-9_.-]+)$/;
 export const SOURCE_FILES=['rigged.glb','portrait_raw.png','stock_raw.png','emblem_raw.png','announcer.wav'];
 export const OPTIONAL_SOURCE_FILES=['emblem_stencil.png','melee-source.json','melee-source.rgba8','melee-source.identity.dat','melee-source-ready.json'];
 export async function prepareSourceExport(job,ownerId,store) {
