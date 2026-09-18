@@ -1,33 +1,26 @@
 # OpenSmash
 
-Super Smash Bros. 64 in the browser, with new fighters from image uploads. Give it a
-name and (optionally) a photo, and the pipeline produces a low-poly rigged
-mesh, a character-select portrait, a stock icon, a series emblem, and an
-announcer call, then injects the result into the game on one of the twelve
-original skeletons.
+Super Smash Bros. 64 and Super Smash Bros. Melee in the browser, with new
+fighters from image uploads. Give it a name and (optionally) a photo, and the
+pipeline produces a low-poly rigged mesh, a character-select portrait, a stock
+icon, a series emblem, and an announcer call. In Smash 64 the result is injected
+into the game on one of the twelve original skeletons; in Melee the same fighter
+becomes a costume on one of the 26 Melee movesets.
 
 https://github.com/user-attachments/assets/d3a589cf-1443-4926-8914-97371bd40b97
 
-Full trailer: [youtu.be/Uj3N_CbYMHs](https://youtu.be/Uj3N_CbYMHs). Play it at [smash.fun](https://smash.fun).
+Full trailer: [youtu.be/Uj3N_CbYMHs](https://youtu.be/Uj3N_CbYMHs). Play it at
+[smash.fun](https://smash.fun) (Smash 64) and [smash.fun/melee](https://smash.fun/melee).
 
-No Nintendo assets are in this repo or served by the site. The engine is
-[BattleShip](https://github.com/turtlesoupy/BattleShip), a decomp-based PC
+No Nintendo assets are in this repo or served by the site. The Smash 64 engine
+is [BattleShip](https://github.com/turtlesoupy/BattleShip), a decomp-based PC
 port, and the game's assets are extracted in the player's browser from their
-own ROM. The few generator inputs that come from the game (sprites, skeletons,
-announcer clips) are gitignored and rebuilt locally from your ROM; see
+own ROM. The Melee engine is a pinned fork of the
+[Melee PC](https://github.com/999sian/melee-pc) source port built to
+WebAssembly, and it reads the player's own disc image in the browser. The few
+generator inputs that come from the games (sprites, skeletons, announcer clips,
+costume templates) can be rebuilt from your own ROM or disc; see
 [Game-derived inputs](#game-derived-inputs).
-
-## Melee integration
-
-This branch brings Melee into `engines/melee` and connects it to the existing
-launcher at `/melee`. The source import includes browser runtime, native engines,
-conversion tools and desktop packaging. See [integration status and acceptance
-criteria](docs/melee-integration.md) before deploying this branch; hosted Melee
-character preparation and a unified two-engine desktop release are not complete.
-
-The standalone Melee build remains available from `engines/melee`. Initialize its
-pinned upstream with `git submodule update --init engines/melee/melee`. Existing
-Smash 64 native and ROM commands in [BUILDING.md](BUILDING.md) remain unchanged.
 
 ## Upstream projects
 
@@ -41,8 +34,10 @@ at these copies.
 | [turtlesoupy/ssb-decomp-re](https://github.com/turtlesoupy/ssb-decomp-re) | [VetriTheRetri/ssb-decomp-re](https://github.com/VetriTheRetri/ssb-decomp-re) | The game decompilation. Vendored as `decomp/`. |
 | [turtlesoupy/libultraship](https://github.com/turtlesoupy/libultraship) | [JRickey/libultraship](https://github.com/JRickey/libultraship/tree/ssb64) ← [Kenix3/libultraship](https://github.com/Kenix3/libultraship) | Rendering, audio, and input layer for N64 ports. Vendored as `libultraship/`. |
 | [turtlesoupy/Torch](https://github.com/turtlesoupy/Torch) | [JRickey/Torch](https://github.com/JRickey/Torch/tree/ssb64) ← [HarbourMasters/Torch](https://github.com/HarbourMasters/Torch) | Extracts assets from the ROM into the `.o2r` archive. Also compiled to wasm so the browser can do this. Vendored as `torch/`. |
+| [turtlesoupy/opensmash-melee-pc](https://github.com/turtlesoupy/opensmash-melee-pc) | [999sian/melee-pc](https://github.com/999sian/melee-pc) | The Melee PC source port. Our `opensmash/browser` branch adds the Emscripten/WebGPU build, custom-costume slots, and launch hooks. Pinned by `engines/melee/upstream.json`. |
+| [doldecomp/melee](https://github.com/doldecomp/melee) | | The Melee decompilation, used as the structure and symbol reference for the costume converter. Submodule at `engines/melee/melee`. |
 
-BattleShip's README has the licenses and credits for those projects.
+BattleShip's README has the licenses and credits for the Smash 64 projects.
 
 ## Getting the code
 
@@ -53,6 +48,7 @@ opensmash/
   BattleShip/    git clone https://github.com/turtlesoupy/BattleShip
   pipeline/      git clone https://github.com/turtlesoupy/opensmash   (this repo)
   emsdk/         https://github.com/emscripten-core/emsdk
+  melee-pc/      cloned for you by engines/melee/tools/build_upstream.py (Melee only)
 ```
 
 The site server looks for the engine at `pipeline/BattleShip/web-dist`, then
@@ -64,22 +60,24 @@ What's in this repo:
 | | What |
 |---|---|
 | `pipeline/` | The generator. `run_character.py` turns a name + photo into a playable fighter. |
-| `web-prototype/` | The site: React frontend + Node server. Character grid, ROM check, launching the engine, and the hosted "create a fighter" flow (Cloud Run, Firestore, GCS). Its own `asset-sources/` and `tools/` hold the site's 3D props, fonts, and the Blender scripts that built them. |
-| `skels/` | The twelve target skeletons, per-fighter conform profiles, and the reference part data the converter fits meshes onto. |
+| `web-prototype/` | The site: React frontend + Node server. Character grid, ROM/disc check, launching either engine (`/` is Smash 64, `/melee` is Melee), and the hosted "create a fighter" flow (Cloud Run, Firestore, GCS). Its own `asset-sources/` and `tools/` hold the site's 3D props, fonts, and the Blender scripts that built them. |
+| `engines/` | Per-engine code. `engines/ssb64/` is the BattleShip launch adapter; `engines/melee/` is the Melee engine build, the costume converter, the launcher components, the hosted converter service, and the desktop shell. See [`engines/melee/README.md`](engines/melee/README.md). |
+| `skels/` | The twelve Smash 64 target skeletons, per-fighter conform profiles, and the reference part data the converter fits meshes onto. Melee skeletons come from the disc at conversion time. |
 | `play/` | Local generation output (gitignored). The production roster lives in a public GCS bucket, pinned by `web-prototype/config/baked-assets.json`. |
 | `scripts/`, `tools/` | Batch driver, the derive-from-ROM scripts, sprite extraction, the Wikipedia roster seed. |
 | `eval/` | Mesh eval harness (`EVAL.md`). |
 | `config/`, `docs/`, `assets/` | Docs and the style references the generator uses. `config/` holds local (gitignored) roster inclusion/exclusion lists. |
 
-## Native and ROM builds with character injection
+## Native and ROM builds with character injection (Smash 64)
 
 Playing on real N64 hardware:
 
 https://github.com/user-attachments/assets/97b41166-8646-4dd5-ab45-80ee5d275297
 
-You can play OpenSmash outside the browser in two ways: build a **native desktop
-game** through BattleShip, or create an **experimental N64 ROM** for an emulator
-or real console. Both can include website fighters and your own custom/private
+You can play the Smash 64 side of OpenSmash outside the browser in two ways:
+build a **native desktop game** through BattleShip, or create an **experimental
+N64 ROM** for an emulator or real console. (For Melee outside the browser, see
+[Melee](#melee).) Both can include website fighters and your own custom/private
 characters, including their portraits, names, emblems and announcer voices.
 
 Both use `build.py` and the same character-selection arguments. The main
@@ -178,7 +176,8 @@ options, including vanilla native builds and local asset loadouts.
 You need Node 20+ with pnpm (`corepack enable`), a Super Smash Bros. USA
 (NTSC-U v1.0) ROM with SHA-1 `e2929e10fccc0aa84e5776227e798abc07cedabf`
 (other regions are rejected), and Emscripten if you're building the engine
-yourself. Don't commit the ROM.
+yourself. Don't commit the ROM. The steps below get Smash 64 running; the
+Melee side of the site is optional and is set up separately in [Melee](#melee).
 
 ### 1. Build the engine
 
@@ -227,9 +226,74 @@ cd web-prototype && pnpm install && pnpm dev:safe
 
 Open <http://127.0.0.1:4174>, drop in the ROM, play. `dev:safe` disables the
 local fighter worker so `/create` can't spend credits; `pnpm dev` runs real
-generations from the web UI. The ROM gate, auth, phone hand-off, and the
+generations from the web UI. `/melee` shows the Melee roster but can't launch a
+match until the Melee asset service is running (next section). The ROM gate, auth, phone hand-off, and the
 hosted generation flow are documented in
 [`web-prototype/README.md`](web-prototype/README.md).
+
+## Melee
+
+Melee runs the same generated fighters on Melee's own skeletons and movesets.
+Everything Melee-specific lives in [`engines/melee`](engines/melee/); this is
+the short version.
+
+**How a fighter gets into Melee.** The converter takes the rigged mesh the
+generator already produced, conforms it onto the chosen Melee fighter's
+skeleton using the game's own bind matrices, bakes the textures into one atlas,
+and writes a real costume `.dat` file. Physics, hitboxes and animations are
+untouched Melee data, so a custom fighter borrows one of the 26 movesets. The
+default moveset is picked from the fighter's Smash 64 base (Mario stays Mario,
+DK becomes Donkey Kong, and so on); a fighter's owner can override it in the
+**Melee** setting of the fighter modal on the site. Fitting happens in the
+browser with a wasm build of the fitter, so each player's disc supplies the
+skeleton templates and nothing game-derived is served for gameplay.
+
+**Playing locally.** You need an unmodified Melee USA 1.02 disc image (ISO or
+GCM). Build the pinned engine fork, then run the Melee asset service next to
+the site:
+
+```bash
+python3 engines/melee/tools/build_upstream.py --jobs 6
+```
+
+```bash
+python3 engines/melee/tools/serve_melee.py --upstream --port 8781 --characters play/ui
+```
+
+```bash
+cd web-prototype && MELEE_LOCAL_ORIGIN=http://127.0.0.1:8781 pnpm dev
+```
+
+Open <http://127.0.0.1:4174/melee> and pick the disc when prompted. The disc
+is hashed and read in the browser; it is never uploaded. Toolchain
+prerequisites (LLVM 22, GCC 16, Node 22.13+, Emscripten) and the upstream
+sync procedure are in [`engines/melee/UPSTREAM.md`](engines/melee/UPSTREAM.md).
+The `--characters` directory is a generator output tree (`play/ui`, one
+directory per slug with `rigged.glb` and `character.json`); the converter
+prepares costumes from it on first use.
+
+**Bringing a fighter over from smash.fun.** Open a fighter's download panel on
+the site and choose **Copy Melee import URL**. A local Melee launcher (or the
+desktop app) accepts that link in **Create** and converts it on your machine.
+On the hosted site no link is needed: the roster is shared and costumes are
+prepared on demand by a Python child inside the web container
+([`engines/melee/server/README.md`](engines/melee/server/README.md)).
+
+**Deploying.** `web-prototype/infra/deploy.sh` runs
+`engines/melee/tools/prepare_web_release.py` before rollout. It fingerprints
+the engine pin, fitter and template code, rebuilds only when something changed,
+publishes a content-addressed input pack to the private bucket, and pins the
+manifest for that deploy. It needs a verified extracted-game workspace
+(`MELEE_WORKSPACE`) and a Python environment with the engine requirements plus
+`google-cloud-storage` (`MELEE_BUILD_PYTHON`).
+
+**Outside the browser.** The standalone desktop alpha (Electron shell around a
+native engine, Windows and Apple Silicon) is released from
+[turtlesoupy/opensmash-melee](https://github.com/turtlesoupy/opensmash-melee/releases).
+Its source was imported here as `engines/melee` (provenance in
+`engines/melee/IMPORT.json`); see
+[`engines/melee/docs/DESKTOP_RELEASE.md`](engines/melee/docs/DESKTOP_RELEASE.md)
+and [`engines/melee/docs/NATIVE.md`](engines/melee/docs/NATIVE.md).
 
 ## Generating a fighter
 
@@ -287,16 +351,18 @@ Options: `--short WEIRDAL` (tile caption, up to 10 capital letters),
 `--variants all` (also build the experimental DK and Yoshi targets).
 
 Stages: `expand` (description) → `tpose` (model sheet) → `mesh` (Tripo mesh +
-rig) → `convert` (fit onto the game skeletons) → `portrait` → `stock` →
-`emblem` → `ui` → `voice`. A stage is skipped if its output already exists,
+rig) → `convert` (fit onto the Smash 64 skeletons) → `portrait` → `stock` →
+`emblem` → `ui` → `voice` → `melee-source` (packs the rigged mesh and art for
+the Melee converter; one package serves every moveset). A stage is skipped if its output already exists,
 so a failed run resumes where it stopped. Delete a stage's output or pass
 `--force-stage <stage>` to redo it. To fix a description or emblem, edit
 `character.json` and re-run.
 
 Output goes to `play/ui/<slug>/` (art, `character.json`, the `.osbui` UI pack,
-`announcer.wav`, intermediates) and `play/<slug>.osb6`, one bundle with the
-mesh for every target skeleton. The site's `/create` page runs this same
-script.
+`announcer.wav`, the Melee source package, intermediates) and
+`play/<slug>.osb6`, one bundle with the mesh for every Smash 64 target
+skeleton. Melee costumes are not built here; they are fitted on first use from
+the source package. The site's `/create` page runs this same script.
 
 ### Many fighters
 
@@ -336,10 +402,12 @@ script: [`web-prototype/infra/README.md`](web-prototype/infra/README.md).
 
 ## Game-derived inputs
 
-Some generator inputs come from the game itself. None of them are committed
+Some generator inputs come from Smash 64 itself. None of them are committed
 (they're gitignored, and were purged from history before the repo went
 public). Rebuild them from your ROM before running the generator or the
-worker Docker build, which copies `ui_refs/` into the image:
+worker Docker build, which copies `ui_refs/` into the image. (Melee's
+equivalents, the costume templates and menu files, are extracted from your
+disc by the Melee tools; see [`engines/melee/README.md`](engines/melee/README.md).)
 
 | Files | What | Rebuilt by |
 |---|---|---|
@@ -423,3 +491,7 @@ one consumer only checks whether it's zero.
   service (job protocol, retries, abuse controls).
 - `BattleShip/docs/`: engine internals, web harness, controller ports,
   in-browser ROM extraction.
+- `engines/melee/README.md`, `engines/melee/UPSTREAM.md`, `engines/melee/docs/`:
+  the Melee engine, converter, validation reports, and desktop packaging.
+- `docs/melee-integration.md`: how the two engines share one launcher, and the
+  acceptance matrix used when Melee was brought in.

@@ -1,51 +1,168 @@
 # OpenSmash Melee
 
-Super Smash Bros. Melee with custom fighters, from the same team that built [OpenSmash](https://github.com/turtlesoupy/opensmash). Pick a character from the roster or bring one over from [smash.fun](https://smash.fun), and play with a familiar Melee moveset.
+Super Smash Bros. Melee with OpenSmash's generated fighters. This directory is
+the Melee half of the [OpenSmash](../../README.md) repo: the pinned browser
+engine, the costume converter that turns a generated fighter into a Melee
+costume, the launcher components the site mounts at `/melee`, the hosted
+converter service, validation tooling, and the desktop shell.
 
-**This is an alpha build.** Expect bugs, unfinished features, and performance issues.
+It started life as the standalone
+[turtlesoupy/opensmash-melee](https://github.com/turtlesoupy/opensmash-melee)
+repository and was imported here at the commit recorded in `IMPORT.json`. The
+desktop alpha is still released from that repository; the website at
+[smash.fun/melee](https://smash.fun/melee) is served from this tree.
 
-## Download
-
-Choose your platform, then download the matching file from the release's **Assets** section.
-
-| Platform | Releases | File to choose |
-| --- | --- | --- |
-| Windows (64-bit) | [Download for Windows](https://github.com/turtlesoupy/opensmash-melee/releases) | `OpenSmash-Melee-…-win-x64-Setup.exe` |
-| macOS (Apple Silicon) | [Download for Apple Silicon](https://github.com/turtlesoupy/opensmash-melee/releases) | `OpenSmash-Melee-…-mac-arm64.dmg` |
-
-Check the release notes for platform requirements and known issues.
-
-## Getting started
-
-You'll need your own **unmodified Super Smash Bros. Melee USA 1.02 disc image** in ISO or GCM format. RVZ, NKit, and patched images aren't supported. No game disc is included.
-
-1. Open OpenSmash Melee and choose your disc image when prompted. Setup stays on your computer and leaves the original image unchanged.
-2. Wait for setup to finish, then pick a fighter from the roster.
-3. Pick a fighter to face a random Melee fighter and two random custom characters. Open **Settings** to choose your opponents, stage, match rules, and controllers. Open **Controls** to see the button mappings light up as you press them, and to rebind keys or gamepad buttons.
-
-## Bring your own character
-
-Create a character on [smash.fun](https://smash.fun). In its download panel, choose **Copy Melee import URL**. Open **Create** in OpenSmash Melee, paste the link, and choose a Melee moveset. Your character appears in the roster when the import finishes.
+No game data is in this directory. You need your own **unmodified Super Smash
+Bros. Melee USA 1.02** disc image in ISO or GCM format. RVZ, NKit and patched
+images are rejected. In the browser the disc is hashed and read locally and is
+never uploaded.
 
 ## How it works
 
-**The browser build now uses the Melee PC source port.** Its exact fork revision is pinned in `upstream.json`; game logic and Aurora/WebGPU rendering are built from that maintained upstream. See [browser build, upstream sync, and validation](UPSTREAM.md). The native desktop release described below retains its separate recompilation engine.
+**The browser engine is the Melee PC source port.** The site runs
+[turtlesoupy/opensmash-melee-pc](https://github.com/turtlesoupy/opensmash-melee-pc),
+a fork of [999sian/melee-pc](https://github.com/999sian/melee-pc), compiled
+with Emscripten and rendering through Aurora/WebGPU. `upstream.json` pins the
+exact fork commit, the upstream commit it was merged from, and the Emscripten
+and LLVM versions used to build it. The fork carries the web build, the
+writable costume and menu slots that overlay the read-only disc, and the launch
+hooks; game logic is upstream's. [UPSTREAM.md](UPSTREAM.md) has the build
+steps and the sync procedure. The earlier direct-C and PowerPC-recompilation
+engines (`browser-port/`, `runtime/direct-c/`, `runtime/native/`) are kept for
+comparison and for the native desktop build; they are not what the site runs.
 
-**The game runs as recompiled code, not in an emulator.** At setup, the `main.dol` executable from your disc image is run through a PowerPC static recompiler that turns the game's machine code into a native module (or WebAssembly for the browser build). Around that module sits a host layer that stands in for the rest of the GameCube: a GX-to-OpenGL/WebGL renderer, DSP audio, controller input, and a virtual disc that serves files from the extracted image. That host layer is built from Dolphin's own video, audio, and hardware subsystems, trimmed down and embedded as a library, with Dolphin's PowerPC interpreter swapped out for the recompiled code. So this is not a source port in the style of the Zelda and Mario decomp ports. It is closer to the N64 recompilation projects: the original game binary, translated ahead of time, running inside a slimmed emulator core. We also use full Dolphin during development to record parity captures and check that our output matches frame for frame.
+**Custom fighters are costumes on Melee skeletons.** A conversion takes the
+rigged mesh and art from the generator, conforms the mesh onto the chosen
+fighter's skeleton using the game's own bind matrices, repairs hands and feet,
+bakes the textures into one atlas, and writes a genuine costume `.dat`. Physics,
+hitboxes and animations are untouched Melee data, so each custom fighter borrows
+one of the 26 movesets. In the browser the fit runs in a wasm build of the
+fitter against templates read from the player's disc; the server only supplies
+the fighter's source package. Kirby and Jigglypuff use the big-head fit, Ice
+Climbers prepares both partners, and Zelda/Sheik keeps the custom character
+through transformations. `docs/COSTUME_FORMS.md`, `docs/SHADING.md` and
+`docs/RETARGET_VALIDATION.md` cover the details.
 
-**Your disc is never modified.** Setup verifies that the image is an unmodified USA 1.02 copy, extracts its filesystem into a local folder, and hashes every file. Custom fighters are swapped into that folder as costume files, padded to fixed sizes so the file table stays stable, and small runtime mods hook into the game to route scenes and drive the expanded character select screen.
+**Moveset assignment.** Each fighter has a default Melee moveset derived from
+its Smash 64 base (`web-prototype/shared/melee-targets.js`), and the fighter's
+owner can pick a different one in the site's fighter modal. The bundled roster's
+assignments come from `tools/assign_roster_targets.py`. The full list of
+movesets and their limits is `runtime/launch-options.json`.
 
-**Custom fighters are costumes on Melee skeletons.** An import fetches the rigged model and art from smash.fun, conforms the mesh onto the chosen fighter's skeleton using the game's own bind matrices, repairs hands and feet, bakes textures into a single atlas, and writes a genuine DAT costume file. Physics, hitboxes, and animations are untouched Melee data, so each custom fighter borrows a Melee moveset. The shared launcher offers all 26 movesets in More → Settings → Players & Controllers; alternate costumes are generated locally on first use and cached. Kirby and Jigglypuff use the big-head fit; Ice Climbers prepares both partners, and Zelda/Sheik keeps the custom character through transformations. The bundled roster uses all 26 default movesets, assigned by stable moveset-family heuristics and thematic overrides in `tools/assign_roster_targets.py`; player overrides remain available. Original assignments are retained only for costume cache compatibility.
+**The site is the only launcher.** `web-prototype` owns the page, accounts,
+roster and navigation for both games. This directory contributes
+`launcher/` (the Melee experience, settings, controller tutorial, trailer
+capture) and `web/` (shared engine components; its `npm run dev` forwards to
+`web-prototype`). There is no separate Melee website any more.
 
-**The desktop app is a shell around the native engine.** Electron hosts the same launcher UI as the web build and a bundled Python service handles setup and imports. The engine renders natively and its frames are shared into the window through IOSurface on macOS or shared memory elsewhere.
+**Hosting.** On smash.fun the converter runs as a loopback-only Python child
+inside the existing web container (`server/embedded.mjs` →
+`tools/serve_embedded.py`). Engine files, the fitter, disc-derived templates and
+per-fighter source packages come from a content-addressed input pack in the
+private bucket; `tools/prepare_web_release.py` builds and publishes that pack
+during `web-prototype/infra/deploy.sh`. See [server/README.md](server/README.md).
 
+## Layout
 
-## Feedback
+| | What |
+|---|---|
+| `upstream.json`, `UPSTREAM.md` | Engine fork pin, build and sync instructions. |
+| `opensmash_melee/` | The Python converter: disc verification and extraction, costume fitting and packing, character-select menu and announcer assembly, hosted cache. |
+| `tools/` | Build, serve, publish and validation scripts. The ones you will use are listed below. |
+| `launcher/`, `web/` | React components the site mounts under `/melee`. |
+| `server/` | The embedded hosted converter and its Dockerfile. |
+| `runtime/` | Launch-option schema, retarget options, engine patches, and the older direct-C and native runtimes. |
+| `desktop/` | Electron shell for the standalone desktop app. |
+| `validation/`, `tests/`, `docs/` | Benchmark reports, Python and Node test suites, design notes and audits. |
+| `melee/` | The [doldecomp/melee](https://github.com/doldecomp/melee) submodule, used as the structure reference. |
+| `assets/`, `build/` | Local extracted game, converted costumes and build output. Gitignored. |
 
-Found a bug? [Open an issue](https://github.com/turtlesoupy/opensmash-melee/issues) with your platform, app version, and what happened. Screenshots or a short clip help, especially for character glitches.
+## Run it locally
 
-Join the [OpenSmash Discord](https://discord.gg/qYBbGmwBhr) to share characters and talk about the alpha.
+Prerequisites: Python 3 with `requirements.txt`, CMake, Ninja, LLVM 22 with
+LibTooling, GCC 16, Node 22.13+, and the site's dependencies. On Apple Silicon
+the build defaults to Homebrew LLVM 22; set `LLVM_ROOT` elsewhere. All commands
+run from the repository root (`pipeline/`).
 
-## Credits
+1. Build the pinned engine. This clones the fork into a sibling `melee-pc/`
+   checkout (or uses `MELEE_PC_ROOT`) and bootstraps its own emsdk:
 
-Made by the team behind [OpenSmash](https://github.com/turtlesoupy/opensmash), with thanks to [doldecomp/melee](https://github.com/doldecomp/melee) and the Melee community.
+```bash
+python3 engines/melee/tools/build_upstream.py --jobs 6
+```
+
+2. Start the Melee asset service. `--characters` is a generator output tree
+   (`play/ui`, one directory per fighter slug with at least `rigged.glb` and
+   `character.json`); costumes are converted from it on first use:
+
+```bash
+python3 engines/melee/tools/serve_melee.py --upstream --port 8781 --characters play/ui
+```
+
+3. Start the site pointed at it:
+
+```bash
+cd web-prototype && MELEE_LOCAL_ORIGIN=http://127.0.0.1:8781 pnpm dev
+```
+
+Open <http://127.0.0.1:4174/melee>, choose your disc when prompted, pick a
+fighter. Setup verifies the image, saves it in the browser's private storage
+so you don't re-select it next visit, and reads game files from it directly.
+The browser needs WebGPU, shared memory and cross-origin isolation. Pass
+`--iso PATH` to `serve_melee.py` if the server-side converter needs an
+extracted game for template work and you have not prepared one yet.
+
+Import a fighter from the site instead of a local `play/ui`: open its download
+panel on smash.fun, choose **Copy Melee import URL**, and paste it into
+**Create** in the local launcher. `docs/CHARACTER_IMPORT.md` describes what
+the link grants and how imports are validated.
+
+## Checks
+
+```bash
+python3 -m unittest discover -s engines/melee/tests
+```
+
+```bash
+node --test engines/melee/tests/*.test.mjs
+```
+
+```bash
+npm run typecheck --prefix engines/melee/web
+```
+
+Tests that need a disc, an extracted game or character fixtures skip when those
+are absent. Performance gates for the browser engine (≥58.5 FPS, p95 ≤20 ms, no
+audio underruns) and the Playwright recipe that measures them are in
+[UPSTREAM.md](UPSTREAM.md); the last reports are under `validation/upstream/`.
+
+## Desktop and native
+
+The standalone app (Windows x64 and Apple Silicon) wraps a native engine in an
+Electron shell with the same launcher UI and a bundled Python service for setup
+and imports. It is built and released from
+[turtlesoupy/opensmash-melee](https://github.com/turtlesoupy/opensmash-melee/releases);
+[docs/DESKTOP_RELEASE.md](docs/DESKTOP_RELEASE.md) and
+[docs/NATIVE.md](docs/NATIVE.md) cover packaging and the Apple Silicon
+ROM-first build. The shared two-engine desktop prototype that also hosts Smash
+64 is described in [`../../desktop/README.md`](../../desktop/README.md).
+
+## More docs
+
+- [UPSTREAM.md](UPSTREAM.md): engine build, upstream sync, benchmark recipe.
+- [server/README.md](server/README.md): hosted converter, release prep, deploy variables.
+- [docs/CHARACTER_IMPORT.md](docs/CHARACTER_IMPORT.md): import links and validation.
+- [docs/LAUNCH_MODES.md](docs/LAUNCH_MODES.md), [docs/CHARACTER_SELECT.md](docs/CHARACTER_SELECT.md): what the launcher can start and how the expanded select screen works.
+- [docs/PERFORMANCE.md](docs/PERFORMANCE.md), [docs/STARTUP.md](docs/STARTUP.md): frame-time and click-to-match work.
+- [docs/BOOT_AND_DISC_SETUP.md](docs/BOOT_AND_DISC_SETUP.md): disc verification and local storage.
+- [launcher/TRAILER.md](launcher/TRAILER.md): recording the Melee trailer.
+- [../../docs/melee-integration.md](../../docs/melee-integration.md): how the two engines share one launcher.
+
+## Feedback and credits
+
+Bugs: [open an issue](https://github.com/turtlesoupy/opensmash/issues) with your
+platform, browser and what happened. Join the
+[OpenSmash Discord](https://discord.gg/qYBbGmwBhr) to share characters.
+
+Thanks to [999sian/melee-pc](https://github.com/999sian/melee-pc),
+[doldecomp/melee](https://github.com/doldecomp/melee), and the Melee community.
