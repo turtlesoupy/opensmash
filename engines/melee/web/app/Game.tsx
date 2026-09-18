@@ -113,7 +113,7 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true,chrom
     if(data.type==='status' && !fullBootVisible)setStatus(data.message);
     if(data.type==='started'){running=true;}
     if(data.type==='trailer-ready')trailerReadyCallback.current?.();
-    if(data.type==='intro'){stopAnnouncer();setStatus('');startAudio();}
+    if(data.type==='intro'){if(holdForTrailer&&!trailerVisible.current){setError('The deployed Melee runtime does not support trailer preloading. Deploy the updated engine input release, then reload this page.');return;}stopAnnouncer();setStatus('');startAudio();}
     if(data.type==='playable'){playable=true;setStatus('');startAudio();if(!gameInputBlocked())canvas.current?.focus({preventScroll:true});}
     if(data.type==='error'){setError(previous=>previous||data.message||'Melee initialization failed without an error message.');running=false;}
     if(data.type==='log'){console.log('[Melee]',data.text);if(playable&&data.text.includes('[opensmash] destination ready'))setStatus('');}
