@@ -1,3 +1,4 @@
+import {meleeTargetFor} from "../../../web-prototype/shared/melee-targets.js";
 import {meleePath} from '../web/lib/paths';
 import type {Fighter} from '../web/lib/fighter';
 import {desktop} from '../web/lib/desktop';
@@ -12,8 +13,7 @@ export async function resolveFighters(action:any,roster:Fighter[],signal:AbortSi
  for(const pick of [action.character,...(action.picks||[])].filter(Boolean)){
   if(roster.some(f=>f.slug===pick.slug)||resolved.has(pick.slug))continue;
   onStatus('Preparing '+pick.name+' for Melee…');
-  const base=pick.base||pick.target||'mario';
-  const target=({donkey:'donkey-kong',captain:'captain-falcon',purin:'jigglypuff'} as Record<string,string>)[base]||base;
+  const target=meleeTargetFor(pick);
   const source=await json('/api/melee/source/'+encodeURIComponent(pick.slug),{method:'POST',body:'{}'});
   let job=await json(meleePath('/api/imports'),{method:'POST',body:JSON.stringify({url:new URL(source.url,location.origin).href,target,sourceOnly:!desktop()})});
   while(job.state!=='complete'){

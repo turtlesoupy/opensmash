@@ -1,3 +1,4 @@
+import { MELEE_TARGETS } from "../shared/melee-targets.js";
 import { blockedArtworkDetails } from "../shared/fighter-job-ui.js";
 import { prepareSourceExport, sourceManifest, SOURCE_FILES, OPTIONAL_SOURCE_FILES } from "./source-export.js";
 import { availableFighterTargets } from "../shared/fighter-targets.js";
@@ -1202,7 +1203,11 @@ export function createFighterJobs({
     if (!availableFighterTargets(job.artifacts).some(({ value }) => value === settings?.retarget)) {
       throw new HttpError(400, "Choose a target available for this fighter.");
     }
-    const updated = { ...job, retarget: settings.retarget };
+    const meleeTarget = settings.meleeTarget ?? job.meleeTarget ?? "match-sm64";
+    if (meleeTarget !== "match-sm64" && !MELEE_TARGETS.some(({ value }) => value === meleeTarget)) {
+      throw new HttpError(400, "Choose a supported Melee target.");
+    }
+    const updated = { ...job, retarget: settings.retarget, meleeTarget };
     await saveJob(updated);
     jobs.set(id, updated);
     return publicJob(updated);

@@ -1,3 +1,4 @@
+import { MELEE_TARGETS } from "../shared/melee-targets.js";
 import { useEffect, useRef, useState } from "react";
 import { availableFighterTargets, CHARACTER_MESHES } from "../shared/fighter-targets.js";
 import ModalPage from "./ModalPage.jsx";
@@ -46,6 +47,7 @@ export default function FighterJobModal({ job, onClose, onDelete, onRetry, onSav
   const [deleting, setDeleting] = useState(false);
 
   const [retarget, setRetarget] = useState("mario");
+  const [meleeTarget, setMeleeTarget] = useState("match-sm64");
   const [saving, setSaving] = useState(false);
   const [copyMessage, setCopyMessage] = useState("");
   const [meleeUrl,setMeleeUrl]=useState("");
@@ -55,6 +57,7 @@ export default function FighterJobModal({ job, onClose, onDelete, onRetry, onSav
   const downloadRef = useRef(null);
   useEffect(() => {
     setRetarget(job?.character?.base || "mario");
+    setMeleeTarget(job?.character?.meleeTarget || "match-sm64");
     setCopyMessage("");
     setMeleeUrl("");
     setDownloadError("");
@@ -176,7 +179,8 @@ export default function FighterJobModal({ job, onClose, onDelete, onRetry, onSav
               <section className="fighter-settings">
                 <h3>Character settings</h3>
                 <p id="fighter-retarget-help">Choose the fighter whose moves and animations your character uses.</p>
-                <select id="fighter-retarget" aria-label="Target fighter" value={retarget} disabled={saving || deleting || !!downloadFormat}
+                <label htmlFor="fighter-retarget">SM64</label>
+                <select id="fighter-retarget" value={retarget} disabled={saving || deleting || !!downloadFormat}
                   aria-describedby="fighter-retarget-help"
                   onChange={async (event) => {
                     const nextTarget = event.target.value;
@@ -186,7 +190,7 @@ export default function FighterJobModal({ job, onClose, onDelete, onRetry, onSav
                     setSaving(true);
                     setRetryError("");
                     try {
-                      await onSaveSettings(job, nextTarget);
+                      await onSaveSettings(job, { retarget: nextTarget, meleeTarget });
                     } catch (error) {
                       setRetarget(previousTarget);
                       setRetryError(error.message || "Could not save fighter settings.");
@@ -195,6 +199,30 @@ export default function FighterJobModal({ job, onClose, onDelete, onRetry, onSav
                     }
                   }}>
                   {availableFighterTargets(job.artifacts).map(({ value, label }) => (
+                    <option key={value} value={value}>{label}</option>
+                  ))}
+                </select>
+                <label htmlFor="fighter-melee-target">Melee</label>
+                <select id="fighter-melee-target" value={meleeTarget} disabled={saving || deleting || !!downloadFormat}
+                  aria-describedby="fighter-retarget-help"
+                  onChange={async (event) => {
+                    const nextTarget = event.target.value;
+                    const previousTarget = meleeTarget;
+                    if (saving || nextTarget === previousTarget) return;
+                    setMeleeTarget(nextTarget);
+                    setSaving(true);
+                    setRetryError("");
+                    try {
+                      await onSaveSettings(job, { retarget, meleeTarget: nextTarget });
+                    } catch (error) {
+                      setMeleeTarget(previousTarget);
+                      setRetryError(error.message || "Could not save fighter settings.");
+                    } finally {
+                      setSaving(false);
+                    }
+                  }}>
+                  <option value="match-sm64">Match SM64</option>
+                  {MELEE_TARGETS.map(({ value, label }) => (
                     <option key={value} value={value}>{label}</option>
                   ))}
                 </select>

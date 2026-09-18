@@ -85,6 +85,7 @@ export function publicJob(job) {
       visibility,
       uploader: result.uploader,
       base: job.retarget || "mario",
+      meleeTarget: job.meleeTarget || "match-sm64",
       fkind: CHARACTER_MESHES.find(({ value }) => value === job.retarget)?.fkind ?? 0,
       bundle: `${job.slug}.osb6`,
     };

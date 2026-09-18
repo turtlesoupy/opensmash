@@ -437,7 +437,13 @@ test("fighter target settings persist and only the owner can choose built target
     for (const retarget of ["auto", "ness", "unknown", null]) {
       await assert.rejects(h.jobs.updateSettings(original.id, "owner-1", { retarget }), { status: 400 });
     }
+    assert.equal(h.jobs.get(original.id, "owner-1").character.meleeTarget, "match-sm64");
+    await assert.rejects(h.jobs.updateSettings(original.id, "owner-1", { retarget: "luigi", meleeTarget: "unknown" }), { status: 400 });
+    const overridden = await h.jobs.updateSettings(original.id, "owner-1", { retarget: "mario", meleeTarget: "marth" });
+    assert.equal(overridden.character.meleeTarget, "marth");
+    assert.equal(overridden.character.base, "mario");
     const updated = await h.jobs.updateSettings(original.id, "owner-1", { retarget: "luigi" });
+    assert.equal(updated.character.meleeTarget, "marth");
     assert.equal(updated.character.fkind, 4);
     assert.equal(updated.character.base, "luigi");
     assert.equal(h.saved.at(-1).retarget, "luigi");
@@ -446,8 +452,10 @@ test("fighter target settings persist and only the owner can choose built target
     try {
       await reloaded.jobs.init();
       assert.equal(reloaded.jobs.get(original.id, "owner-1").character.base, "luigi");
+      assert.equal(reloaded.jobs.get(original.id, "owner-1").character.meleeTarget, "marth");
     } finally { await reloaded.cleanup(); }
-    const reset = await h.jobs.updateSettings(original.id, "owner-1", { retarget: "mario" });
+    const reset = await h.jobs.updateSettings(original.id, "owner-1", { retarget: "mario", meleeTarget: "match-sm64" });
+    assert.equal(reset.character.meleeTarget, "match-sm64");
     assert.equal(reset.character.fkind, 0);
   } finally { await h.cleanup(); }
 });

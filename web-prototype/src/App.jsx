@@ -757,11 +757,11 @@ export default function App() {
     return result.job;
   }, [recordFighterJob]);
 
-  const saveFighterSettings = useCallback(async (job, retarget) => {
+  const saveFighterSettings = useCallback(async (job, settings) => {
     const response = await fetch(`/api/fighters/${encodeURIComponent(job.id)}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ retarget }),
+      body: JSON.stringify(settings),
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(result.error || "Could not save fighter settings.");
