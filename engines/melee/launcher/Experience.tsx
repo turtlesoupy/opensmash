@@ -11,11 +11,12 @@ import catalog from '../web/public/catalog.json';
 import type {Fighter} from '../web/lib/fighter';
 import './launcher.css';
 export const roster=catalog as Fighter[];
-export default function MeleeExperience({action,onClose,soundOn=true}:{action:any;onClose:()=>void;soundOn?:boolean}){
+export default function MeleeExperience({action,onClose,soundOn=true,trailerReveal=false,onTrailerReady,onTrailerStatus}:{action:any;onClose:()=>void;soundOn?:boolean;trailerReveal?:boolean;onTrailerReady?:()=>void;onTrailerStatus?:(status:string)=>void}){
  const [ready,setReady]=useState(false),[status,setStatus]=useState('Choose your unmodified Melee USA 1.02 ISO or GCM.'),[error,setError]=useState('');
  const [setupError,setSetupError]=useState(''),[preparationStatus,setPreparationStatus]=useState('Preparing fighters…');
  const [resolved,setResolved]=useState<{action:any;roster:Fighter[]}|null>(null);
  const [settings,setSettings]=useState(()=>applyLauncherSelection(loadSettings(),action));
+ useEffect(()=>{if(!ready||!resolved)onTrailerStatus?.(error||setupError||(!ready?status:preparationStatus));},[ready,resolved,error,setupError,status,preparationStatus,onTrailerStatus]);
  const fighters=resolved?.roster||roster;
  const fighter=resolved?.action.character?fighters.find(f=>f.slug===resolved.action.character.slug):fighters[0];
  useEffect(()=>{
@@ -50,5 +51,5 @@ export default function MeleeExperience({action,onClose,soundOn=true}:{action:an
  if(ready&&!resolved)return <section className="melee-setup"><h2>Preparing fighters</h2><p role={error?'alert':'status'}>{error||preparationStatus}</p></section>;
  if(!fighter)return <section className="melee-setup" role="alert"><p>This character has not been prepared for Melee yet.</p><button onClick={onClose}>Return to roster</button></section>;
  if(!ready)return <section className="melee-setup"><h2>Play Melee</h2><p role="status">{status}</p><small>Your disc is never uploaded. A local copy is saved in this browser for future visits.</small>{(error||setupError)&&<p role="alert">{error||setupError}</p>}{desktop()?<button onClick={()=>void choose()}>Choose disc</button>:<label>Choose disc<input type="file" accept=".iso,.gcm" onChange={e=>void choose(e.target.files?.[0])}/></label>}<button onClick={onClose}>Return to roster</button></section>;
- return desktop()?<NativeGame fighter={fighter} settings={settings} roster={fighters} onClose={onClose}/>:<Game fighter={fighter} settings={settings} roster={fighters} onClose={onClose} soundOn={soundOn} chrome={false}/>;
+ return desktop()?<NativeGame fighter={fighter} settings={settings} roster={fighters} onClose={onClose}/>:<Game fighter={fighter} settings={settings} roster={fighters} onClose={onClose} soundOn={soundOn} chrome={false} holdForTrailer={!!action.meleeTrailer} trailerReveal={trailerReveal} onTrailerReady={onTrailerReady} onTrailerStatus={onTrailerStatus}/>;
 }

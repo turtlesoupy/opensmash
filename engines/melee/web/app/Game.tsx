@@ -15,10 +15,14 @@ import {claimMelee,releaseMelee} from '@/lib/melee-session';
 import {keyLabel,loadBindings,rawGamepads,sampleMeleePad,type Action} from '@/lib/controls';
 // GameCube button bits in the pad word, keyed by the control id from the bindings module.
 const bits:Record<string,number>={a:0x100,b:0x200,x:0x400,y:0x800,z:0x10,l:0x40,r:0x20,start:0x1000};
-export default function Game({fighter,settings,roster,onClose,soundOn=true,chrome=true}:{fighter:Fighter;settings:Settings;roster:Fighter[];onClose:()=>void;soundOn?:boolean;chrome?:boolean}){
+export default function Game({fighter,settings,roster,onClose,soundOn=true,chrome=true,holdForTrailer=false,trailerReveal=false,onTrailerReady,onTrailerStatus}:{fighter:Fighter;settings:Settings;roster:Fighter[];onClose:()=>void;soundOn?:boolean;chrome?:boolean;holdForTrailer?:boolean;trailerReveal?:boolean;onTrailerReady?:()=>void;onTrailerStatus?:(status:string)=>void}){
  useEffect(()=>{setAudioEnabled(soundOn);},[soundOn]);
  const canvas=useRef<HTMLCanvasElement>(null),[status,setStatus]=useState('Preparing '+fighter.name+'…'),[error,setError]=useState(''),[fps,setFps]=useState<number|null>(null),[attempt,setAttempt]=useState(0);
+ useEffect(()=>{onTrailerStatus?.(error||status||'Preparing the VS screen…');},[error,status,onTrailerStatus]);
  const gameWorker=useRef<Worker|undefined>(undefined);
+ useEffect(()=>{if(trailerReveal)gameWorker.current?.postMessage({type:'trailer-reveal'});},[trailerReveal]);
+ const trailerReadyCallback=useRef(onTrailerReady);trailerReadyCallback.current=onTrailerReady;
+ const trailerVisible=useRef(trailerReveal);trailerVisible.current=trailerReveal;
  const touch=useRef(neutralTouchPad());
  const bindings=loadBindings(),kb=bindings.keyboard;
  useEffect(()=>{
@@ -30,7 +34,7 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true,chrom
    if(worker&&running){
     // Modal visibility is constant for this input sample. Querying layout for
     // every button and axis multiplies main-thread work during gameplay.
-    const blocked=gameInputBlocked();
+    const blocked=gameInputBlocked()||(holdForTrailer&&!trailerVisible.current);
     for(let port=0;port<4;port++){
     const device=launchPlan?.ports[port]?.device;
     if(device==='off'||device==='cpu') {worker.postMessage({type:'pad',values:[port,0,0x80808080,0,0]});continue;}
@@ -59,7 +63,7 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true,chrom
   };
   const code=(e:KeyboardEvent)=>e.code||(/^[a-z]$/i.test(e.key)?'Key'+e.key.toUpperCase():/^[0-9]$/.test(e.key)?'Digit'+e.key:e.key===' '?'Space':e.key);
   const bound=new Set(Object.values(kb));
-  const keydown=(e:KeyboardEvent)=>{if(gameInputBlocked()||(e.target instanceof HTMLElement&&e.target.matches('input,select,textarea,[contenteditable=true]')))return;const key=code(e);if(bound.has(key)){e.preventDefault();keys.add(key);send(false);}};
+  const keydown=(e:KeyboardEvent)=>{if((holdForTrailer&&!trailerVisible.current)||gameInputBlocked()||(e.target instanceof HTMLElement&&e.target.matches('input,select,textarea,[contenteditable=true]')))return;const key=code(e);if(bound.has(key)){e.preventDefault();keys.add(key);send(false);}};
   const keyup=(e:KeyboardEvent)=>{keys.delete(code(e));send(false);};
   const blur=()=>{keys.clear();touch.current=neutralTouchPad();for(let port=0;port<4;port++)worker?.postMessage({type:'pad',values:[port,0,0x80808080,0,launchPlan?.ports[port]?.device==='keyboard'?1:0]});};
   window.addEventListener('keydown',keydown);window.addEventListener('keyup',keyup);window.addEventListener('blur',blur);
@@ -103,11 +107,12 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true,chrom
    worker.onerror=e=>{if(!closed)setError(e.message||'The game worker stopped.');};
    worker.onmessage=({data})=>{
     if(closed)return;
-    if(data.type==='frame'){if(data.bitmap)canvas.current?.getContext('bitmaprenderer')?.transferFromImageBitmap(data.bitmap);if(firstFrame){firstFrame=false;canvas.current?.focus();}}
+    if(data.type==='frame'){if(data.bitmap)canvas.current?.getContext('bitmaprenderer')?.transferFromImageBitmap(data.bitmap);if(firstFrame){firstFrame=false;if(!holdForTrailer||trailerVisible.current)canvas.current?.focus();}}
     if(data.type==='session' && data.launch)selectionAcknowledged=true;
     if(data.type==='frame' && settings.mode===4 && selectionAcknowledged && !fullBootVisible){fullBootVisible=true;setStatus('');}
     if(data.type==='status' && !fullBootVisible)setStatus(data.message);
     if(data.type==='started'){running=true;}
+    if(data.type==='trailer-ready')trailerReadyCallback.current?.();
     if(data.type==='intro'){stopAnnouncer();setStatus('');startAudio();}
     if(data.type==='playable'){playable=true;setStatus('');startAudio();if(!gameInputBlocked())canvas.current?.focus({preventScroll:true});}
     if(data.type==='error'){setError(previous=>previous||data.message||'Melee initialization failed without an error message.');running=false;}
@@ -118,14 +123,14 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true,chrom
     }
    };
    await session.ready;if(closed)return;running=true;
-   worker.postMessage({type:'select',renderWidth:resolveRenderWidth(settings.renderWidth),requestedAt,warmReadyBeforeClick:session.readyAt<=requestedAt,character:fighter.slug,skin,fighter:launchPlan.ports[0].fighter,launch:launchPlan,costumes,cssAssets});
+   worker.postMessage({type:'select',holdForTrailer,renderWidth:resolveRenderWidth(settings.renderWidth),requestedAt,warmReadyBeforeClick:session.readyAt<=requestedAt,character:fighter.slug,skin,fighter:launchPlan.ports[0].fighter,launch:launchPlan,costumes,cssAssets});
    raf=requestAnimationFrame(()=>send());
   }catch(e){if(!closed)setError((e as Error)?.message||String(e||'Melee could not start.'));}}
   // StrictMode replays setup/cleanup synchronously. Claim the warmed engine
   // only after that replay so the discarded effect cannot terminate it.
   queueMicrotask(()=>{if(!closed)void start();});
   return()=>{closed=true;abort.abort();cancelAnimationFrame(raf);if(worker)releaseMelee(worker);audioNode?.disconnect();window.removeEventListener('keydown',keydown);window.removeEventListener('keyup',keyup);window.removeEventListener('blur',blur);touch.current=neutralTouchPad();};
- },[fighter,settings,roster,attempt]);
+ },[fighter,settings,roster,attempt,holdForTrailer]);
  return <div className="game-overlay" role="region" aria-label={'Play as '+fighter.name}><section className="game-panel">{chrome&&<header><div><h2>{fighter.name}</h2><p>{names[settings.ports[0].target && settings.ports[0].target !== 'auto' ? settings.ports[0].target : fighter.target]} moveset · {schema.modes.find(m=>m.id===settings.mode)?.label}</p></div><span className="fps" data-slow={fps!==null&&fps<58.5} title="Target: sustained 60 FPS in combat">{fps===null?'':Math.round(fps)+' FPS'}</span><button onClick={()=>{const panel=canvas.current?.closest('.intro-video-frame');if(document.fullscreenElement)void document.exitFullscreen();else void panel?.requestFullscreen();}} aria-label="Toggle fullscreen">⛶</button><button onClick={()=>{if(document.fullscreenElement)void document.exitFullscreen();onClose();}} aria-label="Return to roster">✕</button></header>}<div className="game-screen"><canvas id="canvas" key={attempt} ref={canvas} width={960} height={720} tabIndex={0}/>{status&&!error&&<p className="game-message" role="status">{status}</p>}{error&&<div className="game-message" role="alert"><p>{error}</p><button onClick={()=>{setError('');setStatus('Preparing…');setFps(null);setAttempt(n=>n+1);}}>Try again</button></div>}</div>{chrome&&<><button className="sound-game" onClick={()=>void unlockAudio()}>Enable sound</button><button className="confirm-game" onClick={()=>gameWorker.current?.postMessage({type:'confirm'})}>Confirm · A</button></>}{chrome&&<p className="game-help">{[keyLabel(kb.up),keyLabel(kb.left),keyLabel(kb.down),keyLabel(kb.right)].join(' ')} move · {keyLabel(kb.a)} attack · {keyLabel(kb.b)} special · {keyLabel(kb.x)} / {keyLabel(kb.y)} jump · {keyLabel(kb.l)} / {keyLabel(kb.r)} shield · {keyLabel(kb.z)} grab · {[kb.cup,kb.cleft,kb.cdown,kb.cright].map(keyLabel).join(' ')} smash · {keyLabel(kb.start)} start / pause<br/>Rebind keys and gamepads in Settings → Players &amp; Controllers. Press {keyLabel(kb.a)} to confirm any first-run memory card prompt.</p>}<MeleeTouchControls pad={touch}/></section></div>;
 }
 

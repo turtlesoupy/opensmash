@@ -28,3 +28,15 @@ test('full-game and character-select actions retain their meaning in Melee',()=>
   assert.equal(settings.mode,mode);
  }
 });
+
+test('Melee trailer fixes the cast, stage and CPU slots regardless of saved settings',()=>{
+ const settings=applyLauncherSelection({...structuredClone(schema.defaults),mode:4},{meleeTrailer:true,character:{slug:'thomasdimson'},picks:[{slug:'mahatmagandhi'},{slug:'eliezeryudkowsky'}]});
+ const cast=['thomasdimson','mahatmagandhi','eliezeryudkowsky'].map(slug=>({slug,target:'fox'}));
+ const result=planLaunch(schema,settings,cast[0],cast,()=>0);
+ assert.equal(settings.mode,0);assert.equal(settings.stage,4);
+ assert.deepEqual(settings.ports.map(p=>p.character),[...cast.map(f=>f.slug),'vanilla:9']);
+ assert.deepEqual(result.ports.map(p=>p.device),['keyboard','cpu','cpu','cpu']);
+ assert.equal(result.ports[3].custom,false);
+ assert.deepEqual(settings.ports.map(p=>p.target),['mario','sheik','young-link','auto']);
+ assert.equal(new Set(result.ports.map(p=>p.fighter)).size,4);
+});

@@ -336,6 +336,7 @@ function applyControlLabels() {
 }
 
 function requiresControllerTutorial() {
+  if (APP_BRIDGE?.trailerCapture) return false;
   // The tutorial teaches the keyboard map; the touch deck replaces it, so a
   // touch device never sees it (and clears any /create roadblock it carries).
   if (usesMobileControls()) {

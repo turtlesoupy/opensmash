@@ -183,3 +183,8 @@ export function createDemoMatchAction(action, characters) {
     opponents,
   };
 }
+
+// Keep the presenter immediately available for a preloaded Melee take.
+export function meleeDemoGridOrder(characters) {
+  return [...characters.filter(c => c.slug === 'thomasdimson'), ...characters.filter(c => c.slug !== 'thomasdimson')];
+}

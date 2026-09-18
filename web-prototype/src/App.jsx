@@ -58,6 +58,7 @@ import {
   TRAILER_STAGE,
   createDemoMatchAction,
   demoGridOrder,
+  meleeDemoGridOrder,
   DEMO_MUSIC_ON_SCROLL,
   DEMO_PIN_ON_PLAY,
   demoStageFor,
@@ -340,6 +341,7 @@ function CreateExperienceOverlay({ onAuthenticated, onClose, onCreated, onPlay, 
   );
 }
 
+const TrailerCapture = lazy(()=>import('../../engines/melee/launcher/TrailerCapture'));
 const NativeSsb64 = lazy(()=>import('../../engines/ssb64/launcher/NativeGame.jsx'));
 const MeleeExperience = lazy(()=>import('../../engines/melee/launcher/Experience.tsx'));
 
@@ -384,7 +386,13 @@ export default function App() {
     window.addEventListener('popstate', syncExperience);
     return () => window.removeEventListener('popstate', syncExperience);
   }, []);
+  const meleeTrailerRef = useRef(null);
   function launchMelee(action) {
+    if(demoMode && !meleeDesktop() && action.type==='character' && meleeTrailerRef.current){
+      setPendingAction(null);
+      meleeTrailerRef.current.launch(action.character);
+      return;
+    }
     setPendingAction(null);
     requestAnimationFrame(() => window.scrollTo({
       top: 0,
@@ -680,8 +688,8 @@ export default function App() {
   // changes, and a fresh filtered array per render made every state change
   // (engine boot, pin, Esc) repaint 1000 caption bitmaps in one task.
   const gridCharacters = useMemo(() => (demoMode
-    ? demoGridOrder(characters.filter((character) => character.visibility !== "private" && !character.mine))
-    : characters), [characters, demoMode]);
+    ? (isMelee ? meleeDemoGridOrder : demoGridOrder)(characters.filter((character) => character.visibility !== "private" && !character.mine))
+    : characters), [characters, demoMode, isMelee]);
   const gridJobs = demoMode ? [] : fighterJobs;
 
   useEffect(() => {
@@ -1590,6 +1598,7 @@ export default function App() {
       characters,
       fighterJobs,
       handlesGameSetup: isMelee||nativeSsb64,
+      trailerCapture: isMelee && demoMode && !meleeDesktop(),
       experience: isMelee ? 'melee' : 'ssb64',
       switchExperience,
       nativeDiscPicker: isMelee && Boolean(meleeDesktop()),
@@ -1603,6 +1612,7 @@ export default function App() {
       hasGamepad() { return gamepads.length > 0; },
       selectionSlots() {
         if(isMelee){
+          if(demoMode&&!meleeDesktop())return ['1P'];
           const plan=controllerPlan(advancedOptions,gamepads);
           return meleeSelectionPorts(plan,advancedOptions.selectionMode,loadMeleeSettings().mode).map(port=>
             !plan[port]||plan[port].kind==='cpu'?`CPU${port+1}`:`${port+1}P`);
@@ -1641,6 +1651,7 @@ export default function App() {
 
     return (
       <>
+        {isMelee && demoMode && meleeDiscReady && !loadingCharacters && <Suspense fallback={null}><TrailerCapture ref={meleeTrailerRef} characters={characters} soundOn={soundOn}/></Suspense>}
         {isTrailerPage && !trailerSetup && (
           <TrailerSetup characters={characters} loading={loadingCharacters || loadingSession}
             onBoot={setTrailerSetup} />
