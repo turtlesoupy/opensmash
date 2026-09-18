@@ -37,3 +37,38 @@ test('Safari mounts directly in the final parent without reloading the iframe',a
   worker.terminate();assert.equal(surface.style.opacity,'');
  }finally{Object.assign(globalThis,saved);}
 });
+
+test('empty engine errors retain GPU diagnostics and always have visible text',async()=>{
+ const saved={document:globalThis.document,window:globalThis.window,location:globalThis.location};
+ const frame={style:{},contentWindow:{postMessage(){}},remove(){}};
+ Object.assign(globalThis,{document:{createElement:()=>frame,body:{append(){}}},window:new EventTarget(),location:{origin:'http://localhost'}});
+ try{
+  const {MeleeFrameWorker}=await import('../web/lib/melee-frame-worker.ts');
+  const worker=new MeleeFrameWorker('/engine');
+  let received;worker.onmessage=event=>received=event.data;
+  const emit=data=>worker.listener({source:frame.contentWindow,origin:location.origin,data});
+  emit({type:'error',message:''});
+  assert.match(received.message,/initialization failed/);
+  emit({type:'log',text:'WebGPU not available (requestAdapter returned null)'});
+  emit({type:'log',text:'[aurora] Error creating window: Aborted()'});
+  emit({type:'error',message:''});
+  assert.match(received.message,/Check browser hardware acceleration/);
+  assert.match(received.message,/requestAdapter returned null/);
+  assert.match(received.message,/Aborted/);
+  worker.terminate();
+ }finally{Object.assign(globalThis,saved);}
+});
+
+test('a missing engine bridge reports a startup failure',async()=>{
+ const saved={document:globalThis.document,window:globalThis.window,location:globalThis.location,setTimeout:globalThis.setTimeout,clearTimeout:globalThis.clearTimeout};
+ let timeout,cleared=false;
+ const frame={style:{},contentWindow:{postMessage(){}},remove(){}};
+ Object.assign(globalThis,{document:{createElement:()=>frame,body:{append(){}}},window:new EventTarget(),location:{origin:'http://localhost'},setTimeout:callback=>{timeout=callback;return 1;},clearTimeout:()=>{cleared=true;}});
+ try{
+  const {MeleeFrameWorker}=await import('../web/lib/melee-frame-worker.ts');
+  const worker=new MeleeFrameWorker('/missing-engine');
+  let received;worker.onmessage=event=>received=event.data;
+  timeout();assert.equal(received.type,'error');assert.match(received.message,/did not initialize/);
+  worker.terminate();assert.equal(cleared,true);
+ }finally{Object.assign(globalThis,saved);}
+});

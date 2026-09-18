@@ -110,7 +110,7 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true,chrom
     if(data.type==='started'){running=true;}
     if(data.type==='intro'){stopAnnouncer();setStatus('');startAudio();}
     if(data.type==='playable'){playable=true;setStatus('');startAudio();if(!gameInputBlocked())canvas.current?.focus({preventScroll:true});}
-    if(data.type==='error'){setError(previous=>previous||data.message);running=false;}
+    if(data.type==='error'){setError(previous=>previous||data.message||'Melee initialization failed without an error message.');running=false;}
     if(data.type==='log'){console.log('[Melee]',data.text);if(playable&&data.text.includes('[opensmash] destination ready'))setStatus('');}
     if(data.type==='metrics'){
      setFps(playable&&data.completeCombatInterval!==false&&data.combatFrames>0?data.fps:null);frameSamples.push(...data.frameTimes);if(frameSamples.length>36000)frameSamples=frameSamples.slice(-36000);
@@ -120,7 +120,7 @@ export default function Game({fighter,settings,roster,onClose,soundOn=true,chrom
    await session.ready;if(closed)return;running=true;
    worker.postMessage({type:'select',renderWidth:resolveRenderWidth(settings.renderWidth),requestedAt,warmReadyBeforeClick:session.readyAt<=requestedAt,character:fighter.slug,skin,fighter:launchPlan.ports[0].fighter,launch:launchPlan,costumes,cssAssets});
    raf=requestAnimationFrame(()=>send());
-  }catch(e){if(!closed)setError((e as Error).message);}}
+  }catch(e){if(!closed)setError((e as Error)?.message||String(e||'Melee could not start.'));}}
   // StrictMode replays setup/cleanup synchronously. Claim the warmed engine
   // only after that replay so the discarded effect cannot terminate it.
   queueMicrotask(()=>{if(!closed)void start();});

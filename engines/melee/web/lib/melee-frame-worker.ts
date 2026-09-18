@@ -7,8 +7,10 @@ export class MeleeFrameWorker extends EventTarget {
   pending: unknown[];
   listener: (event: MessageEvent) => void;
   private pads = new Map<number, number[]>();
+  private diagnostics: string[] = [];
   connected = false;
   closed = false;
+  private bridgeTimer: ReturnType<typeof setTimeout>;
   resize?: ResizeObserver;
   surface?: HTMLCanvasElement;
   constructor(url: string, surface?: HTMLCanvasElement) {
@@ -22,11 +24,28 @@ export class MeleeFrameWorker extends EventTarget {
     this.listener=event=>{
       if(event.source!==this.frame.contentWindow||event.origin!==location.origin)return;
       if(event.data?.type==='bridge-ready'){
-        this.connected=true;for(const data of this.pending)this.postMessage(data);this.pending=[];return;
+        clearTimeout(this.bridgeTimer);this.connected=true;for(const data of this.pending)this.postMessage(data);this.pending=[];return;
       }
-      const message=new MessageEvent('message',{data:event.data});
+      let data=event.data;
+      if(data?.type==='log'){
+        this.diagnostics.push(String(data.text||data.message||'').slice(-2000));
+        if(this.diagnostics.length>12)this.diagnostics.shift();
+      }
+      if(data?.type==='error'){
+        const reason=typeof data.message==='string'&&data.message.trim()?data.message:'Melee initialization failed without an error message.';
+        const details=this.diagnostics.join('\n');
+        const gpuFailure=/WebGPU|requestAdapter|requestDevice/i.test(reason+'\n'+details);
+        const help=gpuFailure?'Melee could not initialize WebGPU. Check browser hardware acceleration and graphics driver support. ':'';
+        data={...data,message:help+reason+(details?'\nRecent engine output:\n'+details:'')};
+      }
+      const message=new MessageEvent('message',{data});
       this.dispatchEvent(message);this.onmessage?.(message);
     };
+    this.bridgeTimer=setTimeout(()=>{
+      if(this.closed||this.connected)return;
+      const message=new MessageEvent('message',{data:{type:'error',message:'The Melee engine page did not initialize within 30 seconds. Reload and try again; an engine script may have failed to load.'}});
+      this.dispatchEvent(message);this.onmessage?.(message);
+    },30000);
     window.addEventListener('message',this.listener);
     this.frame.src=url;
     if(surface?.parentElement)surface.parentElement.insertBefore(this.frame,surface);
@@ -70,5 +89,5 @@ export class MeleeFrameWorker extends EventTarget {
     }else if(['select','confirm','input'].includes(message?.type||''))this.pads.clear();
     this.frame.contentWindow?.postMessage(data,location.origin);
   }
-  terminate(){if(this.closed)return;this.closed=true;window.removeEventListener('message',this.listener);this.resize?.disconnect();if(this.surface)this.surface.style.opacity='';this.frame.remove();this.pending=[];}
+  terminate(){if(this.closed)return;this.closed=true;clearTimeout(this.bridgeTimer);window.removeEventListener('message',this.listener);this.resize?.disconnect();if(this.surface)this.surface.style.opacity='';this.frame.remove();this.pending=[];}
 }

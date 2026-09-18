@@ -87,6 +87,8 @@ export async function selectLocalDisc(file:File,restored=false){
    session.worker.addEventListener('message',listener);
    await session.verified;
   }else{
+   const {checkGraphics}=await import(/* @vite-ignore */ meleePath('/engine/upstream/gpu-preflight.mjs'));
+   await checkGraphics();
    // Verify without allocating a standby WASM runtime that Safari cannot move.
    // Launch will allocate exactly one runtime inside its final game surface.
    const {verifyDisc}=await import(/* @vite-ignore */ meleePath('/engine/verify-disc.mjs'));
@@ -137,7 +139,7 @@ export function warmMelee(surface?:HTMLCanvasElement){
  worker.addEventListener('message',({data})=>{
   if(data.type==='ready-for-selection'){session.readyAt=Date.now();resolve();}
   if(data.type==='disc-verified'&&disc){verifiedDiscs.add(disc);verify();}
-  if(data.type==='error')fail(Error(data.message));
+  if(data.type==='error')fail(Error(data.message||'Melee initialization failed without an error message.'));
   if(data.type==='frame'&&!worker.onmessage)data.bitmap?.close();
  });
  worker.addEventListener('error',e=>fail(Error(e.message||'The engine could not start.')));
