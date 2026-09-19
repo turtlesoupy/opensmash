@@ -1,13 +1,13 @@
 import {BINDING_HELP,PROFILE_HELP,controllerStatus} from '../../../../web-prototype/shared/controller-help.js';
 import {useEffect,useState,useSyncExternalStore} from 'react';
 import {desktop} from '@/lib/desktop';
-import {gamepadAxes,rebindAxes,actions,buttonActions,connectedGamepads,defaults,eventCode,gamepadBindings,resetGamepad,keyLabel,loadBindings,padActions,padFamily,padLabel,rebindButton,rebindKey,saveBindings,subscribeBindings,type Action,type ButtonAction,type PadFamily} from '@/lib/controls';
+import {hasUnmappedLayout,gamepadAxes,rebindAxes,actions,buttonActions,connectedGamepads,defaults,eventCode,gamepadBindings,resetGamepad,keyLabel,loadBindings,padActions,padFamily,padLabel,rebindButton,rebindKey,saveBindings,subscribeBindings,type Action,type ButtonAction,type PadFamily} from '@/lib/controls';
 type Pending={kind:'key',action:Action}|{kind:'button',action:ButtonAction}|null;
 export default function Controls() {
  const bindings=useSyncExternalStore(subscribeBindings,loadBindings,loadBindings);
  const [heldKeys,setHeldKeys]=useState<Set<string>>(()=>new Set());
  const [padHeld,setPadHeld]=useState<Set<Action>>(()=>new Set());
- const [pads,setPads]=useState<{id:string,family:PadFamily}[]>(()=>connectedGamepads().map(p=>({id:p.id,family:padFamily(p.id)})));
+ const [pads,setPads]=useState<{id:string,family:PadFamily,unmapped:boolean}[]>(()=>connectedGamepads().map(p=>({id:p.id,family:padFamily(p.id),unmapped:hasUnmappedLayout(p)})));
  // null follows the first connected controller, including pads revealed by a
  // button press. An explicit selection (including defaults) stays selected.
  const [selectedProfile,setProfile]=useState<string|null>(null);
@@ -38,7 +38,7 @@ export default function Controls() {
   let raf=0,previous=new Set<number>();
   const poll=()=>{
    const connected=connectedGamepads();
-   setPads(list=>{const next=connected.map(p=>({id:p.id,family:padFamily(p.id)}));return JSON.stringify(list)===JSON.stringify(next)?list:next;});
+   setPads(list=>{const next=connected.map(p=>({id:p.id,family:padFamily(p.id),unmapped:hasUnmappedLayout(p)}));return JSON.stringify(list)===JSON.stringify(next)?list:next;});
    const active=new Set<Action>(),pressed=new Set<number>();
    for(const pad of connected.filter(p=>!profile||p.id===profile)){for(const a of padActions(pad,gamepadBindings(bindings,pad.id),gamepadAxes(bindings,pad.id)))active.add(a);pad.buttons.forEach((b,i)=>{if(b.pressed||b.value>0.5)pressed.add(i);});}
    if(pending?.kind==='button'){
@@ -64,6 +64,7 @@ export default function Controls() {
   {[...new Set([...pads.map(p=>p.id),...Object.keys(bindings.profiles||{}),...Object.keys(bindings.axisProfiles||{})])].map(id=><option key={id} value={id}>{id}</option>)}
  </select></label>
  <p>{PROFILE_HELP}</p>
+ {pads.filter(p=>p.unmapped&&(!profile||p.id===profile)).map((p,i)=><p key={`${p.id}-${i}`} role="status">The browser does not recognize the button layout for {p.id}. Select this controller’s profile, then check and rebind its controls below, including both Shield actions. Saved bindings still apply.</p>)}
  {profile
   ?<p>{pads.some(p=>p.id===profile)?'Editing this controller’s gameplay controls.':'This controller is disconnected. Changes apply when it reconnects.'}</p>
   :<p>Editing defaults. Controllers with saved profiles keep their own controls; select a connected controller above to change its gameplay controls.</p>}
@@ -83,12 +84,14 @@ export default function Controls() {
    </div>;
   })}
  </dl>
- <fieldset><legend>Controller sticks</legend>
+ <fieldset><legend>Controller sticks and triggers</legend>
  {([['x','invertX','Move horizontally'],['y','invertY','Move vertically'],['cx','invertCX','C-stick horizontally'],['cy','invertCY','C-stick vertically']] as const).map(([axis,invert,label])=><div key={axis}>
   <label>{label} <select value={axes[axis]} onChange={e=>saveBindings(rebindAxes(bindings,{...axes,[axis]:Number(e.target.value)},profile||undefined))}>{Array.from({length:16},(_,i)=><option value={i} key={i}>Axis {i+1}</option>)}</select></label>
   <label><input type="checkbox" checked={axes[invert]} onChange={e=>saveBindings(rebindAxes(bindings,{...axes,[invert]:e.target.checked},profile||undefined))}/> Reverse direction</label>
  </div>)}
  <label>Stick deadzone <input type="number" min="0" max="95" step="1" value={Math.round(axes.deadzone*100)} onChange={e=>saveBindings(rebindAxes(bindings,{...axes,deadzone:Number(e.target.value)/100},profile||undefined))}/>%</label>
+ <label>Trigger deadzone <input type="number" min="0" max="95" step="1" value={Math.round(axes.triggerDeadzone*100)} onChange={e=>saveBindings(rebindAxes(bindings,{...axes,triggerDeadzone:Number(e.target.value)/100},profile||undefined))}/>%</label>
+ <p>Ignores light trigger pressure up to this value. Increase it if a released trigger registers pressure. Default: 5%. Full button presses still activate shield.</p>
  </fieldset>
  <div className="controls-actions">
   {pending&&<button type="button" className="settings-menu-button" onClick={()=>setPending(null)}>Cancel</button>}

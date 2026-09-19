@@ -22,8 +22,8 @@ export const actions=[
 export type Action=(typeof actions)[number]['id'];
 export type ButtonAction='a'|'b'|'x'|'y'|'z'|'l'|'r'|'start';
 export const buttonActions:ButtonAction[]=['a','b','x','y','z','l','r','start'];
-export type StickAxes={x:number;y:number;cx:number;cy:number;invertX:boolean;invertY:boolean;invertCX:boolean;invertCY:boolean;deadzone:number};
-export const defaultAxes:StickAxes={x:0,y:1,cx:2,cy:3,invertX:false,invertY:false,invertCX:false,invertCY:false,deadzone:.15};
+export type StickAxes={x:number;y:number;cx:number;cy:number;invertX:boolean;invertY:boolean;invertCX:boolean;invertCY:boolean;deadzone:number;triggerDeadzone:number};
+export const defaultAxes:StickAxes={x:0,y:1,cx:2,cy:3,invertX:false,invertY:false,invertCX:false,invertCY:false,deadzone:.15,triggerDeadzone:.05};
 export type Bindings={axes?:StickAxes;axisProfiles?:Record<string,StickAxes>;keyboard:Record<Action,string>;gamepad:Record<ButtonAction,number>;profiles?:Record<string,Record<ButtonAction,number>>};
 
 // Physical DOM key codes: the right-hand cluster stays under the fingers on every layout.
@@ -140,10 +140,17 @@ export function connectedGamepads():Gamepad[] {
  try{return rawGamepads().filter((p):p is Gamepad=>!!p&&p.connected);}catch{return [];}
 }
 export const stickThreshold=0.5;
+// Ignore resting trigger noise without changing Melee's light-shield pressure
+// curve above the cutoff. Digital presses remain independent of analog values.
+export function triggerValue(button:GamepadButton|undefined,deadzone=defaultAxes.triggerDeadzone):number {
+ const value=button?.value;
+ return typeof value==='number'&&Number.isFinite(value)&&value>deadzone?Math.min(1,value):0;
+}
+export function hasUnmappedLayout(pad:Pick<Gamepad,'mapping'>):boolean{return pad.mapping!== 'standard';}
 // Which actions a gamepad currently holds, for the Controls screen's live highlight.
 export function padActions(pad:Gamepad,gamepad:Record<ButtonAction,number>,axes:StickAxes=defaultAxes):Set<Action> {
  const active=new Set<Action>();
- for(const action of buttonActions){const b=pad.buttons[gamepad[action]];if(b&&(b.pressed||b.value>0.5))active.add(action);}
+ for(const action of buttonActions){const b=pad.buttons[gamepad[action]];if(b&&(b.pressed||((action==='l'||action==='r')?triggerValue(b,axes.triggerDeadzone)>0:b.value>0.5)))active.add(action);}
  const axis=(n:number,invert:boolean)=>((pad.axes[n]||0)*(invert?-1:1));
  if(axis(axes.y,axes.invertY)<-stickThreshold)active.add('up');if(axis(axes.y,axes.invertY)>stickThreshold)active.add('down');
  if(axis(axes.x,axes.invertX)<-stickThreshold)active.add('left');if(axis(axes.x,axes.invertX)>stickThreshold)active.add('right');
@@ -166,7 +173,7 @@ export function sampleMeleePad(pad:Gamepad|null|undefined, b=loadBindings()):num
  [8,4,1,2].forEach((bit,i)=>{if(pad.buttons[12+i]?.pressed)buttons|=bit;});
  const axes=gamepadAxes(b,pad.id);
  const axis=(i:number,sign=1,invert=false)=>Math.round((Math.abs(pad.axes[i]||0)>axes.deadzone?Math.max(-1,Math.min(1,pad.axes[i])):0)*100*sign*(invert?-1:1))||0;
- return [3,1,buttons,axis(axes.x,1,axes.invertX),axis(axes.y,-1,axes.invertY),axis(axes.cx,1,axes.invertCX),axis(axes.cy,-1,axes.invertCY),Math.round((pad.buttons[map.l]?.value||0)*255),Math.round((pad.buttons[map.r]?.value||0)*255)];
+ return [3,1,buttons,axis(axes.x,1,axes.invertX),axis(axes.y,-1,axes.invertY),axis(axes.cx,1,axes.invertCX),axis(axes.cy,-1,axes.invertCY),Math.round(triggerValue(pad.buttons[map.l],axes.triggerDeadzone)*255),Math.round(triggerValue(pad.buttons[map.r],axes.triggerDeadzone)*255)];
 }
 
 export function gameInputBlocked(){
@@ -181,6 +188,7 @@ function validAxes(value:any):StickAxes{
  for(const key of ['x','y','cx','cy'] as const)if(Number.isInteger(value?.[key])&&value[key]>=0&&value[key]<16)result[key]=value[key];
  for(const key of ['invertX','invertY','invertCX','invertCY'] as const)if(typeof value?.[key]==='boolean')result[key]=value[key];
  if(Number.isFinite(value?.deadzone)&&value.deadzone>=0&&value.deadzone<=.95)result.deadzone=value.deadzone;
+ if(Number.isFinite(value?.triggerDeadzone)&&value.triggerDeadzone>=0&&value.triggerDeadzone<=.95)result.triggerDeadzone=value.triggerDeadzone;
  return result;
 }
 export function gamepadAxes(b:Bindings,id?:string):StickAxes{return validAxes(id&&Object.hasOwn(b.axisProfiles||{},id)?b.axisProfiles![id]:b.axes);}
