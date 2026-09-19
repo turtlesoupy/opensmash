@@ -2,6 +2,8 @@
 
 Run with PYTHONPATH=build/test-deps SKIN_ROM=... python3 -m unittest discover
 -s hardware-rom/skinning -p 'test_mips.py'. Unicorn is a test-only dependency.
+SKIN_BASE_MODEL and SKIN_CANONICAL_MODEL override the default Mario/Samus
+model IDs for reproductions with other loadouts (for example Luigi: 323).
 """
 import os
 import ctypes
@@ -23,7 +25,7 @@ except ImportError:
 
 @unittest.skipUnless(Uc and os.environ.get('SKIN_ROM'),'MIPS emulator and skinned ROM fixture required')
 class RuntimeTests(unittest.TestCase):
-    asset_id=296
+    asset_id=int(os.environ.get('SKIN_BASE_MODEL',296))
     def setUp(self):
         rom=Path(os.environ['SKIN_ROM']).read_bytes()
         e=ENTRY.unpack_from(rom,TABLE+self.asset_id*12)
@@ -64,7 +66,8 @@ class RuntimeTests(unittest.TestCase):
         self.word(0x800465d8+8,0x80308000)
         self.word(0x800465d8+12,0x80300000)
         self.word(0x800465b0,0x80130000)
-        self.scene=0;self.kind=3 if self.asset_id==320 else 0;self.have_parent=False
+        from presentation import MODELS
+        self.scene=0;self.kind=MODELS.index(self.asset_id);self.have_parent=False
         self.word(self.fp+8,self.kind)
         self.calls=[]
         for address in (0x800edf24,0x800f1e60,0x800f21b4,0x800f1020,0x800344b0,0x80039160,0x800303f0,0x80035cd0,0x8001863c,0x800eb528):
@@ -209,7 +212,7 @@ class RuntimeTests(unittest.TestCase):
 
 class CanonicalRuntimeTests(RuntimeTests):
     """Repeat the actual MIPS checks with Casey's CAN1/TBND asset."""
-    asset_id=320
+    asset_id=int(os.environ.get('SKIN_CANONICAL_MODEL',320))
 
     def test_menu_alignment_matches_native_source(self):
         self.scene=16;self.write(0x800a4ad0,b'\x10')

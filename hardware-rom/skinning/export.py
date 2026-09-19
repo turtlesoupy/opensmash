@@ -5,7 +5,7 @@ import struct
 import numpy as np
 from scipy.spatial import cKDTree
 import fast_simplification
-from build_rom import read_osb, bind_to_local, patch_model, chain
+from build_rom import read_osb, bind_to_local, blank_model_body, chain
 from face_textures import SurfaceSampler, shade_equivalent
 from skinning.patches import GRAPHICS_RESERVE
 
@@ -191,17 +191,8 @@ def batches(triangles):
 
 def patch_skin_model(raw,entry,source,main_source,mesh,texture_size,module):
     if len(mesh['joints'])>16:module=module['wide']
-    blob,first,ext=patch_model(raw,entry,source,{j:[] for j in mesh['blank_joints']},main_source)
+    blob,first,ext=blank_model_body(raw,entry,source,mesh['blank_joints'],main_source)
     internal=chain(blob,first);external=chain(blob,ext)
-    # Rigid empty batches still set SHADE and disable lighting. They run after
-    # the root skin DL, so replace them with genuine END-only lists.
-    trees=list(dict.fromkeys(int(x,16) for x in re.findall(r'DObjDesc: JointTree[^@\n]*@ (0x[0-9A-Fa-f]+)',source)))[:2]
-    for tree in trees:
-        for i in range(64):
-            at=tree+i*44
-            if struct.unpack_from('>I',blob,at)[0]==18:break
-            if i+4 in mesh['blank_joints'] and at+4 in internal:
-                struct.pack_into('>II',blob,internal[at+4],0xdf000000,0)
 
     # Reuse only unreachable tails of body display lists replaced by an
     # unconditional branch. Preserve every original public entry offset.

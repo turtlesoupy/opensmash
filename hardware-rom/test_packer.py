@@ -1,6 +1,8 @@
 """Small corruption tests for the standalone ROM auditor."""
 import unittest
 import argparse
+import json
+import os
 import sys
 from pathlib import Path
 import struct
@@ -10,7 +12,7 @@ from verify_rom import verify, TABLE, DATA, ENTRY
 
 ROOT = Path(__file__).resolve().parent
 BASE = ROOT.parents[1]/'BattleShip/baserom.us.z64'
-ROM = ROOT.parent/'build/rom/opensmash.z64'
+ROM = Path(os.environ.get('SKIN_ROM', str(ROOT.parent/'build/rom/opensmash.z64')))
 
 
 class BindTests(unittest.TestCase):
@@ -30,28 +32,31 @@ class AuditTests(unittest.TestCase):
             raise unittest.SkipTest('Build the sample ROM or pass --base and --rom')
         cls.base = BASE.read_bytes()
         cls.rom = ROM.read_bytes()
+        cls.loadout = json.loads(ROM.with_suffix('.json').read_text())['loadout']
+        cls.fids = [f['model_file'] for f in cls.loadout]
 
     def test_complete_rom(self):
-        self.assertEqual(verify(self.base, self.rom, [296,323,332]), {296:700,323:700,332:700})
+        self.assertEqual(verify(self.base, self.rom, self.fids, self.loadout),
+                         {f['model_file']: f['triangles_after'] for f in self.loadout})
 
     def test_rejects_unexpected_code_change(self):
         bad = bytearray(self.rom)
         bad[0x1000] ^= 1
         with self.assertRaises(AssertionError):
-            verify(self.base, bad, [296,323,332])
+            verify(self.base, bad, self.fids, self.loadout)
 
     def test_rejects_invalid_internal_pointer(self):
         bad = bytearray(self.rom)
-        e = ENTRY.unpack_from(bad, TABLE+296*12)
+        e = ENTRY.unpack_from(bad, TABLE+self.fids[0]*12)
         struct.pack_into('>H', bad, DATA+e[0]+e[1]*4+2, 65535)
         with self.assertRaises(AssertionError):
-            verify(self.base, bad, [296,323,332])
+            verify(self.base, bad, self.fids, self.loadout)
 
     def test_rejects_broken_file_boundary(self):
         bad = bytearray(self.rom)
-        struct.pack_into('>I', bad, TABLE+297*12, 0)
+        struct.pack_into('>I', bad, TABLE+(self.fids[0]+1)*12, 0)
         with self.assertRaises(AssertionError):
-            verify(self.base, bad, [296,323,332])
+            verify(self.base, bad, self.fids, self.loadout)
 
 
 if __name__ == '__main__':

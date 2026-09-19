@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bake rigid OSB5 fighters with textured heads into an owned NTSC-U SSB64 ROM."""
+"""Bake skinned OSB5 fighters with textured heads into an owned NTSC-U SSB64 ROM."""
 import argparse
 import hashlib
 import json
@@ -9,12 +9,9 @@ import struct
 import subprocess
 import tempfile
 
-from face_textures import SurfaceSampler, shade_equivalent
 from presentation import MENU_SCALE_TABLE, MODELS, Reloc, bake_voice, patch_ui, symbols
 
-import fast_simplification
 import numpy as np
-from scipy.spatial import cKDTree
 
 SHA1 = 'e2929e10fccc0aa84e5776227e798abc07cedabf'
 TABLE = 0x1AC870
@@ -68,47 +65,8 @@ def bind_to_local(frame, points):
     return np.linalg.solve(matrix, (points - frame[:3]).T).T
 
 
-def mesh_parts(path, budget, face_texture_size=0):
-    joints, verts, faces, frames, colors = read_osb(path)
-    sampler = None
-    head_joint = joints[int(np.argmax(frames[:,1]))]
-    if face_texture_size:
-        data = path.read_bytes()
-        w,h = struct.unpack_from('<2I',data,16)
-        at = 24+len(joints)*4
-        sampler = SurfaceSampler(verts,faces,np.frombuffer(data[at:at+w*h*2],dtype='>u2').reshape(h,w))
-    # Weld UV seam duplicates before QEM; recover color/weights spatially.
-    points, inverse = np.unique(np.round(verts[:, :3], 4), axis=0, return_inverse=True)
-    indices = inverse[faces].astype(np.int32)
-    points, indices = fast_simplification.simplify(points, indices, target_count=min(budget, len(indices)))
-    if len(indices) > budget:
-        raise ValueError('Simplifier exceeded triangle budget')
-    nearest = cKDTree(verts[:, :3]).query(points)[1]
-    parts = {j: [] for j in joints}
-    for tri in indices:
-        source = nearest[tri]
-        scores = np.zeros(len(joints))
-        for vi in source:
-            for ji, weight in zip(verts[vi, 5:9].astype(int), verts[vi, 9:13]):
-                scores[ji] += weight
-        ji = int(scores.argmax())
-        frame = frames[ji]
-        local = bind_to_local(frame, points[tri])
-        if not np.isfinite(local).all() or np.abs(local).max() > 32767:
-            raise ValueError('Joint-local vertex outside signed 16-bit range')
-        triangle = (np.rint(local).astype(int), colors[source].astype(int))
-        if sampler is not None and joints[ji] == head_joint:
-            tile = sampler.tile(points[tri],face_texture_size)
-            shading = shade_equivalent(tile,face_texture_size)
-            if shading is not None:
-                triangle = (triangle[0],shading)
-            else:
-                triangle += ((face_texture_size,tile),)
-        parts[joints[ji]].append(triangle)
-    return parts, len(faces), len(indices)
-
-
-def patch_model(raw, entry, source, parts, main_source):
+def blank_model_body(raw, entry, source, blank_joints, main_source):
+    """Hide replaced body DLs, including animation variants, while retaining props."""
     blob = bytearray(raw)
     internal = chain(blob, entry[1])
     external = chain(blob, entry[3])
@@ -120,69 +78,11 @@ def patch_model(raw, entry, source, parts, main_source):
     # Later trees are move-specific props/forms, not the normal body skeleton.
     trees = trees[:2]
 
-    def command(w0, w1):
-        blob.extend(struct.pack('>II', w0, w1))
-
     dl_by_joint = {}
-    for joint, triangles in parts.items():
-        while len(blob) % 8:
-            blob.append(0)
-        batches = []
-        # Textured triangles each carry a small independent tile. The rest
-        # keep the original 30-vertex batches and vertex colors.
-        # Draw shaded triangles first, in batches, then textured triangles.
-        # This also avoids carrying texture state into shaded head geometry.
-        shaded = [t for t in triangles if len(t)==2]
-        textured = [t for t in triangles if len(t)==3]
-        chunks = [shaded[i:i+10] for i in range(0,len(shaded),10)] + [[t] for t in textured]
-        for batch in chunks:
-            texture = batch[0][2] if len(batch[0])==3 else None
-            tex_offset = None
-            if texture:
-                tex_offset = len(blob)
-                blob.extend(texture[1])
-            offset = len(blob)
-            for triangle in batch:
-                positions, colors = triangle[:2]
-                coords = [(32,32),((texture[0]-2)*32,32),(32,(texture[0]-2)*32)] if texture else [(0,0)]*3
-                for p,c,uv in zip(positions,colors,coords):
-                    blob.extend(struct.pack('>hhhHhhBBBB',*p,0,*uv,*(c if not texture else (255,255,255)),255))
-            batches.append((offset,len(batch),tex_offset,texture[0] if texture else 0))
+    for joint in sorted(blank_joints):
+        blob.extend(bytes((-len(blob)) % 8))
         dl_by_joint[joint] = len(blob)
-        command(0xE7000000, 0)  # Pipe sync
-        command(0xD7000000, 0)  # Texture off
-        command(0xD9F1F9FF, 0x00200004)  # Clear lighting/texgen/culling; smooth shade
-        command(0xFCFFFFFF, 0xFFFE793C)  # G_CC_SHADE
-        for offset,n,tex_offset,size in batches:
-            if tex_offset is not None:
-                command(0xE7000000,0)
-                command(0xD7000002,0xFFFFFFFF)
-                # ftDisplayMain uses G_CYC_2CYCLE. The second cycle must
-                # pass COMBINED through; TEXEL0 there samples tile+1.
-                command(0xFCFFFFFF,0xFFFCF238)  # DECALRGBA, PASS2
-                at=len(blob)
-                command(0xFD100000|(size-1),0)  # RGBA16 texture image
-                internal[at+4]=tex_offset
-                # LoadTile handles row swizzling in TMEM. Unlike sprite
-                # LoadBlock(dxt=0), its source bytes must remain linear.
-                command(0xF5100000|((size//4)<<9),0x07080200)
-                command(0xE6000000,0)
-                extent=((size-1)*4<<12)|((size-1)*4)
-                command(0xF4000000,0x07000000|extent)
-                command(0xE7000000,0)
-                command(0xF5100000|((size//4)<<9),0x00080200)
-                command(0xF2000000,extent)
-            at = len(blob)
-            command(0x01000000 | ((n*3) << 12) | ((n*3) << 1), 0)
-            internal[at+4] = offset
-            for ti in range(n):
-                a = ti*6
-                command(0x05000000 | (a << 16) | ((a+2) << 8) | (a+4), 0)
-        if any(size for _,_,_,size in batches):
-            command(0xE7000000,0)
-            command(0xD7000000,0)
-            command(0xFCFFFFFF,0xFFFE793C)
-        command(0xDF000000, 0)
+        blob.extend(struct.pack('>II', 0xDF000000, 0))
     original_dls = {}
     for tree in trees:
         for i in range(64):
@@ -204,7 +104,7 @@ def patch_model(raw, entry, source, parts, main_source):
                         raise ValueError('Trampoline overlaps external relocation')
         else:
             raise ValueError('Unterminated joint tree')
-    # Route animated open/closed hands to the same rigid hand mesh. The
+    # Blank animated open/closed hands along with the replaced body. The
     # supported source layouts name DL offsets explicitly, including gaps.
     # The engine's sources contain JP alternatives; this exporter targets US.
     main_source = re.sub(r'#if defined\(REGION_JP\)(.*?)#endif',
@@ -244,8 +144,6 @@ def build(args):
     output = bytearray(original)
     report = []
     loadout = json.loads(args.loadout.read_text())
-    skinning = getattr(args,'skinning',True)
-    module = None
     replacements = {}
     edited = {}
     suffixes = {}
@@ -257,12 +155,11 @@ def build(args):
         output[offset:offset+len(expected)] = replacement
         byte_patches.append(dict(offset=offset, expected=expected.hex(), replacement=replacement.hex()))
 
-    if skinning:
-        from skinning.toolchain import compile_modules
-        from skinning.export import weighted_mesh, patch_skin_model
-        from skinning.patches import patches, MODEL_GROWTH_BUDGET, ASSET_GROWTH_BUDGET, crc6103
-        module=compile_modules(args.decomp,args.output.parent/'mips-runtime')
-        for at,old,new in patches(original):patch(at,old,new)
+    from skinning.toolchain import compile_modules
+    from skinning.export import weighted_mesh, patch_skin_model
+    from skinning.patches import patches, MODEL_GROWTH_BUDGET, ASSET_GROWTH_BUDGET, crc6103
+    module=compile_modules(args.decomp,args.output.parent/'mips-runtime')
+    for at,old,new in patches(original):patch(at,old,new)
     with tempfile.TemporaryDirectory() as tmp:
         def get(fid):
             if fid in edited:
@@ -324,28 +221,18 @@ def build(args):
             main_source = (args.decomp/'src/relocData'/fighter['main_source']).read_text()
             # CSS loads every fighter, not merely the four active players.
             # Share a conservative model-growth budget across the loadout.
-            model_budget = (MODEL_GROWTH_BUDGET if skinning else 320*1024) // len(loadout)
-            if skinning:
-                used=sum(max(0,f['model_bytes_after']-f['model_bytes_before']) for f in report)
-                model_budget=(MODEL_GROWTH_BUDGET-used)//(len(loadout)-len(report))
+            used=sum(max(0,f['model_bytes_after']-f['model_bytes_before']) for f in report)
             try:
                 for size in (12,8,4,0):
                     if size > requested:
                         continue
-                    skin_stats={}
-                    if skinning:
-                        mesh=weighted_mesh(asset,args.triangles,size)
-                        selected=module['wide'] if len(mesh['joints'])>16 else module
-                        share_runtime(selected)
-                        model_budget=(MODEL_GROWTH_BUDGET-used-shared_growth)//(len(loadout)-len(report))
-                        before,after=mesh['source_faces'],mesh['triangles']
-                    else:
-                        parts, before, after = mesh_parts(asset,args.triangles,size)
+                    mesh=weighted_mesh(asset,args.triangles,size)
+                    selected=module['wide'] if len(mesh['joints'])>16 else module
+                    share_runtime(selected)
+                    model_budget=(MODEL_GROWTH_BUDGET-used-shared_growth)//(len(loadout)-len(report))
+                    before,after=mesh['source_faces'],mesh['triangles']
                     try:
-                        if skinning:
-                            blob,intern,extern,skin_stats=patch_skin_model(raw,entries[fid],source,main_source,mesh,size,module)
-                        else:
-                            blob, intern, extern = patch_model(raw, entries[fid], source, parts, main_source)
+                        blob,intern,extern,skin_stats=patch_skin_model(raw,entries[fid],source,main_source,mesh,size,module)
                     except ValueError as exc:
                         if str(exc) not in ('Relocation exceeds 16-bit word range','Model exceeds reloc file limit'):
                             raise
@@ -358,12 +245,12 @@ def build(args):
                 presentation = patch_ui(fighter, args.assets, get, sym, patch) if fighter.get('ui') else {}
             except ValueError as exc:
                 raise ValueError(f'{fighter["name"]} on {fighter["slot"]}: {exc}') from exc
-            report.append(dict(fighter, source_sha256=hashlib.sha256(asset.read_bytes()).hexdigest(), triangles_before=before, triangles_after=after, face_texture_size=size, textured_triangles=skin_stats.get('textured_triangles',0) if skinning else sum(len(t)==3 for ts in parts.values() for t in ts), skinning=skin_stats if skinning else None, model_bytes_before=len(raw), model_bytes_after=len(blob), presentation=presentation))
+            report.append(dict(fighter, source_sha256=hashlib.sha256(asset.read_bytes()).hexdigest(), triangles_before=before, triangles_after=after, face_texture_size=size, textured_triangles=skin_stats['textured_triangles'], skinning=skin_stats, model_bytes_before=len(raw), model_bytes_after=len(blob), presentation=presentation))
         for fid, reloc in edited.items():
             blob, intern, extern = reloc.finish()
             replacements[fid] = (blob + suffixes[fid], intern, extern, len(blob)//4)
     asset_growth = sum(max(0,r[3]*4-entries[fid][4]*4) for fid,r in replacements.items())
-    asset_budget = ASSET_GROWTH_BUDGET if skinning else 352*1024
+    asset_budget = ASSET_GROWTH_BUDGET
     if asset_growth > asset_budget:
         raise ValueError('Loadout exceeds the character-select asset budget; reduce --triangles or select fewer fighters')
     # Move ALL file bodies together so next-entry offsets remain meaningful
@@ -398,13 +285,9 @@ def build(args):
         if struct.unpack_from('>I', output, offset)[0] != int(patch['expected'], 16):
             raise ValueError('Character-selection patch preimage mismatch')
         struct.pack_into('>I', output, offset, int(patch['replacement'], 16))
-    if skinning:
-        output[0x10:0x18]=crc6103(output)
+    output[0x10:0x18]=crc6103(output)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_bytes(output)
-    # The four selection-mask instructions lie beyond the CIC checksum range.
-    if not skinning:
-        assert output[0x1000:0x101000] == original[0x1000:0x101000]
     # Additional model bytes loaded for any four distinct fighter kinds.
     # This excludes vanilla scene heaps and is not a hardware RAM guarantee.
     deltas = sorted((r['model_bytes_after']-r['model_bytes_before'] for r in report), reverse=True)
@@ -422,7 +305,6 @@ if __name__ == '__main__':
     ap.add_argument('--loadout', type=Path, required=True)
     ap.add_argument('--output', type=Path, required=True)
     ap.add_argument('--triangles', type=int)
-    ap.add_argument('--skinning', action=argparse.BooleanOptionalAction, default=True, help='Use skeletal skinning (default); --no-skinning selects rigid joints')
     args = ap.parse_args()
     if args.triangles is None:
         args.triangles = 700

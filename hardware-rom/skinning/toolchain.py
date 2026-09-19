@@ -29,7 +29,7 @@ def compile_modules(decomp,output,classic=False,joint_cap=16):
     assembler=shutil.which('mips-linux-gnu-as')
     linker=shutil.which('mips-linux-gnu-ld')
     if not all((clang,assembler,linker)):
-        raise ValueError('--skinning requires LLVM clang with MIPS support and mips-linux-gnu binutils')
+        raise ValueError('ROM export requires LLVM clang with MIPS support and mips-linux-gnu binutils; see hardware-rom/skinning/FORMAT.md for setup')
     run=lambda args:subprocess.run(args,check=True,capture_output=True,text=True)
     from skinning.native_pose import generate
     generate(decomp,output)

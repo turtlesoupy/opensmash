@@ -34,10 +34,10 @@ class SpriteTests(unittest.TestCase):
     def test_css_budget_counts_more_than_four_fighters(self):
         base=bytes(2*1024*1024)
         rom=bytearray(base)
-        # Four 80 KB models fit the growth budget, five do not. CSS loads
+        # Four 40 KB models fit the growth budget, five do not. CSS loads
         # all five even though only four fighters can be active in battle.
         for fid in range(5):
-            ENTRY.pack_into(rom,TABLE+fid*12,0,65535,20000,65535,20000)
+            ENTRY.pack_into(rom,TABLE+fid*12,0,65535,10000,65535,10000)
         with self.assertRaisesRegex(AssertionError,'Character-select asset growth'):
             verify(base,rom,[])
 
@@ -109,23 +109,6 @@ class SpriteTests(unittest.TestCase):
         self.assertEqual(tile[1,6],texture[0,4])
         self.assertEqual(tile[6,1],texture[4,0])
 
-    def test_two_cycle_head_combiner_passes_first_cycle_color(self):
-        # GBI dRGB1/dAlpha1 must select COMBINED (0), not TEXEL0 (1).
-        # In cycle 2, TEXEL0 is the next tile, absent from our one-tile DL.
-        from build_rom import patch_model
-        raw=bytearray(88)
-        struct.pack_into('>I',raw,0,18);struct.pack_into('>I',raw,44,18)
-        source='DObjDesc: JointTreeA @ 0x0\nDObjDesc: JointTreeB @ 0x2c'
-        parts={12:[(np.zeros((3,3),dtype=int),np.full((3,3),255),(4,bytes(32)))]}
-        blob,_,_=patch_model(raw,[0,65535,0,65535,22],source,parts,'')
-        words=[b for a,b in struct.iter_unpack('>II',blob[88:]) if a==0xFCFFFFFF and b!=0xFFFE793C]
-        self.assertEqual(len(words),1)
-        word=words[0]
-        self.assertEqual((word>>15)&7,1) # cycle 1: texture color
-        self.assertEqual((word>>9)&7,1)  # cycle 1: texture alpha
-        self.assertEqual((word>>6)&7,0)  # cycle 2: COMBINED color
-        self.assertEqual(word&7,0)      # cycle 2: COMBINED alpha
-
     def test_adpcm_uses_decoded_feedback_and_preserves_waveform(self):
         # A predictor with one previous-sample tap exercises feedback; the
         # reference decoder is the independently ported RSP algorithm.
@@ -180,17 +163,19 @@ class AllSlotsTests(unittest.TestCase):
 class BakedAuditTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        path=Path(os.environ.get('PRESENTATION_ROM',str(ROOT/'build/rom-dimson-casey-v2/opensmash.z64')))
-        if not path.exists() or not BASE.exists():
+        path=Path(os.environ.get('PRESENTATION_ROM', ''))
+        if not path.is_file() or not BASE.exists():
             raise unittest.SkipTest('Build a ROM with presentation assets for corruption tests')
         cls.base=BASE.read_bytes();cls.rom=path.read_bytes()
-        cls.loadout=json.loads(path.with_name('loadout.json').read_text())
+        cls.loadout=json.loads(path.with_suffix('.json').read_text())['loadout']
         cls.fids=[f['model_file'] for f in cls.loadout]
+        cls.untouched=next(i for i,fid in enumerate(MODELS) if fid not in cls.fids)
 
     def test_complete_rom_and_untouched_vanilla_slot(self):
         self.assertTrue(verify(self.base,self.rom,self.fids,self.loadout))
         for t in EMBLEM_TABLES:
-            self.assertEqual(self.rom[t+16:t+20],self.base[t+16:t+20]) # Luigi
+            at=t+4*self.untouched
+            self.assertEqual(self.rom[at:at+4],self.base[at:at+4])
 
     def test_rejects_audio_pointer_into_original_bank(self):
         bad=bytearray(self.rom);wt,_,_=voice_info(self.base,0)
@@ -198,7 +183,7 @@ class BakedAuditTests(unittest.TestCase):
         with self.assertRaises(AssertionError):verify(self.base,bad,self.fids,self.loadout)
 
     def test_rejects_unselected_emblem_change(self):
-        bad=bytearray(self.rom);bad[EMBLEM_TABLES[0]+16]^=1
+        bad=bytearray(self.rom);bad[EMBLEM_TABLES[0]+4*self.untouched]^=1
         with self.assertRaises(AssertionError):verify(self.base,bad,self.fids,self.loadout)
 
     def test_rejects_bad_presentation_relocation(self):

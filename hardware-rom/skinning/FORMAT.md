@@ -1,7 +1,6 @@
 # Experimental N64 skinning
 
-ROM builds use skinning by default. Use `build.py rom --no-skinning` for the
-earlier rigid-joint builder. The website and native target are unaffected;
+ROM builds always use skeletal skinning. The website and native target are unaffected;
 all the usual loadout and private-character arguments still apply.
 
 ```sh
@@ -97,10 +96,6 @@ The current runtime fixture expects Thomas in Mario's slot and Casey in Samus's
 slot. Emulator testing uses Ares v148 with Expansion Pak disabled. The user tested the four-character, 250-triangle build on a physical console
 and reported improved skinning. Hardware frame rate has not been measured.
 Never distribute the debug scene/roster ROMs.
-
-Rigid output (`--no-skinning`) is checked byte-for-byte against the production fixture at
-pipeline commit `5afc823` (SHA-256
-`2e1453bfa2c9391fb22bb7841902babb330145fae45b8c91acd266c51c04f760`).
 
 ### Current performance limit
 

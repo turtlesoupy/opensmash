@@ -23,23 +23,20 @@ def walk(raw, first, internal):
     return result
 
 
-def verify(base, rom, fids, loadout=None, skinning=False):
+def verify(base, rom, fids, loadout=None):
     assert len(rom) <= 64*1024*1024 and len(rom) & (len(rom)-1) == 0
     from presentation import MENU_SCALE_TABLE, CTL, TBL, MODELS, EMBLEMS, EMBLEM_TABLES, voice_info
     table = [ENTRY.unpack_from(rom, TABLE+i*12) for i in range(COUNT+1)]
     old = [ENTRY.unpack_from(base, TABLE+i*12) for i in range(COUNT+1)]
     # All replacement assets can be resident together in character select.
     growth = sum(max(0,new[4]-prev[4])*4 for new,prev in zip(table[:-1],old[:-1]))
-    if skinning:
-        from skinning.patches import patches, crc6103, ASSET_GROWTH_BUDGET
-    assert growth <= (ASSET_GROWTH_BUDGET if skinning else 352*1024), 'Character-select asset growth exceeds conservative budget'
+    from skinning.patches import patches, crc6103, ASSET_GROWTH_BUDGET
+    assert growth <= ASSET_GROWTH_BUDGET, 'Character-select asset growth exceeds conservative budget'
     expected = bytearray(base)
-    extra_files = {163} if skinning else set()
-    common=None
-    if skinning:
-        ce=table[163];cs=DATA+(ce[0]&0x7fffffff)
-        assert not ce[0]&0x80000000
-        common=rom[cs:cs+ce[4]*4]
+    extra_files = {163}
+    ce=table[163];cs=DATA+(ce[0]&0x7fffffff)
+    assert not ce[0]&0x80000000
+    common=rom[cs:cs+ce[4]*4]
     for fighter in loadout or []:
         fk = MODELS.index(fighter['model_file'])
         factor = fighter.get('menu_scale',1)
@@ -82,11 +79,10 @@ def verify(base, rom, fids, loadout=None, skinning=False):
         offset = int(patch['rom_offset'], 16)
         assert struct.unpack_from('>I', expected, offset)[0] == int(patch['expected'], 16)
         struct.pack_into('>I', expected, offset, int(patch['replacement'], 16))
-    if skinning:
-        for at,old_bytes,new_bytes in patches(base):
-            assert expected[at:at+len(old_bytes)]==old_bytes
-            expected[at:at+len(new_bytes)]=new_bytes
-        expected[0x10:0x18]=crc6103(expected)
+    for at,old_bytes,new_bytes in patches(base):
+        assert expected[at:at+len(old_bytes)]==old_bytes
+        expected[at:at+len(new_bytes)]=new_bytes
+    expected[0x10:0x18]=crc6103(expected)
     assert expected[:TABLE] == rom[:TABLE], 'Unexpected game code/header change'
     assert expected[DATA:] == rom[DATA:len(base)], 'Original non-table data changed'
     totals = {}
@@ -109,57 +105,8 @@ def verify(base, rom, fids, loadout=None, skinning=False):
         walk(raw, entry[3], False)
         if fid not in fids:
             continue
-        if skinning:
-            from skinning.audit import audit_model
-            totals[fid]=audit_model(raw,pointers,common)
-            continue
-        # Appended DLs start with PipeSync, TextureOff, GeometryMode, Combine.
-        count = 0
-        for at in range(prev[4]*4, len(raw)-32, 8):
-            if raw[at:at+32] != bytes.fromhex('e700000000000000d700000000000000d9f1f9ff00200004fcfffffffffe793c'):
-                continue
-            cursor = at+32
-            vertex_count = 0
-            texture_size = 0
-            while True:
-                w0, w1 = struct.unpack_from('>II', raw, cursor)
-                op = w0 >> 24
-                if op == 0xDF:
-                    break
-                if op == 1:
-                    vertex_count = (w0 >> 12)&255
-                    assert 0 < vertex_count <= 32
-                    assert (w0 & 255)//2 == vertex_count
-                    offset = pointers[cursor+4]
-                    assert offset % 8 == 0 and offset+vertex_count*16 <= len(raw)
-                elif op == 5:
-                    idx = [(w0 >> shift)&255 for shift in (16,8,0)]
-                    assert all(i%2 == 0 and i//2 < vertex_count for i in idx)
-                    count += 1
-                elif op == 0xFD:
-                    texture_size = (w0 & 0xfff)+1
-                    assert w0 >> 12 == 0xFD100 and texture_size in (4,8,12)
-                    offset = pointers[cursor+4]
-                    assert offset % 8 == 0 and offset+texture_size**2*2 <= len(raw)
-                elif op == 0xF5:
-                    assert texture_size and w0 == (0xF5100000|((texture_size//4)<<9))
-                    assert w1 in (0x07080200,0x00080200)
-                elif op in (0xF4,0xF2):
-                    extent=((texture_size-1)*4<<12)|((texture_size-1)*4)
-                    assert texture_size and w0 == op<<24
-                    assert w1 == (extent | (0x07000000 if op==0xF4 else 0))
-                elif op in (0xE7,0xE6):
-                    assert w0 == op<<24 and w1 == 0
-                elif op == 0xD7:
-                    assert (w0,w1) in [(0xD7000000,0),(0xD7000002,0xffffffff)]
-                elif op == 0xFC:
-                    assert w0 == 0xFCFFFFFF and w1 in (0xFFFE793C,0xFFFCF238)
-                else:
-                    raise AssertionError(f'Unexpected emitted GBI opcode {op:x}')
-                cursor += 8
-            assert cursor < len(raw)
-        assert count > 0
-        totals[fid] = count
+        from skinning.audit import audit_model
+        totals[fid]=audit_model(raw,pointers,common)
     return totals
 
 
@@ -167,11 +114,10 @@ if __name__ == '__main__':
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument('base', type=Path)
     ap.add_argument('rom', type=Path)
-    ap.add_argument('--skinning', action=argparse.BooleanOptionalAction, default=True, help='Use skeletal skinning (default); --no-skinning selects rigid joints')
     ap.add_argument('--models', type=int, nargs='+', default=[296,323,332])
     ap.add_argument('--loadout', type=Path, help='Read model IDs from a generated loadout')
     args = ap.parse_args()
     loadout = json.loads(args.loadout.read_text()) if args.loadout else None
     if loadout is not None:
         args.models = [c['model_file'] for c in loadout]
-    print('PASS:', verify(args.base.read_bytes(), args.rom.read_bytes(), args.models, loadout, args.skinning))
+    print('PASS:', verify(args.base.read_bytes(), args.rom.read_bytes(), args.models, loadout))
