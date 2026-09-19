@@ -7,10 +7,14 @@ export default function Controls() {
  const bindings=useSyncExternalStore(subscribeBindings,loadBindings,loadBindings);
  const [heldKeys,setHeldKeys]=useState<Set<string>>(()=>new Set());
  const [padHeld,setPadHeld]=useState<Set<Action>>(()=>new Set());
- const [pads,setPads]=useState<{id:string,family:PadFamily}[]>([]);
- const [profile,setProfile]=useState('');
+ const [pads,setPads]=useState<{id:string,family:PadFamily}[]>(()=>connectedGamepads().map(p=>({id:p.id,family:padFamily(p.id)})));
+ // null follows the first connected controller, including pads revealed by a
+ // button press. An explicit selection (including defaults) stays selected.
+ const [selectedProfile,setProfile]=useState<string|null>(null);
+ const profile=selectedProfile??pads[0]?.id??'';
  const mapping=gamepadBindings(bindings,profile),axes=gamepadAxes(bindings,profile);
  const [pending,setPending]=useState<Pending>(null);
+ useEffect(()=>{setPending(null);},[profile]);
  useEffect(()=>{
   const down=(e:KeyboardEvent)=>{
    if(e.target instanceof HTMLElement&&e.target.matches('input,select,textarea'))return;
@@ -60,6 +64,10 @@ export default function Controls() {
   {[...new Set([...pads.map(p=>p.id),...Object.keys(bindings.profiles||{}),...Object.keys(bindings.axisProfiles||{})])].map(id=><option key={id} value={id}>{id}</option>)}
  </select></label>
  <p>{PROFILE_HELP}</p>
+ {profile
+  ?<p>{pads.some(p=>p.id===profile)?'Editing this controller’s gameplay controls.':'This controller is disconnected. Changes apply when it reconnects.'}</p>
+  :<p>Editing defaults. Controllers with saved profiles keep their own controls; select a connected controller above to change its gameplay controls.</p>}
+ {pads.length>0&&<ul aria-label="Profiles used in gameplay">{[...new Set(pads.map(p=>p.id))].map(id=><li key={id}>{id}: {Object.hasOwn(bindings.profiles||{},id)?'saved button profile':'default buttons'}{Object.hasOwn(bindings.axisProfiles||{},id)?', saved stick profile':', default sticks'} used in gameplay.</li>)}</ul>}
  <dl className="controls-list controls-grid" aria-live="polite">
   <div className="controls-head" aria-hidden="true"><dt>Action</dt><dd>Keyboard</dd><dd>Gamepad</dd></div>
   {actions.map(action=>{
