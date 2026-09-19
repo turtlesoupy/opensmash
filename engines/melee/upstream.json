@@ -1,9 +1,9 @@
 {
   "repository": "https://github.com/turtlesoupy/opensmash-melee-pc.git",
-  "revision": "bdbc35b02682b3406b48515ec7a156c314919684",
+  "revision": "b9b143762c1231f2f0c8380525bca4d67bfbdb9e",
   "branch": "opensmash/browser",
   "upstreamRepository": "https://github.com/999sian/melee-pc.git",
-  "upstreamRevision": "adaf840577ec24e63861d97fdf6a6a85d40e28bf",
+  "upstreamRevision": "ac684f13d24b8dbb4058915f17718ae81861bd3e",
   "emscripten": "6.0.9",
   "llvm": "22",
   "validation": "validation/upstream/README.md"
