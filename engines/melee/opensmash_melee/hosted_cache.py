@@ -36,7 +36,13 @@ class ServiceCache:
                     elif d.exists():d.unlink(missing_ok=True)
                 total-=entry['bytes'];self.entries.pop(key,None);self.loaded.discard(key)
     def restore(self,key,dirs=None):
-        if key in self.loaded:self.touch(key,dirs);return True
+        if key in self.loaded:
+            # Multiple archives can share source directories. Evicting another
+            # archive may remove these files without clearing this loaded key.
+            paths=self.entries.get(key,{}).get('dirs',dirs or [])
+            if paths and all(Path(path).exists() for path in paths):
+                self.touch(key,dirs);return True
+            self.loaded.discard(key);self.entries.pop(key,None)
         raw=self.store.get(key)
         if raw is None:return False
         unpack(raw,self.base.ROOT);self.loaded.add(key);self.touch(key,dirs or self.archive_dirs(raw));return True

@@ -83,3 +83,18 @@ class CacheTests(unittest.TestCase):
    self.assertIs(second.request_lock(request),second.request_lock(SimpleNamespace(path=value['base']+'.rgba8')))
    second.before_request(request)
    self.assertEqual((second.base.ROOT/'build/native-fit/local/revisions'/revision/'sources/custom.json').read_bytes(),b'geometry')
+
+ def test_import_source_restores_after_overlapping_cache_eviction(self):
+  with tempfile.TemporaryDirectory() as directory:
+   root=Path(directory);store=Store(local=root/'bucket');slug='import-'+'b'*24
+   base=SimpleNamespace(ROOT=root/'workspace',CATALOG={slug:{'target':'mario','imported':True}})
+   cache=ServiceCache(base,store,{},'v1');ident=cache.ident(slug)
+   relative='assets/characters/'+ident
+   source=base.ROOT/relative/'rigged.glb';source.parent.mkdir(parents=True);source.write_bytes(b'model')
+   imported='melee/imports/'+slug+'.tar.gz';variant=cache.prefix+'sources/'+ident+'.tar.gz'
+   cache.save(imported,[relative]);cache.save(variant,[relative])
+   # Both archives own the same directory; evicting one leaves the other loaded.
+   cache.entries[variant]['used']=0;cache.budget=5;cache.evict()
+   self.assertFalse(source.exists())
+   cache.source(slug)
+   self.assertEqual(source.read_bytes(),b'model')
