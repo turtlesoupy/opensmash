@@ -58,6 +58,7 @@ class CacheTests(unittest.TestCase):
     self.assertTrue(source_only)
     base.CATALOG[slug]=row;ident=first.ident(slug)
     source=base.ROOT/'assets/characters'/ident/'rigged.glb';source.parent.mkdir(parents=True);source.write_bytes(b'imported model')
+    portrait=base.ROOT/'build/character-imports'/f'{slug}.webp';portrait.parent.mkdir(parents=True);portrait.write_bytes(b'portrait')
     job.update(state='complete',fighter=row)
    manager.work=work;first.install_import_cache();job={'id':'c'*32,'state':'queued'}
    manager.work(job,'https://unused.invalid','mario',True);access.grant(owner,'job:'+job['id'])
@@ -98,3 +99,22 @@ class CacheTests(unittest.TestCase):
    self.assertFalse(source.exists())
    cache.source(slug)
    self.assertEqual(source.read_bytes(),b'model')
+
+ def test_missing_cache_input_cannot_silently_publish_partial_archive(self):
+  with tempfile.TemporaryDirectory() as directory:
+   root=Path(directory);(root/'portrait.webp').write_bytes(b'portrait')
+   with self.assertRaises(FileNotFoundError):pack(root,['missing-source','portrait.webp'])
+
+ def test_repaired_import_is_restored_even_if_portrait_only_archive_was_loaded(self):
+  with tempfile.TemporaryDirectory() as directory:
+   root=Path(directory);store=Store(local=root/'bucket');slug='import-'+'b'*24
+   base=SimpleNamespace(ROOT=root/'workspace',CATALOG={slug:{'target':'mario','imported':True}})
+   cache=ServiceCache(base,store,{},'v1');key='melee/imports/'+slug+'.tar.gz'
+   portrait=f'build/character-imports/{slug}.webp'
+   art=base.ROOT/portrait;art.parent.mkdir(parents=True);art.write_bytes(b'portrait')
+   cache.save(key,[portrait])
+   repaired=root/'repaired';source=repaired/'assets/characters'/cache.ident(slug)/'rigged.glb'
+   source.parent.mkdir(parents=True);source.write_bytes(b'recovered model')
+   store.put(key,pack(repaired,['assets/characters/'+cache.ident(slug)]))
+   cache.source(slug)
+   self.assertEqual((base.ROOT/source.relative_to(repaired)).read_bytes(),b'recovered model')

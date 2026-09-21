@@ -47,6 +47,15 @@ class SourceImportTests(unittest.TestCase):
     self.assertEqual(second['fighter']['target'],'fox')
     convert.assert_not_called()
     self.assertEqual(len(list((Path(directory)/'assets/characters').glob('*/rigged.glb'))),1)
+    # A persisted roster row alone must not make an incomplete import ready.
+    model=next((Path(directory)/'assets/characters').glob('*/rigged.glb'))
+    model.unlink()
+    third={};manager.work(third,BASE+'manifest.json','fox',True)
+    self.assertEqual(third['state'],'complete',third)
+    self.assertEqual(third['fighter']['slug'],first['fighter']['slug'])
+    self.assertEqual(model.read_bytes(),(SOURCE/'rigged.glb').read_bytes())
+    self.assertEqual(len(manager.rows),1)
+    convert.assert_not_called()
    manager.pool.shutdown()
 
  def test_remove_forgets_imported_fighter_and_deletes_its_files(self):

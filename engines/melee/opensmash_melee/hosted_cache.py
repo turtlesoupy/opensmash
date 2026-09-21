@@ -39,7 +39,7 @@ class ServiceCache:
         if key in self.loaded:
             # Multiple archives can share source directories. Evicting another
             # archive may remove these files without clearing this loaded key.
-            paths=self.entries.get(key,{}).get('dirs',dirs or [])
+            paths=[*self.entries.get(key,{}).get('dirs',[]),*(dirs or [])]
             if paths and all(Path(path).exists() for path in paths):
                 self.touch(key,dirs);return True
             self.loaded.discard(key);self.entries.pop(key,None)
@@ -56,7 +56,8 @@ class ServiceCache:
     def source(self,slug):
         row=self.base.CATALOG.get(slug)
         if row and row.get('imported'):
-            return self.restore('melee/imports/'+slug+'.tar.gz')
+            source=self.base.ROOT/'assets/characters'/self.ident(slug)
+            return self.restore('melee/imports/'+slug+'.tar.gz',[source,source/'rigged.glb'])
         entry=self.manifest.get('characters',{}).get(slug)
         if not entry:raise ValueError('Character source is not published: '+slug)
         if entry['key'] not in self.loaded:
@@ -181,7 +182,9 @@ class ServiceCache:
             try:
                 if result.get('fighter'):
                     row=result['fighter'];slug=row['slug'];ident=self.ident(slug)
-                    if not (self.base.ROOT/'assets/characters'/ident).is_dir():self.source(slug)
+                    source=self.base.ROOT/'assets/characters'/ident/'rigged.glb'
+                    if not source.is_file():self.source(slug)
+                    if not source.is_file():raise ValueError('Imported character source is missing')
                     self.save('melee/imports/'+slug+'.tar.gz',['assets/characters/'+ident,'build/character-imports/'+slug+'.webp'])
                     self.save(self.prefix+'sources/'+ident+'.tar.gz',['assets/characters/'+ident])
                     self.store.put('melee/import-rows/'+slug+'.json',json.dumps(row).encode())

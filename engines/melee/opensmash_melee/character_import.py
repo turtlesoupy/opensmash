@@ -115,12 +115,13 @@ class ImportManager:
                 slug='import-'+hashlib.sha256((info['signature']+('' if source_only else target)).encode()).hexdigest()[:24]
                 with self.lock:
                     existing=self.catalog.get(slug)
-                    if existing:
+                    ident='web-v1-'+hashlib.sha256(slug.encode()).hexdigest()[:16]
+                    retained=self.workspace/'assets/characters'/ident
+                    if existing and all((retained/name).is_file() for name in [*FILES,'character.json']):
                         if source_only and existing['target']!=target:
                             existing['target']=target
                             atomic_write(self.index,(json.dumps(self.rows,indent=2)+'\n').encode())
                         job.update(state='complete',message='Character is ready.',fighter=existing);return
-                    ident='web-v1-'+hashlib.sha256(slug.encode()).hexdigest()[:16]
                     archive_previous_build(self.workspace,ident)
                     commands=[('Fitting character',['tools/build_character.py',str(source),'--id',ident,'--target',target]),
                               ('Preparing textures and artwork',['tools/upgrade_character_surfaces.py',ident]),
@@ -139,6 +140,7 @@ class ImportManager:
                     art=self.root/(slug+'.webp')
                     with Image.open(source/'portrait_raw.png') as im:im.thumbnail((180,172));im.convert('RGB').save(art,'WEBP',quality=90)
                     row={'slug':slug,'name':info['name'],'short':info['short'],'target':target,'portrait':f'/api/imports/portraits/{slug}.webp','imported':True}
+                    self.rows=[r for r in self.rows if r['slug']!=slug]
                     self.rows.append(row);atomic_write(self.index,(json.dumps(self.rows,indent=2)+'\n').encode());self.catalog[slug]=row
                 job.update(state='complete',message='Character is ready.',fighter=row)
         except Exception as error:

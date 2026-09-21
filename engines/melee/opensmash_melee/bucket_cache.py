@@ -39,6 +39,7 @@ def pack(root,paths):
         with tarfile.open(fileobj=compressed,mode='w',format=tarfile.PAX_FORMAT) as archive:
             for relative in paths:
                 path=root/relative
+                if not path.exists():raise FileNotFoundError(f'Missing Melee cache input: {relative}')
                 files=sorted(path.rglob('*')) if path.is_dir() else [path]
                 for item in files:
                     if item.is_file() and not item.is_symlink():archive.add(item,arcname=item.relative_to(root).as_posix(),recursive=False,filter=normalize)
